@@ -7,6 +7,7 @@
 
 @use "common";
 
+
 @use "ui";
 @use "forms";
 @use "header";
@@ -17,10 +18,11 @@
 
 @use "old-styles";
 
-// .nojq {
-//     display: none;
-// }
 
-// html {
-//     margin-top: 0 !important;
-// }
+.nojq {
+    display: none;
+}
+
+html {
+    margin-top: 0 !important;
+}

@@ -149,20 +149,15 @@
 }
 
 .logo {
-    display: inline-flex;
+    display: flex;
     align-items: center;
+    gap: 12px;
     font-weight: 800;
-    letter-spacing: 0.06em;
-    font-size: 13px;
-    color: #2f3236;
-    text-decoration: none;
-    padding: 6px 12px;
-    border-radius: 14px;
-    background: #ffffff;
-    border: 1px solid #e3e6e8;
-    box-shadow: 0 6px 16px rgba(15, 26, 23, 0.05);
+    font-size: 18px;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
-    white-space: nowrap;
+
+    &__icon {}
 }
 
 .nav {

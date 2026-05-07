@@ -3,14 +3,14 @@
 @font-face {
   font-family: "icons";
   font-display: swap;
-  src: url("../fonts/icons.woff2?v=1778153079981") format("woff2"), url("../fonts/icons.woff?v=1778153079981") format("woff");
+  src: url("../fonts/icons.woff2?v=1778159756406") format("woff2"), url("../fonts/icons.woff?v=1778159756406") format("woff");
   font-weight: 400;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Rubik";
-  src: url("../fonts/Rubik-VariableFont_wght.woff2?v=1778153079981") format("woff2 supports variations"), url("../fonts/Rubik-VariableFont_wght.woff2?v=1778153079981") format("woff2-variations"), url("../fonts/Rubik-VariableFont_wght.woff?v=1778153079981") format("woff");
+  src: url("../fonts/Rubik-VariableFont_wght.woff2?v=1778159756406") format("woff2 supports variations"), url("../fonts/Rubik-VariableFont_wght.woff2?v=1778159756406") format("woff2-variations"), url("../fonts/Rubik-VariableFont_wght.woff?v=1778159756406") format("woff");
   font-weight: 100 900;
   font-stretch: 75% 125%;
   font-style: normal;
@@ -1621,25 +1621,17 @@ body.header-solid::before {
 }
 
 .logo {
-  display: -webkit-inline-box;
-  display: -ms-inline-flexbox;
-  display: inline-flex;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
+  gap: 12px;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  font-size: 13px;
-  color: #2f3236;
-  text-decoration: none;
-  padding: 6px 12px;
-  border-radius: 14px;
-  background: #ffffff;
-  border: 1px solid #e3e6e8;
-  -webkit-box-shadow: 0 6px 16px rgba(15, 26, 23, 0.05);
-          box-shadow: 0 6px 16px rgba(15, 26, 23, 0.05);
+  font-size: 18px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  white-space: nowrap;
 }
 
 .nav {
@@ -2317,22 +2309,6 @@ body.header-solid::before {
   -webkit-box-align: start;
       -ms-flex-align: start;
           align-items: start;
-}
-
-.footer-logo {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  gap: 12px;
-  font-weight: 800;
-  font-size: 18px;
-  letter-spacing: 0.04em;
-  color: #ffffff;
-  text-transform: uppercase;
-  margin-bottom: 12px;
 }
 
 .footer-desc {
@@ -8711,6 +8687,14 @@ body.header-solid::before {
 }
 
 /* Home collections: restore desktop tabs style */
+
+.nojq {
+  display: none;
+}
+
+html {
+  margin-top: 0 !important;
+}
 
 @media (min-width: 575.98px) {
   .popup__form {

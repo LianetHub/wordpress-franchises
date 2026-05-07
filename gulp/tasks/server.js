@@ -1,9 +1,11 @@
 
 export const server = (done) => {
     app.plugins.browsersync.init({
-        proxy: "localhost",
+        proxy: "http://aulutsbw.beget.tech/",
+        serveStatic: ['.'],
+        files: ["./**/*.css", "./**/*.js", "./**/*.php"],
         notify: false,
-        port: 3000,
+        online: true
     });
     done();
 };

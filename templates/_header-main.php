@@ -6,8 +6,17 @@
             </svg>
         </button>
         <div class="brand">
-            <a class="logo" href="index.html" aria-label="Лого — на главную">ЛОГО</a>
-
+            <a href="<?php echo home_url(); ?>" class="logo">
+                <span class="logo__icon">
+                    <?php
+                    $logo_icon = get_field('logo_icon', 'option');
+                    if ($logo_icon):
+                    ?>
+                        <img src="<?php echo esc_url($logo_icon['url']); ?>" alt="logo icon">
+                    <?php endif; ?>
+                </span>
+                <?php echo esc_html(get_field('logo_text', 'option')); ?>
+            </a>
         </div>
         <nav class="nav" aria-label="Основное меню">
             <a href="catalog.html">Все франшизы</a>

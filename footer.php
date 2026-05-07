@@ -3,8 +3,8 @@
 <footer class="footer">
     <div class="footer-shell">
         <div class="footer-top">
-            <a href="<?php echo home_url(); ?>" class="footer-logo">
-                <span class="footer-logo-mark">
+            <a href="<?php echo home_url(); ?>" class="logo">
+                <span class="logo__mark">
                     <?php
                     $logo_icon = get_field('logo_icon', 'option');
                     if ($logo_icon):
