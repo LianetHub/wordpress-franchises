@@ -9,7 +9,9 @@
     </div>
     <div class="cta-group">
         <button class="btn btn-outline secondary-btn category-toggle" type="button" aria-expanded="false" aria-controls="category-grid-wrap">Показать все отрасли</button>
-        <a class="btn btn-primary catalog-btn" href="catalog.html">Все франшизы</a>
+        <a class="btn btn-primary catalog-btn" href="<?php echo esc_url(get_permalink(wc_get_page_id('shop'))); ?>">
+            Все франшизы
+        </a>
     </div>
 </section>
 
@@ -104,7 +106,7 @@
         </a>
     </div>
     <div class="segment-actions">
-        <a class="btn btn-primary" href="catalog.html?tag=%D0%9F%D0%BE%D0%BF%D1%83%D0%BB%D1%8F%D1%80%D0%BD%D1%8B%D0%B5%20%D1%84%D1%80%D0%B0%D0%BD%D1%88%D0%B8%D0%B7%D1%8B" data-popular-open>Смотреть все популярные франшизы</a>
+        <a class="btn btn-primary" href="<?php echo esc_url(get_permalink(wc_get_page_id('shop'))); ?>?tag=%D0%9F%D0%BE%D0%BF%D1%83%D0%BB%D1%8F%D1%80%D0%BD%D1%8B%D0%B5%20%D1%84%D1%80%D0%B0%D0%BD%D1%88%D0%B8%D0%B7%D1%8B" data-popular-open>Смотреть все популярные франшизы</a>
     </div>
 </section>
 
@@ -302,7 +304,7 @@
             </a>
         </div>
         <div class="segment-actions">
-            <a class="btn btn-primary" href="catalog.html?tag=%D0%9F%D1%80%D0%BE%D0%B2%D0%B5%D1%80%D0%B5%D0%BD%D0%BE" data-collections-open>Смотреть подборку полностью</a>
+            <a class="btn btn-primary" href="<?php echo esc_url(get_permalink(wc_get_page_id('shop'))); ?>?tag=%D0%9F%D1%80%D0%BE%D0%B2%D0%B5%D1%80%D0%B5%D0%BD%D0%BE" data-collections-open>Смотреть подборку полностью</a>
         </div>
     </div>
 </section>

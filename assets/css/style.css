@@ -8688,14 +8688,6 @@ body.header-solid::before {
 
 /* Home collections: restore desktop tabs style */
 
-.nojq {
-  display: none;
-}
-
-html {
-  margin-top: 0 !important;
-}
-
 @media (min-width: 575.98px) {
   .popup__form {
     margin-top: 2rem;

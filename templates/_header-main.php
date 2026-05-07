@@ -19,7 +19,7 @@
             </a>
         </div>
         <nav class="nav" aria-label="Основное меню">
-            <a href="catalog.html">Все франшизы</a>
+            <a href="<?php echo esc_url(get_permalink(wc_get_page_id('shop'))); ?>">Все франшизы</a>
             <div class="nav-dropdown" data-categories-dropdown>
                 <button class="nav-dropdown-trigger" type="button" aria-haspopup="true" aria-expanded="false" data-categories-trigger>
                     Категории <svg class="nav-chev" viewBox="0 0 12 8" aria-hidden="true">
@@ -80,7 +80,7 @@
             </form>
 
             <nav class="mobile-menu-list" aria-label="Навигация">
-                <a class="mobile-menu-link" href="catalog.html">Все франшизы</a>
+                <a class="mobile-menu-link" href="<?php echo esc_url(get_permalink(wc_get_page_id('shop'))); ?>">Все франшизы</a>
 
                 <div class="mobile-acc" data-mobile-acc="categories">
                     <button class="mobile-acc-trigger" type="button" aria-expanded="false" aria-controls="mobile-categories" data-mobile-acc-trigger="categories">
