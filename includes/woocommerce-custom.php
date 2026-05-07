@@ -123,10 +123,14 @@ add_action('admin_head', function () {
         #toplevel_page_woocommerce .wp-submenu li:has(a[href*="wc-reports"]),
         #toplevel_page_woocommerce .wp-submenu li:has(a[href*="extensions"]),
         
-        /* Прячем отдельный блок Платежей, если он вылез в корень */
         #toplevel_page_admin-page-wc-settings-tab-checkout,
         li[id*="PAYMENTS_MENU_ITEM"],
         a[href*="PAYMENTS_MENU_ITEM"] { 
+            display: none !important; 
+        }
+
+        #toplevel_page_woocommerce .wp-submenu li:has(a[href*="product-reviews"]),
+        .submenu-product-reviews { 
             display: none !important; 
         }
     </style>';

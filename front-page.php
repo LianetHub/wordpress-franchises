@@ -15,26 +15,7 @@
     </div>
 </section>
 
-<section class="about-stats" aria-label="Цифры платформы">
-    <div class="stats-grid" aria-label="Цифры платформы">
-        <div class="stat">
-            <div class="stat-value">750+</div>
-            <div class="stat-label">Франшиз в каталоге</div>
-        </div>
-        <div class="stat">
-            <div class="stat-value">68 000+</div>
-            <div class="stat-label">Посетителей на сайте</div>
-        </div>
-        <div class="stat">
-            <div class="stat-value">300+</div>
-            <div class="stat-label">Договоров в месяц</div>
-        </div>
-        <div class="stat">
-            <div class="stat-value">9 лет</div>
-            <div class="stat-label">Помогаем запускать бизнесы</div>
-        </div>
-    </div>
-</section>
+<?php require_once(TEMPLATE_PATH . '_stats-block.php'); ?>
 
 <section class="popular-section stats-next-tight" aria-label="Популярные франшизы" data-popular-section>
     <div class="popular-head">
