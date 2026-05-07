@@ -1,0 +1,121 @@
+@use "sass:color";
+@use "sass:math";
+@use "mixins" as *;
+@use "variables" as *;
+@use "fonts";
+@use "icons";
+
+.pagination {
+	padding: 0.75rem 1.5rem 1rem;
+	display: flex;
+	align-items: center;
+	gap: rem(2);
+
+	@media (max-width: $md4) {
+		display: none;
+	}
+
+	// .pagination__item
+	.page-numbers {
+		width: rem(40);
+		height: rem(40);
+		text-align: center;
+		font-size: 1rem;
+		font-style: normal;
+		font-weight: 600;
+		line-height: 150%;
+		border-radius: 50%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		transition:
+			background-color 0.3s ease,
+			color 0.3s ease;
+		color: #717680;
+
+		&.current {
+			color: #414651;
+			background: #fafafa;
+		}
+
+		&:is(a) {
+			@media (any-hover: hover) {
+				&:hover {
+					color: #414651;
+					background: #fafafa;
+				}
+			}
+		}
+	}
+
+	// .pagination__next
+	&__next,
+	&__prev {
+		transition: all 0.3s ease;
+		display: flex;
+		align-items: center;
+		gap: rem(6);
+		border-radius: 0.5rem;
+		border: rem(1) solid #d5d7da;
+		background: #fff;
+		color: #414651;
+		box-shadow: 0 rem(1) rem(2) 0 rgba(10, 13, 18, 0.05);
+		font-size: 1rem;
+		line-height: 150%;
+		padding: rem(8) rem(12);
+
+		&::before {
+			color: #a4a7ae;
+			width: 1.25rem;
+			height: 1.25rem;
+			font-size: 1.25rem;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			flex-shrink: 0;
+			transition: color 0.3s ease;
+		}
+
+		& span {
+			display: none;
+
+			@media (min-width: $md4) {
+				display: inline;
+			}
+		}
+
+		&:disabled,
+		&[aria-disabled="true"] {
+			pointer-events: none;
+			user-select: none;
+			color: #a4a7ae;
+			border: rem(1) solid #e9eaeb;
+
+			&::before {
+				color: #d5d7da;
+			}
+		}
+
+		@media (any-hover: hover) {
+			&:hover {
+				background: #fafafa;
+				box-shadow:
+					0 0 0 rem(1) rgba(10, 13, 18, 0.18) inset,
+					0 rem(-2) 0 0 rgba(10, 13, 18, 0.05) inset,
+					0 rem(1) rem(2) 0 rgba(10, 13, 18, 0.05);
+			}
+		}
+	}
+
+	&__prev {
+		margin-right: auto;
+	}
+
+	&__next {
+		margin-left: auto;
+
+		&::before {
+			order: 1;
+		}
+	}
+}

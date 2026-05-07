@@ -1,0 +1,243 @@
+@use "sass:color";
+@use "sass:math";
+@use "mixins" as *;
+@use "variables" as *;
+@use "fonts";
+@use "icons";
+
+.fancybox__container {
+	max-width: 100% !important;
+	padding: 0 !important;
+}
+
+.fancybox__slide {
+	padding: 0;
+
+	@media (min-width: $md4) {
+		padding: 1.25rem;
+	}
+
+	&.is-case-popup-slide {
+
+		.f-html {
+			max-width: rem(1800);
+			width: 100%;
+			padding: 3rem 1rem 1rem;
+
+			@media (min-width:$md4) {
+				padding: 2rem;
+
+			}
+		}
+	}
+
+	&.has-ajax {
+		.f-button.is-close-button {
+			--f-close-button-width: #{rem(64)};
+			--f-close-button-height: #{rem(64)};
+			--f-button-bg: rgba(194, 194, 194, 0.40);
+			--f-close-button-color: #000;
+			top: 0;
+			right: 0;
+			opacity: 0.7;
+			--f-button-hover-bg: rgba(194, 194, 194, 0.40);
+
+			@media (any-hover: hover) {
+				&:hover {
+					opacity: 1;
+				}
+			}
+		}
+	}
+}
+
+.fancybox__backdrop {
+	background: rgba(0, 0, 0, 0.65);
+	backdrop-filter: blur(5px);
+	-webkit-backdrop-filter: blur(5px);
+}
+
+.fancybox__content {
+	color: inherit;
+	background: none;
+	padding: 0;
+}
+
+.fancybox__content :focus:not(.carousel__button.is-close) {
+	outline: none;
+}
+
+.f-button.is-close-button {
+	--f-close-button-width: #{rem(42)};
+	--f-close-button-height: #{rem(42)};
+	--f-close-button-svg-stroke-width: #{rem(1.5)};
+	--f-close-button-svg-width: #{rem(32)};
+	--f-close-button-svg-height: #{rem(32)};
+	--f-close-button-color: #{rgba(#aaaaaa, 1)};
+	--f-close-button-hover-color: #000;
+	top: #{rem(8)};
+	right: #{rem(8)};
+
+	@media (min-width: $md4) {
+		top: #{rem(14)};
+		right: #{rem(14)};
+	}
+}
+
+.popup {
+	display: none;
+	background-color: #fff;
+	color: #000;
+	max-width: 100%;
+	padding: 0;
+	width: 100%;
+	border-radius: 1rem;
+	overflow: hidden;
+
+	@media (min-width: $md3) {
+		max-width: rem(950);
+	}
+
+	&.popup--small {
+		max-width: rem(490);
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		background-size: cover;
+		background-repeat: no-repeat;
+		background-position: center;
+		padding: rem(40) rem(32);
+
+		@media (min-width: $md4) {
+			padding: rem(40) rem(24);
+		}
+
+		.popup__title {
+			@media (min-width: $md4) {
+				font-size: 1.75rem;
+			}
+		}
+	}
+
+
+
+	// .popup__icon
+	&__icon {
+		width: rem(123);
+		margin-bottom: 1rem;
+
+		@media (min-width: $md4) {
+			margin-bottom: 1.5rem;
+		}
+
+		& img {
+			width: 100%;
+			height: auto;
+		}
+	}
+
+	// .popup__image
+	&__image {
+		display: none;
+
+		@media (min-width: $md4) {
+			display: block;
+			background: $accent;
+			flex: 0 0 47.5%;
+			min-height: 40.625rem;
+			height: 100%;
+			position: relative;
+			overflow: hidden;
+
+			&::before {
+				content: "";
+				position: absolute;
+				top: 2rem;
+				left: 2rem;
+				width: rem(197);
+				height: rem(42);
+				background: url("@img/logo-white.svg") 0 0 / cover no-repeat;
+				z-index: 2;
+			}
+
+			&::after {
+				content: "";
+				position: absolute;
+				top: -7.94rem;
+				left: -9.13rem;
+				border-radius: 50%;
+				background: $accent;
+				width: 34.625rem;
+				height: 18.6875rem;
+				z-index: 1;
+				filter: blur(rem(80));
+			}
+		}
+	}
+
+	// .popup__content
+	&__content {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		padding: rem(42) 1.5rem rem(24);
+
+		@media (min-width: $md4) {
+			padding: rem(52) 3.5rem rem(20) 3rem;
+		}
+	}
+
+	// .popup__btn
+	&__btn {
+		&[data-fancybox-close] {
+			margin-top: 1rem;
+			width: 100%;
+
+			@media (min-width: $md4) {
+				margin-top: 1.5rem;
+			}
+
+			&.btn-secondary {
+				background: #fff;
+			}
+		}
+	}
+
+	// .popup__title
+	&__title {}
+
+	// .popup__subtitle
+	&__subtitle {}
+
+	// .popup__form
+	&__form {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		margin-top: rem(24);
+
+		@media (min-width: $md5) {
+			margin-top: rem(32);
+		}
+	}
+
+	// .popup__form-field
+	&__form-field {}
+
+	&__download-link {
+		margin-top: 1rem;
+	}
+
+	// .popup__form-footer
+	&__form-footer {
+		display: flex;
+		flex-direction: column;
+		text-align: center;
+		gap: rem(18);
+		margin-top: rem(16);
+
+		@media (min-width: $md4) {
+			margin-top: rem(32);
+		}
+	}
+}

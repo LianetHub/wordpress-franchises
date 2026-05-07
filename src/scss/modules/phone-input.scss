@@ -1,0 +1,58 @@
+.phone-input {
+	transition: color 0.3s ease 0s, border-color 0.3s ease 0s;
+	width: 100%;
+	color: #d8d3bf;
+	font-size: rem(14);
+	background-color: #fff;
+	border: 0;
+	border-radius: 0.5rem;
+	padding: 1rem;
+	caret-color: $accent;
+	color: $dark;
+	&.input-code {
+		text-align: center;
+		padding: 0.6rem;
+
+		font-size: rem(26);
+	}
+	&::placeholder {
+		color: #c2c2c2;
+		opacity: 1;
+	}
+	&:focus {
+		border-color: $accent;
+	}
+}
+
+.iti {
+	color: $dark;
+}
+.iti--separate-dial-code .iti__selected-flag {
+	background: transparent;
+	border-radius: rem(26) 0 0 rem(26);
+	padding-left: 0.8rem;
+	font-size: 0.875rem;
+}
+.iti__flag {
+	border-radius: 0.25rem;
+}
+
+.iti--separate-dial-code.iti--show-flags .iti__selected-dial-code {
+	margin-left: rem(0);
+}
+
+.iti--allow-dropdown .iti__flag-container:hover .iti__selected-flag {
+	background-color: transparent;
+}
+
+.iti__selected-dial-code {
+	padding: em(0) em(0) em(0) rem(10);
+}
+
+.iti__selected-flag {
+	padding: em(0) em(0) em(0) rem(22);
+}
+
+.iti__arrow {
+	display: none;
+}

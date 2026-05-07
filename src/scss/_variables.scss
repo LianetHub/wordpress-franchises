@@ -1,0 +1,57 @@
+@use "sass:color";
+@use "sass:math";
+@use "mixins" as *;
+
+$card: #ffffff;
+$text: #1c2023;
+$muted: #6d7278;
+$btn-accent: #1a76d3;
+$accent: $btn-accent;
+$btn-accent-dark: #155aa1;
+$accent-2: #f1f2f3;
+$shadow: 0 12px 30px rgba(15, 26, 23, 0.08);
+$radius: 18px;
+$btn-radius: 12px;
+$banner-ratio: math.div(16, 9);
+
+$shared-card-bg: #ffffff;
+$shared-text: #1c2023;
+$shared-muted: #6d7278;
+$shared-border: #d7dade;
+$shared-input-bg: #f5f6f7;
+$header-menu-surface: #ffffff;
+$header-float-offset: 10px;
+
+// Шрифты
+
+$fontfamily: "Rubik" !default;
+
+// Шрифты
+
+$md0: 1539.98px !default;
+$md1: 1439.98px !default;
+$md2: 1199.98px !default;
+$md3: 991.98px !default;
+$md4: 767.98px !default;
+$md5: 575.98px !default;
+$md6: 359.98px !default;
+
+// ПЕРЕМЕННЫЕ
+$minWidth: 320; // Минимальная ширина страницы
+$maxWidth: 1920; // Ширина макета
+$maxWidthContainer: rem(1680); // Максимальная ширина ограничивающего контейнера
+$containerPadding: 30;
+
+$white: #ffffff;
+$bg: #F8FAFB;
+$dark: #272727;
+
+// Z-Index
+$ui-index-1: 1; // Для наполняющих элементов в общем потоке
+$ui-index-2: 2; // Для наполняющих элементов в общем потоке
+$ui-index-3: 3; // Для масок
+$ui-index-4: 4; // Для сайдбаров
+$ui-index-5: 5; // Для модалок
+$ui-index-6: 6; // Для элементов, перекрывающих все
+
+$header-height: var(--header-height, #{rem(150)})

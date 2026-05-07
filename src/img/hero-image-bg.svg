@@ -1,0 +1,12 @@
+<svg width="625" height="383" viewBox="0 0 625 383" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+        d="M312.5 0C485.089 0 625 124.081 625 277.142C625 314.633 616.606 350.384 601.394 383H23.6059C8.39389 350.384 0 314.633 0 277.142C0 124.081 139.911 0 312.5 0Z"
+        fill="url(#paint0_linear_hero_dome)" />
+    <defs>
+        <linearGradient id="paint0_linear_hero_dome" x1="122.904" y1="-21.3811" x2="413.143"
+            y2="783.215" gradientUnits="userSpaceOnUse">
+            <stop offset="20%" stop-color="#F5F8FA" />
+            <stop offset="100%" stop-color="#4C89A9" stop-opacity="0" />
+        </linearGradient>
+    </defs>
+</svg>

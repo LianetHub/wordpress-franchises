@@ -1,0 +1,76 @@
+@use "sass:color";
+@use "sass:math";
+@use "mixins" as *;
+@use "variables" as *;
+@use "fonts";
+@use "icons";
+
+.breadcrumbs {
+	position: relative;
+	z-index: 3;
+	padding: 1.5rem 0 1rem;
+
+	// .breadcrumbs__list
+	&__list {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+		font-size: 1rem;
+		// font-weight: 500;;
+	}
+
+	// .breadcrumbs__item
+	&__item {
+		display: inline-flex;
+		align-items: center;
+
+		min-width: 0;
+		gap: 0.25rem;
+
+
+		&:not(:last-child) {
+			flex-shrink: 1;
+
+			&::before {
+				transform: rotate(-90deg);
+				order: 1;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				@extend %ic, .icon-chevron-down;
+
+			}
+		}
+
+		&:not(:last-child) {
+			flex-shrink: 0;
+			overflow: visible;
+			text-overflow: clip;
+		}
+	}
+
+	// .breadcrumbs__link
+	&__link {
+
+
+
+		&:is(a) {
+			transition: color 0.3s ease;
+
+			@media (any-hover: hover) {
+				&:hover {
+					color: $accent;
+				}
+			}
+		}
+	}
+
+	// .breadcrumbs__current
+	&__current {
+		word-break: break-all;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		color: $accent;
+	}
+}

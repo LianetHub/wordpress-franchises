@@ -1,0 +1,105 @@
+@use "sass:color";
+@use "sass:math";
+@use "mixins" as *;
+@use "variables" as *;
+@use "fonts";
+@use "icons";
+
+.preloader {
+	position: fixed;
+	top: 0;
+	left: 0;
+	margin: auto;
+	width: 100vw;
+	height: 100dvh;
+	background: #181d27;
+	color: #fff;
+	opacity: 1;
+
+	z-index: 200;
+
+	&::before,
+	&::after {
+		content: "";
+		display: block;
+		width: 0;
+		height: 0;
+		border-style: solid;
+		position: absolute;
+		top: 0;
+	}
+
+	&::before {
+		border-width: 0 rem(200) 100vh 0;
+		border-color: transparent #797979 transparent transparent;
+		left: rem(-200);
+	}
+
+	&::after {
+		border-width: 100vh 0 0 rem(200);
+		border-color: transparent transparent transparent #fff;
+		right: rem(-200);
+	}
+
+	body.is-loaded & {
+		left: calc(-100% - rem(200));
+		visibility: hidden;
+		transition: all 0.3s ease;
+		transition-duration: 500ms;
+		transition-timing-function: cubic-bezier(0.86, 0, 0.07, 1);
+		transition-delay: 0.25s;
+	}
+
+	&__logo {
+		max-width: 80vw;
+		width: 100%;
+
+		@media (min-width:$md4) {
+			max-width: 40vw;
+
+		}
+
+		& img {
+			width: 100%;
+		}
+	}
+
+	// .preloader__inner
+	&__inner {
+		width: 100vw;
+		height: 100vh;
+		padding: rem(20);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		overflow: hidden;
+		text-align: center;
+	}
+
+	// .preloader__percentage
+	&__percentage {
+		margin-top: 2.25rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.75rem;
+		font-size: 2rem;
+		font-weight: 700;
+		line-height: 131.25%;
+		letter-spacing: -0.00625rem;
+		color: $accent;
+
+		& span {
+			color: #fff;
+		}
+	}
+
+	// .preloader__text
+	&__text {
+		margin-top: 0.62rem;
+		color: #fff;
+		font-size: 1.25rem;
+		line-height: 150%;
+	}
+}
