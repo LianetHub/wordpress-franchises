@@ -301,12 +301,12 @@
 
 <section class="logos-section" aria-label="Логотипы франшиз">
     <div class="section-head">
-        <!--
+
         <div>
-          <h2 class="segment-title">Известные франшизы</h2>
-          <p class="segment-sub">Сильные имена, устойчивые модели и подтверждённая стабильность на рынке.</p>
+            <h2 class="segment-title">Известные франшизы</h2>
+            <p class="segment-sub">Сильные имена, устойчивые модели и подтверждённая стабильность на рынке.</p>
         </div>
-        -->
+
         <a class="section-link" href="#catalog">Все франшизы<span aria-hidden="true">→</span></a>
     </div>
     <div class="logo-wrap">

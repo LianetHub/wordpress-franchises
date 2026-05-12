@@ -135,3 +135,13 @@ add_action('admin_head', function () {
         }
     </style>';
 });
+
+/**
+ * Отключаем все типы товаров, кроме простого
+ */
+add_filter('product_type_selector', function ($types) {
+    // Оставляем в массиве только ключ 'simple'
+    return [
+        'simple' => $types['simple']
+    ];
+});
