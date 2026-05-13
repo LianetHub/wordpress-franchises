@@ -1,8 +1,28 @@
 <?php
-if (! defined('ABSPATH')) {
-    exit; // Exit if accessed directly
+
+/**
+ * Страница одной франшизы (товар WooCommerce).
+ *
+ * @package WooCommerce\Templates
+ */
+
+defined('ABSPATH') || exit;
+
+get_header();
+
+if (! function_exists('wc_get_product')) {
+    echo '<p class="wrap">WooCommerce не активен.</p>';
+    get_footer();
+    return;
 }
 
-get_header(); ?>
-SINGLE FRANSHIZE
-<?php get_footer(); ?>
+while (have_posts()) {
+    the_post();
+    if (post_password_required()) {
+        echo '<div class="wrap">' . get_the_password_form() . '</div>';
+        continue;
+    }
+    wc_get_template_part('content', 'single-product');
+}
+
+get_footer();

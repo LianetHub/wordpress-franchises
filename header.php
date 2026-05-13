@@ -21,4 +21,4 @@
     <?php wp_body_open(); ?>
     <div class="wrapper">
         <?php require_once(TEMPLATE_PATH . '_header-main.php'); ?>
-        <main class="wrap wrap-home">
+        <main class="wrap<?php echo is_front_page() ? ' wrap-home' : ''; ?>">

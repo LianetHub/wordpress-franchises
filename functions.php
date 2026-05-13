@@ -306,36 +306,40 @@ function franchises_theme_the_reading_time($before = '', $after = ' мин. чи
     printf('%s%d%s', $before, franchises_theme_reading_time(), $after);
 }
 
-// Просмотры
-function franchises_theme_set_post_views($postID)
+// Просмотры (мета-ключ franchises_theme_post_views; AJAX: franchises_theme_increment_views)
+function franchises_theme_set_post_views($postID): void
 {
-    $count_key = 'franchises_theme_post_views';
-    $count = get_post_meta($postID, $count_key, true);
-    if ($count == '') {
-        $count = 0;
-        delete_post_meta($postID, $count_key);
-        add_post_meta($postID, $count_key, 1);
-    } else {
-        $count++;
-        update_post_meta($postID, $count_key, $count);
+    $post_id = (int) $postID;
+    if ($post_id <= 0) {
+        return;
     }
+    $key = 'franchises_theme_post_views';
+    $count = get_post_meta($post_id, $key, true);
+    $count = ($count === '' || $count === null) ? 0 : (int) $count;
+    $count++;
+    update_post_meta($post_id, $key, $count);
 }
 
-function franchises_theme_get_post_views($postID)
+function franchises_theme_get_post_views($postID): int
 {
-    $count = get_post_meta($postID, 'franchises_theme_post_views', true);
-    return $count ? (int) $count : 0;
+    $post_id = (int) $postID;
+    if ($post_id <= 0) {
+        return 0;
+    }
+    $count = get_post_meta($post_id, 'franchises_theme_post_views', true);
+
+    return ($count === '' || $count === null) ? 0 : (int) $count;
 }
 
 add_action('wp_ajax_franchises_theme_increment_views', 'franchises_theme_increment_views_ajax');
 add_action('wp_ajax_nopriv_franchises_theme_increment_views', 'franchises_theme_increment_views_ajax');
-function franchises_theme_increment_views_ajax()
+function franchises_theme_increment_views_ajax(): void
 {
-    if (isset($_POST['post_id']) && is_numeric($_POST['post_id'])) {
-        franchises_theme_set_post_views((int)$_POST['post_id']);
-        wp_send_json_success();
+    if (! isset($_POST['post_id']) || ! is_numeric($_POST['post_id'])) {
+        wp_send_json_error();
     }
-    wp_send_json_error();
+    franchises_theme_set_post_views((int) $_POST['post_id']);
+    wp_send_json_success();
 }
 
 // Лайки
@@ -430,3 +434,30 @@ add_action('wp_footer', function () {
         </script>
 <?php endif;
 });
+
+/**
+ * Оглавление по H2 (делегирует в franchises_content_with_toc из includes/woocommerce-custom.php).
+ *
+ * @return array{content: string, toc: string}
+ */
+function theme_content_with_toc($content)
+{
+    if (function_exists('franchises_content_with_toc')) {
+        $r = franchises_content_with_toc((string) $content);
+        $toc_list = '';
+        foreach ($r['toc_items'] as $row) {
+            $toc_list .= '<li><a href="#' . esc_attr($row['id']) . '" class="sidebar__link">'
+                . esc_html($row['title']) . '</a></li>';
+        }
+
+        return [
+            'content' => $r['content'],
+            'toc'     => $toc_list,
+        ];
+    }
+
+    return [
+        'content' => $content,
+        'toc'     => '',
+    ];
+}

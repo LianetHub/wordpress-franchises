@@ -285,3 +285,388 @@ if (! function_exists('franchises_franchise_card_from_post')) {
         ];
     }
 }
+
+// -------------------------------------------------------------------------
+// Карточка франшизы (single product): галерея, хлебные крошки, оглавление, FAQ
+// -------------------------------------------------------------------------
+
+add_filter('body_class', function (array $classes): array {
+    if (function_exists('is_product') && is_product()) {
+        $classes[] = 'header-solid';
+        $classes[] = 'woocommerce-single-franchise';
+    }
+    return $classes;
+});
+
+if (! function_exists('franchises_product_gallery_urls')) {
+    /**
+     * URL изображений: обложка + галерея WooCommerce (без дубликатов).
+     *
+     * @return list<string>
+     */
+    function franchises_product_gallery_urls(WC_Product $product): array
+    {
+        $urls = [];
+        $image_id = $product->get_image_id();
+        if ($image_id) {
+            $u = wp_get_attachment_image_url((int) $image_id, 'full');
+            if ($u) {
+                $urls[] = $u;
+            }
+        }
+        foreach ($product->get_gallery_image_ids() as $gid) {
+            $u = wp_get_attachment_image_url((int) $gid, 'full');
+            if ($u && ! in_array($u, $urls, true)) {
+                $urls[] = $u;
+            }
+        }
+        if ($urls === []) {
+            $ph = function_exists('wc_placeholder_img_src') ? wc_placeholder_img_src('woocommerce_single') : '';
+            if ($ph) {
+                $urls[] = $ph;
+            }
+        }
+
+        return array_values(array_filter($urls));
+    }
+}
+
+if (! function_exists('franchises_product_breadcrumb_trail')) {
+    /**
+     * Цепочка для верстки .page-head .breadcrumbs (как в макете каталога).
+     *
+     * @return list<array{label: string, href: string}>
+     */
+    function franchises_product_breadcrumb_trail(int $post_id): array
+    {
+        $trail = [];
+        $trail[] = ['label' => 'Главная', 'href' => home_url('/')];
+
+        $shop_id = function_exists('wc_get_page_id') ? wc_get_page_id('shop') : 0;
+        $shop_url = $shop_id > 0 ? get_permalink($shop_id) : '';
+        if ($shop_url) {
+            $trail[] = ['label' => 'Каталог франшиз', 'href' => $shop_url];
+        }
+
+        if (taxonomy_exists('product_cat')) {
+            $terms = get_the_terms($post_id, 'product_cat');
+            if (is_array($terms) && $terms !== []) {
+                $picked = null;
+                foreach ($terms as $t) {
+                    if ((int) $t->parent > 0) {
+                        $picked = $t;
+                        break;
+                    }
+                }
+                if (! $picked) {
+                    $picked = $terms[0];
+                }
+                if ((int) $picked->parent > 0) {
+                    $parent = get_term((int) $picked->parent, 'product_cat');
+                    if ($parent && ! is_wp_error($parent)) {
+                        $link = get_term_link($parent);
+                        $trail[] = [
+                            'label' => (string) $parent->name,
+                            'href'  => is_wp_error($link) ? '' : (string) $link,
+                        ];
+                    }
+                }
+                $link = get_term_link($picked);
+                $trail[] = [
+                    'label' => (string) $picked->name,
+                    'href'  => is_wp_error($link) ? '' : (string) $link,
+                ];
+            }
+        }
+
+        $title = get_the_title($post_id);
+        if (function_exists('get_field')) {
+            $full = get_field('product_full_title', $post_id);
+            if (is_string($full) && $full !== '') {
+                $title = $full;
+            }
+        }
+        $trail[] = ['label' => $title, 'href' => ''];
+
+        return $trail;
+    }
+}
+
+if (! function_exists('franchises_format_payback_ru')) {
+    function franchises_format_payback_ru($min, $max): string
+    {
+        $imin = $min !== null && $min !== '' ? (int) $min : null;
+        $imax = $max !== null && $max !== '' ? (int) $max : null;
+        if ($imin === null && $imax === null) {
+            return '';
+        }
+        if ($imin !== null && $imax !== null && $imin !== $imax) {
+            return (string) $imin . '–' . (string) $imax . ' ' . russian_plural($imax, ['месяц', 'месяца', 'месяцев']);
+        }
+        $n = $imin ?? $imax;
+
+        return (string) $n . ' ' . russian_plural((int) $n, ['месяц', 'месяца', 'месяцев']);
+    }
+}
+
+if (! function_exists('franchises_format_profit_line_ru')) {
+    /** «от 420 000 ₽» или «420 000 – 850 000 ₽» */
+    function franchises_format_profit_line_ru($min, $max): string
+    {
+        $pmin = $min !== null && $min !== '' ? (int) $min : null;
+        $pmax = $max !== null && $max !== '' ? (int) $max : null;
+        if ($pmin === null && $pmax === null) {
+            return '';
+        }
+        if ($pmin !== null && $pmax !== null && $pmin !== $pmax) {
+            return franchises_format_money_ru($pmin) . ' – ' . franchises_format_money_ru($pmax);
+        }
+        $v = $pmin ?? $pmax;
+
+        return 'от ' . franchises_format_money_ru($v);
+    }
+}
+
+if (! function_exists('franchises_format_investment_line_ru')) {
+    /**
+     * Инвестиции для сайдбара: ACF investment_min (руб.) или цена товара WooCommerce.
+     */
+    function franchises_format_investment_line_ru(WC_Product $product): string
+    {
+        $post_id = $product->get_id();
+        if (function_exists('get_field')) {
+            $inv = get_field('investment_min', $post_id);
+            if ($inv !== null && $inv !== '') {
+                return 'от ' . franchises_format_money_ru((int) $inv);
+            }
+        }
+        $price = $product->get_regular_price();
+        if ($price !== '' && is_numeric($price)) {
+            return 'от ' . franchises_format_money_ru((int) wc_format_decimal($price, 0, false));
+        }
+
+        return '';
+    }
+}
+
+if (! function_exists('franchises_format_pausal_line_ru')) {
+    function franchises_format_pausal_line_ru(int $post_id): string
+    {
+        if (! function_exists('get_field')) {
+            return '';
+        }
+        $p = get_field('pausal', $post_id);
+        if ($p === null || $p === '') {
+            return '';
+        }
+
+        return 'от ' . franchises_format_money_ru((int) $p);
+    }
+}
+
+if (! function_exists('franchises_format_royalty_display')) {
+    function franchises_format_royalty_display(int $post_id): string
+    {
+        if (! function_exists('get_field')) {
+            return '';
+        }
+        $r = get_field('royalty', $post_id);
+        if ($r === null || $r === '') {
+            return '';
+        }
+        if (is_numeric($r)) {
+            return rtrim(rtrim((string) ((float) $r), '0'), '.') . '%';
+        }
+
+        return (string) $r;
+    }
+}
+
+if (! function_exists('franchises_extract_toc_from_content')) {
+    /**
+     * Заголовки h2 с атрибутом id — для блока «Содержание» (без автогенерации id).
+     *
+     * @return list<array{id: string, title: string}>
+     */
+    function franchises_extract_toc_from_content(string $html): array
+    {
+        $out = [];
+        if (! preg_match_all('/<h2\b[^>]*\bid\s*=\s*["\']([^"\']+)["\'][^>]*>(.*?)<\/h2>/is', $html, $m, PREG_SET_ORDER)) {
+            return $out;
+        }
+        foreach ($m as $row) {
+            $id = isset($row[1]) ? sanitize_html_class($row[1]) : '';
+            $title = isset($row[2]) ? wp_strip_all_tags((string) $row[2]) : '';
+            if ($id !== '' && $title !== '') {
+                $out[] = ['id' => $id, 'title' => $title];
+            }
+        }
+
+        return $out;
+    }
+}
+
+if (! function_exists('franchises_content_with_toc')) {
+    /**
+     * Добавляет уникальные id к &lt;h2&gt; без id и строит оглавление (адаптация theme_content_with_toc).
+     *
+     * @return array{content: string, toc_items: list<array{id: string, title: string}>}
+     */
+    function franchises_content_with_toc(string $html): array
+    {
+        $toc_items = [];
+        $used_ids = [];
+
+        $out = preg_replace_callback(
+            '/<h2\b([^>]*)>(.*?)<\/h2>/is',
+            static function (array $m) use (&$toc_items, &$used_ids): string {
+                $attrs = $m[1];
+                $inner = $m[2];
+                $title_text = wp_strip_all_tags((string) $inner);
+                if ($title_text === '') {
+                    return $m[0];
+                }
+
+                $had_id = preg_match('/\bid\s*=\s*["\']([^"\']+)["\']/i', $attrs, $im);
+                if ($had_id) {
+                    $slug = sanitize_html_class($im[1]);
+                    if ($slug === '') {
+                        $slug = 'section-' . (count($used_ids) + 1);
+                    }
+                } else {
+                    $base = sanitize_title($title_text);
+                    if ($base === '') {
+                        $base = 'section-' . (count($used_ids) + 1);
+                    }
+                    $slug = $base;
+                    $n = 2;
+                    while (isset($used_ids[$slug])) {
+                        $slug = $base . '-' . $n;
+                        $n++;
+                    }
+                    $attrs_clean = preg_replace('/\s*\bid\s*=\s*["\'][^"\']*["\']/i', '', trim($attrs));
+                    $slug_attr = ' id="' . esc_attr($slug) . '"';
+                    $used_ids[$slug] = true;
+                    $toc_items[] = ['id' => $slug, 'title' => $title_text];
+                    if ($attrs_clean === '') {
+                        return '<h2' . $slug_attr . '>' . $inner . '</h2>';
+                    }
+
+                    return '<h2 ' . trim($attrs_clean) . $slug_attr . '>' . $inner . '</h2>';
+                }
+
+                $used_ids[$slug] = true;
+                $toc_items[] = ['id' => $slug, 'title' => $title_text];
+
+                return '<h2 ' . trim($attrs) . '>' . $inner . '</h2>';
+            },
+            $html
+        );
+
+        return [
+            'content'   => is_string($out) ? $out : $html,
+            'toc_items' => $toc_items,
+        ];
+    }
+}
+
+if (! function_exists('franchises_get_product_faq_rows')) {
+    /**
+     * ACF repeater «faq» на товаре: подполя question, answer (или вопрос / ответ).
+     *
+     * @return list<array{question: string, answer: string}>
+     */
+    function franchises_get_product_faq_rows(int $post_id): array
+    {
+        $rows = [];
+        if (! function_exists('have_rows') || ! have_rows('faq', $post_id)) {
+            return $rows;
+        }
+        while (have_rows('faq', $post_id)) {
+            the_row();
+            $q = get_sub_field('question');
+            if ($q === null || $q === '') {
+                $q = get_sub_field('вопрос');
+            }
+            $a = get_sub_field('answer');
+            if ($a === null || $a === '') {
+                $a = get_sub_field('ответ');
+            }
+            if ($q && $a) {
+                $rows[] = [
+                    'question' => wp_strip_all_tags((string) $q),
+                    'answer'   => wp_kses_post((string) $a),
+                ];
+            }
+        }
+
+        return $rows;
+    }
+}
+
+if (! function_exists('franchises_product_similar_query')) {
+    function franchises_product_similar_query(int $post_id, int $limit = 12): WP_Query
+    {
+        $term_ids = [];
+        if (taxonomy_exists('product_cat')) {
+            $terms = get_the_terms($post_id, 'product_cat');
+            if (is_array($terms)) {
+                $term_ids = wp_list_pluck($terms, 'term_id');
+            }
+        }
+        $args = [
+            'post_type'           => 'product',
+            'post_status'         => 'publish',
+            'posts_per_page'      => $limit,
+            'post__not_in'        => [$post_id],
+            'ignore_sticky_posts' => true,
+            'no_found_rows'       => true,
+            'orderby'             => ['menu_order' => 'ASC', 'date' => 'DESC'],
+        ];
+        if ($term_ids !== []) {
+            $args['tax_query'] = [
+                [
+                    'taxonomy' => 'product_cat',
+                    'field'    => 'term_id',
+                    'terms'    => array_map('intval', $term_ids),
+                ],
+            ];
+        }
+
+        return new WP_Query($args);
+    }
+}
+
+if (! function_exists('franchises_product_popular_query')) {
+    /** Как на главной: по тегу «Популярные франшизы», иначе последние товары. */
+    function franchises_product_popular_query(int $exclude_id, int $limit = 12): WP_Query
+    {
+        $popular_tag_term = get_term_by('name', 'Популярные франшизы', 'product_tag');
+        if (! $popular_tag_term || is_wp_error($popular_tag_term)) {
+            $popular_tag_term = get_term_by('slug', 'popularnye-franshizy', 'product_tag');
+        }
+        $args = [
+            'post_type'           => 'product',
+            'post_status'         => 'publish',
+            'posts_per_page'      => $limit,
+            'post__not_in'        => [$exclude_id],
+            'ignore_sticky_posts' => true,
+            'no_found_rows'       => true,
+            'orderby'             => [
+                'menu_order' => 'ASC',
+                'date'       => 'DESC',
+            ],
+        ];
+        if ($popular_tag_term && ! is_wp_error($popular_tag_term)) {
+            $args['tax_query'] = [
+                [
+                    'taxonomy' => 'product_tag',
+                    'field'    => 'term_id',
+                    'terms'    => [(int) $popular_tag_term->term_id],
+                ],
+            ];
+        }
+
+        return new WP_Query($args);
+    }
+}
