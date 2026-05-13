@@ -724,6 +724,152 @@ add_action(
 // Каталог WooCommerce: верстка catalog.html + GET-фильтры
 // -------------------------------------------------------------------------
 
+if (! function_exists('franchises_request_uri_relative_path')) {
+    /** Путь запроса без префикса каталога сайта (для подпапок). */
+    function franchises_request_uri_relative_path(): string
+    {
+        $uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
+        $path = (string) wp_parse_url(strtok($uri, '?') ?: '', PHP_URL_PATH);
+        $path = trim($path, '/');
+        if ($path === '') {
+            return '';
+        }
+        $home_path = (string) wp_parse_url(home_url('/'), PHP_URL_PATH);
+        $home_path = trim($home_path, '/');
+        if ($home_path !== '' && ($path === $home_path || str_starts_with($path, $home_path . '/'))) {
+            $path = trim(substr($path, strlen($home_path)), '/');
+        }
+
+        return $path;
+    }
+}
+
+if (! function_exists('franchises_fix_shop_prefixed_product_cat_request')) {
+    /**
+     * WooCommerce отдаёт канонические ссылки вида /{shop}/{родитель}/{категория}/, но правила
+     * перезаписи часто не сопоставляют их с product_cat (404). Преобразуем в query_vars архива.
+     *
+     * @param array<string, string|int> $query_vars
+     * @return array<string, string|int>
+     */
+    function franchises_fix_shop_prefixed_product_cat_request(array $query_vars): array
+    {
+        if (is_admin() || wp_doing_ajax() || wp_doing_cron()) {
+            return $query_vars;
+        }
+        if (! function_exists('wc_get_page_id') || ! taxonomy_exists('product_cat')) {
+            return $query_vars;
+        }
+
+        $shop_id = wc_get_page_id('shop');
+        if ($shop_id <= 0) {
+            return $query_vars;
+        }
+        $shop = get_post($shop_id);
+        if (! $shop instanceof WP_Post || $shop->post_name === '') {
+            return $query_vars;
+        }
+        $shop_slug = (string) $shop->post_name;
+
+        // Сначала реальный путь из URI: для /{shop}/{родитель}/{ребёнок}/ поле pagename часто
+        // обрезано или совпадает только с родителем, из‑за чего дочерние категории не распознаются.
+        $path = franchises_request_uri_relative_path();
+        if ($path === '' && ! empty($query_vars['pagename']) && is_string($query_vars['pagename'])) {
+            $path = trim($query_vars['pagename'], '/');
+        }
+        if ($path === '') {
+            return $query_vars;
+        }
+
+        $parts = array_values(array_filter(explode('/', $path), 'strlen'));
+        while ($parts !== []) {
+            $last = (string) $parts[count($parts) - 1];
+            if ($last === 'feed' || $last === 'embed' || $last === 'trackback') {
+                array_pop($parts);
+                continue;
+            }
+            break;
+        }
+
+        if ($parts === [] || $parts[0] !== $shop_slug) {
+            return $query_vars;
+        }
+
+        $paged = 0;
+        $n = count($parts);
+        if ($n >= 3 && $parts[$n - 2] === 'page' && ctype_digit((string) $parts[$n - 1])) {
+            $paged = (int) $parts[$n - 1];
+            array_pop($parts);
+            array_pop($parts);
+        }
+
+        array_shift($parts);
+        if ($parts === []) {
+            return $query_vars;
+        }
+
+        $leaf_slug = (string) array_pop($parts);
+        $ancestors = $parts;
+
+        $term = get_term_by('slug', $leaf_slug, 'product_cat');
+        if (! $term instanceof WP_Term || is_wp_error($term)) {
+            return $query_vars;
+        }
+
+        $check = $term;
+        foreach (array_reverse($ancestors) as $anc_slug) {
+            if ((int) $check->parent <= 0) {
+                return $query_vars;
+            }
+            $parent = get_term((int) $check->parent, 'product_cat');
+            if (! $parent instanceof WP_Term || is_wp_error($parent) || $parent->slug !== $anc_slug) {
+                return $query_vars;
+            }
+            $check = $parent;
+        }
+        if ($ancestors === [] && (int) $term->parent > 0) {
+            return $query_vars;
+        }
+        if ((int) $check->parent !== 0) {
+            return $query_vars;
+        }
+
+        foreach (
+            [
+                'pagename',
+                'page_id',
+                'page',
+                'attachment',
+                'attachment_id',
+                'name',
+                'error',
+                'year',
+                'monthnum',
+                'day',
+                'hour',
+                'minute',
+                'second',
+                'category_name',
+                'cat',
+            ] as $unset
+        ) {
+            unset($query_vars[$unset]);
+        }
+
+        // Не задаём post_type здесь: иначе WP считает запрос архивом типа product,
+        // is_shop() в WC становится true, и фильтры в woocommerce_product_query
+        // обрабатывают страницу как магазин (ломает пересечение tax_query с дочерней категорией).
+        $query_vars['product_cat'] = $leaf_slug;
+        if ($paged > 1) {
+            $query_vars['paged'] = $paged;
+        }
+
+        return $query_vars;
+    }
+}
+
+add_filter('request', 'franchises_fix_shop_prefixed_product_cat_request', 999);
+
 if (! function_exists('franchises_is_product_catalog_view')) {
     function franchises_is_product_catalog_view(): bool
     {
@@ -834,7 +980,24 @@ add_action('woocommerce_product_query', static function ($q): void {
 
     $extra_tax = [];
 
-    if (is_shop()) {
+    // Сначала архивы таксономий по объекту запроса: при post_type=product в query_vars
+    // is_shop() в WC также true, нельзя трактовать страницу как «только магазин».
+    if ($q->is_tax('product_cat') || $q->is_tax('product_tag')) {
+        $tag = isset($_GET['tag']) ? sanitize_text_field(wp_unslash($_GET['tag'])) : '';
+        if ($tag !== '') {
+            $t = get_term_by('name', $tag, 'product_tag');
+            if (! $t) {
+                $t = get_term_by('slug', sanitize_title($tag), 'product_tag');
+            }
+            if ($t && ! is_wp_error($t)) {
+                $extra_tax[] = [
+                    'taxonomy' => 'product_tag',
+                    'field'    => 'term_id',
+                    'terms'    => [(int) $t->term_id],
+                ];
+            }
+        }
+    } elseif (is_shop()) {
         $category = isset($_GET['category']) ? sanitize_text_field(wp_unslash($_GET['category'])) : '';
         $sphere = isset($_GET['sphere']) ? sanitize_text_field(wp_unslash($_GET['sphere'])) : '';
 
@@ -866,21 +1029,6 @@ add_action('woocommerce_product_query', static function ($q): void {
             }
         }
 
-        $tag = isset($_GET['tag']) ? sanitize_text_field(wp_unslash($_GET['tag'])) : '';
-        if ($tag !== '') {
-            $t = get_term_by('name', $tag, 'product_tag');
-            if (! $t) {
-                $t = get_term_by('slug', sanitize_title($tag), 'product_tag');
-            }
-            if ($t && ! is_wp_error($t)) {
-                $extra_tax[] = [
-                    'taxonomy' => 'product_tag',
-                    'field'    => 'term_id',
-                    'terms'    => [(int) $t->term_id],
-                ];
-            }
-        }
-    } elseif (is_product_category() || is_product_tag()) {
         $tag = isset($_GET['tag']) ? sanitize_text_field(wp_unslash($_GET['tag'])) : '';
         if ($tag !== '') {
             $t = get_term_by('name', $tag, 'product_tag');
