@@ -670,3 +670,52 @@ if (! function_exists('franchises_product_popular_query')) {
         return new WP_Query($args);
     }
 }
+
+/**
+ * Учёт просмотра страницы франшизы: один раз в сутки с браузера (cookie).
+ * AJAX franchises_theme_increment_views остаётся для ручного вызова из JS.
+ */
+add_action(
+    'template_redirect',
+    static function (): void {
+        static $franchises_product_view_counted = false;
+        if ($franchises_product_view_counted) {
+            return;
+        }
+        if (is_admin() || (function_exists('wp_doing_ajax') && wp_doing_ajax())) {
+            return;
+        }
+        if (! function_exists('is_product') || ! is_product()) {
+            return;
+        }
+        if (function_exists('is_preview') && is_preview()) {
+            return;
+        }
+        if (function_exists('is_customize_preview') && is_customize_preview()) {
+            return;
+        }
+        $post_id = (int) get_queried_object_id();
+        if ($post_id <= 0 || get_post_status($post_id) !== 'publish') {
+            return;
+        }
+        $cookie_name = 'fr_viewed_prod_' . $post_id;
+        if (! empty($_COOKIE[$cookie_name])) {
+            return;
+        }
+        if (! function_exists('franchises_theme_set_post_views')) {
+            return;
+        }
+        franchises_theme_set_post_views($post_id);
+        $franchises_product_view_counted = true;
+
+        if (headers_sent()) {
+            return;
+        }
+        $expire = time() + DAY_IN_SECONDS;
+        $path = (defined('COOKIEPATH') && COOKIEPATH) ? COOKIEPATH : '/';
+        $domain = (defined('COOKIE_DOMAIN') && COOKIE_DOMAIN) ? COOKIE_DOMAIN : '';
+        setcookie($cookie_name, '1', $expire, $path, $domain, is_ssl(), true);
+        $_COOKIE[$cookie_name] = '1';
+    },
+    20
+);
