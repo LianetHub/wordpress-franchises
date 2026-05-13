@@ -2596,6 +2596,10 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.popular-grid.catalog-cards .catalog-card-cell {
+    display: contents;
+}
+
 .popular-card {
     border: 1px solid #e6e8ea;
     border-radius: 16px;

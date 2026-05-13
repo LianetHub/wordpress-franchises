@@ -719,3 +719,274 @@ add_action(
     },
     20
 );
+
+// -------------------------------------------------------------------------
+// Каталог WooCommerce: верстка catalog.html + GET-фильтры
+// -------------------------------------------------------------------------
+
+if (! function_exists('franchises_is_product_catalog_view')) {
+    function franchises_is_product_catalog_view(): bool
+    {
+        if (! function_exists('is_shop')) {
+            return false;
+        }
+
+        return is_shop() || is_product_category() || is_product_tag();
+    }
+}
+
+if (! function_exists('franchises_catalog_breadcrumbs')) {
+    /**
+     * @return list<array{label: string, href: string}>
+     */
+    function franchises_catalog_breadcrumbs(): array
+    {
+        $trail = [];
+        $trail[] = ['label' => 'Главная', 'href' => home_url('/')];
+        $shop_id = function_exists('wc_get_page_id') ? wc_get_page_id('shop') : 0;
+        $shop_url = $shop_id > 0 ? (string) get_permalink($shop_id) : '';
+
+        if (is_shop()) {
+            $trail[] = ['label' => 'Каталог франшиз', 'href' => ''];
+
+            return $trail;
+        }
+
+        if ($shop_url !== '') {
+            $trail[] = ['label' => 'Каталог франшиз', 'href' => $shop_url];
+        }
+
+        if (is_product_category()) {
+            $t = get_queried_object();
+            if ($t instanceof WP_Term && $t->taxonomy === 'product_cat') {
+                if ((int) $t->parent > 0) {
+                    $parent = get_term((int) $t->parent, 'product_cat');
+                    if ($parent && ! is_wp_error($parent)) {
+                        $link = get_term_link($parent);
+                        $trail[] = [
+                            'label' => (string) $parent->name,
+                            'href'  => is_wp_error($link) ? '' : (string) $link,
+                        ];
+                    }
+                }
+                $trail[] = ['label' => (string) $t->name, 'href' => ''];
+            }
+
+            return $trail;
+        }
+
+        if (is_product_tag()) {
+            $t = get_queried_object();
+            if ($t instanceof WP_Term && $t->taxonomy === 'product_tag') {
+                $trail[] = ['label' => (string) $t->name, 'href' => ''];
+            }
+
+            return $trail;
+        }
+
+        return $trail;
+    }
+}
+
+if (! function_exists('franchises_wc_catalog_orderby_choices')) {
+    /** @return array<string, string> */
+    function franchises_wc_catalog_orderby_choices(): array
+    {
+        return [
+            'menu_order' => 'По умолчанию',
+            'popularity' => 'По популярности',
+            'rating'     => 'По рейтингу',
+            'date'       => 'Сначала новые',
+            'title'      => 'По алфавиту',
+            'price'      => 'По инвестициям: сначала дешевле',
+            'price-desc' => 'По инвестициям: сначала дороже',
+        ];
+    }
+}
+
+add_filter('woocommerce_product_loop_start', static function (string $html): string {
+    if (! franchises_is_product_catalog_view()) {
+        return $html;
+    }
+
+    return '<div class="popular-grid catalog-cards">';
+}, 50);
+
+add_filter('woocommerce_product_loop_end', static function (string $html): string {
+    if (! franchises_is_product_catalog_view()) {
+        return $html;
+    }
+
+    return '</div>';
+}, 50);
+
+add_action('woocommerce_product_query', static function ($q): void {
+    if (is_admin() || ! $q->is_main_query()) {
+        return;
+    }
+    if (! function_exists('is_shop') || (! is_shop() && ! is_product_taxonomy())) {
+        return;
+    }
+
+    if (! empty($_GET['q'])) {
+        $q->set('s', sanitize_text_field(wp_unslash($_GET['q'])));
+    }
+
+    $extra_tax = [];
+
+    if (is_shop()) {
+        $category = isset($_GET['category']) ? sanitize_text_field(wp_unslash($_GET['category'])) : '';
+        $sphere = isset($_GET['sphere']) ? sanitize_text_field(wp_unslash($_GET['sphere'])) : '';
+
+        if ($category !== '') {
+            $term = get_term_by('name', $category, 'product_cat');
+            if (! $term) {
+                $term = get_term_by('slug', sanitize_title($category), 'product_cat');
+            }
+            if ($term && ! is_wp_error($term)) {
+                $extra_tax[] = [
+                    'taxonomy'         => 'product_cat',
+                    'field'            => 'term_id',
+                    'terms'            => [(int) $term->term_id],
+                    'include_children' => false,
+                ];
+            }
+        } elseif ($sphere !== '') {
+            $term = get_term_by('name', $sphere, 'product_cat');
+            if (! $term) {
+                $term = get_term_by('slug', sanitize_title($sphere), 'product_cat');
+            }
+            if ($term && ! is_wp_error($term)) {
+                $extra_tax[] = [
+                    'taxonomy'         => 'product_cat',
+                    'field'            => 'term_id',
+                    'terms'            => [(int) $term->term_id],
+                    'include_children' => true,
+                ];
+            }
+        }
+
+        $tag = isset($_GET['tag']) ? sanitize_text_field(wp_unslash($_GET['tag'])) : '';
+        if ($tag !== '') {
+            $t = get_term_by('name', $tag, 'product_tag');
+            if (! $t) {
+                $t = get_term_by('slug', sanitize_title($tag), 'product_tag');
+            }
+            if ($t && ! is_wp_error($t)) {
+                $extra_tax[] = [
+                    'taxonomy' => 'product_tag',
+                    'field'    => 'term_id',
+                    'terms'    => [(int) $t->term_id],
+                ];
+            }
+        }
+    } elseif (is_product_category() || is_product_tag()) {
+        $tag = isset($_GET['tag']) ? sanitize_text_field(wp_unslash($_GET['tag'])) : '';
+        if ($tag !== '') {
+            $t = get_term_by('name', $tag, 'product_tag');
+            if (! $t) {
+                $t = get_term_by('slug', sanitize_title($tag), 'product_tag');
+            }
+            if ($t && ! is_wp_error($t)) {
+                $extra_tax[] = [
+                    'taxonomy' => 'product_tag',
+                    'field'    => 'term_id',
+                    'terms'    => [(int) $t->term_id],
+                ];
+            }
+        }
+    }
+
+    if ($extra_tax !== []) {
+        $tax_query = $q->get('tax_query');
+        $clauses = [];
+        if (is_array($tax_query)) {
+            foreach ($tax_query as $k => $v) {
+                if ($k === 'relation' || ! is_array($v)) {
+                    continue;
+                }
+                $clauses[] = $v;
+            }
+        }
+        foreach ($extra_tax as $piece) {
+            $clauses[] = $piece;
+        }
+        if (count($clauses) > 1) {
+            $q->set('tax_query', array_merge(['relation' => 'AND'], $clauses));
+        } elseif (count($clauses) === 1) {
+            $q->set('tax_query', $clauses);
+        }
+    }
+
+    $meta_query = $q->get('meta_query');
+    if (! is_array($meta_query)) {
+        $meta_query = [];
+    }
+    $meta_parts = [];
+    foreach ($meta_query as $k => $v) {
+        if ($k === 'relation' || ! is_array($v)) {
+            continue;
+        }
+        $meta_parts[] = $v;
+    }
+
+    if (! empty($_GET['verified'])) {
+        $meta_parts[] = [
+            'key'     => 'verified',
+            'value'   => '1',
+            'compare' => '=',
+        ];
+    }
+
+    $invest_max = isset($_GET['invest_max']) ? (int) $_GET['invest_max'] : 0;
+    if ($invest_max > 0) {
+        $meta_parts[] = [
+            'key'     => 'pausal',
+            'value'   => $invest_max,
+            'compare' => '<=',
+            'type'    => 'NUMERIC',
+        ];
+    }
+
+    $profit_min = isset($_GET['profit_min']) ? (int) $_GET['profit_min'] : 0;
+    if ($profit_min > 0) {
+        $meta_parts[] = [
+            'relation' => 'OR',
+            [
+                'key'     => 'monthly_profit_min',
+                'value'   => $profit_min,
+                'compare' => '>=',
+                'type'    => 'NUMERIC',
+            ],
+            [
+                'key'     => 'monthly_profit_max',
+                'value'   => $profit_min,
+                'compare' => '>=',
+                'type'    => 'NUMERIC',
+            ],
+        ];
+    }
+
+    $payback_max = isset($_GET['payback_max']) ? (int) $_GET['payback_max'] : 0;
+    if ($payback_max > 0) {
+        $meta_parts[] = [
+            'relation' => 'OR',
+            [
+                'key'     => 'payback_max',
+                'value'   => $payback_max,
+                'compare' => '<=',
+                'type'    => 'NUMERIC',
+            ],
+            [
+                'key'     => 'payback_min',
+                'value'   => $payback_max,
+                'compare' => '<=',
+                'type'    => 'NUMERIC',
+            ],
+        ];
+    }
+
+    if ($meta_parts !== []) {
+        $q->set('meta_query', array_merge(['relation' => 'AND'], $meta_parts));
+    }
+}, 40);

@@ -1,9 +1,7 @@
 <?php
 
 /**
- * Страница магазина WooCommerce — каталог франшиз (верстка catalog.html).
- *
- * @package WooCommerce\Templates
+ * Архив рубрики товара (сфера / категория франшизы).
  */
 
 defined('ABSPATH') || exit;

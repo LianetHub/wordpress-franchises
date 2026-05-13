@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Карточка франшизы (сетка «Популярные» / каталог).
  *
@@ -18,6 +19,8 @@
  */
 
 defined('ABSPATH') || exit;
+
+global $product;
 
 $franchise_card = isset($franchise_card) && is_array($franchise_card) ? $franchise_card : [];
 
@@ -123,8 +126,7 @@ $attr = static function (string $k, $v): string {
     echo $attr('data-payback-max', $c['acf_payback_max']);
     echo $attr('data-pausal', $c['acf_pausal']);
     echo $attr('data-royalty', $c['acf_royalty']);
-    ?>
->
+    ?>>
     <div class="popular-media">
         <?php if ($img !== '') : ?>
             <img loading="lazy" alt="<?php echo $img_alt; ?>" src="<?php echo $img; ?>">

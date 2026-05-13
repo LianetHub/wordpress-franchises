@@ -1,9 +1,7 @@
 <?php
 
 /**
- * Страница магазина WooCommerce — каталог франшиз (верстка catalog.html).
- *
- * @package WooCommerce\Templates
+ * Архив метки товара (подборка).
  */
 
 defined('ABSPATH') || exit;

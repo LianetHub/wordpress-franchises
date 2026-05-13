@@ -63,6 +63,8 @@
     </div>
 </header>
 
+<div class="catalog-dropdown-backdrop" data-categories-backdrop aria-hidden="true"></div>
+
 <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
     <div class="mobile-menu-card" role="dialog" aria-modal="true" aria-label="Меню">
         <div class="mobile-menu-head">

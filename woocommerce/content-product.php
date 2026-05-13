@@ -1,4 +1,5 @@
 <?php
+
 defined('ABSPATH') || exit;
 
 global $product;
@@ -7,6 +8,6 @@ if (! class_exists('WC_Product') || ! is_a($product, 'WC_Product', true) || ! $p
     return;
 }
 ?>
-<li <?php wc_product_class('', $product); ?>>
+<div <?php wc_product_class('catalog-card-cell', $product); ?>>
     <?php get_template_part('templates/components/franchise-card'); ?>
-</li>
+</div>

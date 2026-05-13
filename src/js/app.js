@@ -468,6 +468,138 @@ $(function () {
     // initYandexMap();
 
 
-})
+});
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const main = document.querySelector('main.wrap.catalog-page');
+    if (!main) return;
+
+    const filterCard = main.querySelector('.filter-card');
+    const filterToggle = main.querySelector('.filter-toggle');
+    if (filterToggle && filterCard) {
+        filterToggle.addEventListener('click', () => {
+            const collapsed = filterCard.classList.toggle('advanced-collapsed');
+            filterToggle.setAttribute('aria-expanded', String(!collapsed));
+        });
+    }
+
+    const investRange = main.querySelector('#invest-range');
+    const investHidden = main.querySelector('#invest_max_input');
+    const investLabel = main.querySelector('#invest-value');
+    const profitRange = main.querySelector('#profit-range');
+    const profitHidden = main.querySelector('#profit_min_input');
+    const profitLabel = main.querySelector('#profit-value');
+
+    const formatMoney = (n) =>
+        new Intl.NumberFormat('ru-RU').format(Math.round(Number(n) || 0)) + ' ₽';
+
+    if (investRange && investHidden && investLabel) {
+        const syncInvest = () => {
+            const max = Number(investRange.max) || 3000000;
+            const v = Number(investRange.value) || 0;
+            if (v >= max) {
+                investHidden.value = '0';
+                investLabel.textContent = 'Любые вложения';
+            } else {
+                investHidden.value = String(v);
+                investLabel.textContent = 'до ' + formatMoney(v);
+            }
+        };
+        investRange.addEventListener('input', syncInvest);
+        syncInvest();
+    }
+
+    if (profitRange && profitHidden && profitLabel) {
+        const syncProfit = () => {
+            const v = Number(profitRange.value) || 0;
+            if (v <= 0) {
+                profitHidden.value = '0';
+                profitLabel.textContent = 'Любая прибыль';
+            } else {
+                profitHidden.value = String(v);
+                profitLabel.textContent = 'от ' + formatMoney(v);
+            }
+        };
+        profitRange.addEventListener('input', syncProfit);
+        syncProfit();
+    }
+
+    main.querySelectorAll('.preset-btn[data-invest]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const v = btn.getAttribute('data-invest');
+            if (investRange && investHidden && investLabel && v) {
+                investRange.value = v;
+                investHidden.value = v;
+                investLabel.textContent = 'до ' + formatMoney(v);
+            }
+        });
+    });
+
+    main.querySelectorAll('.preset-btn[data-profit]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const v = btn.getAttribute('data-profit');
+            if (profitRange && profitHidden && profitLabel && v) {
+                profitRange.value = v;
+                profitHidden.value = v;
+                profitLabel.textContent = 'от ' + formatMoney(v);
+            }
+        });
+    });
+
+    const sphereSelect = main.querySelector('select[name="sphere"]');
+    const categorySelect = main.querySelector('select[name="category"]');
+    const syncCategoryOptions = () => {
+        if (!sphereSelect || !categorySelect) return;
+        const sphere = String(sphereSelect.value || '').trim();
+        Array.from(categorySelect.options).forEach((opt) => {
+            if (!opt.value) {
+                opt.hidden = false;
+                return;
+            }
+            const ds = String(opt.getAttribute('data-sphere') || '').trim();
+            if (!sphere) {
+                opt.hidden = false;
+            } else {
+                opt.hidden = ds !== sphere;
+            }
+        });
+    };
+    if (sphereSelect) {
+        sphereSelect.addEventListener('change', syncCategoryOptions);
+        syncCategoryOptions();
+    }
+
+    const tagsToggle = main.querySelector('.catalog-tags-toggle');
+    const tagsEl = main.querySelector('.catalog-tags.segment-tabs');
+    if (tagsToggle && tagsEl) {
+        tagsToggle.addEventListener('click', () => {
+            const open = tagsEl.classList.toggle('expanded');
+            tagsToggle.setAttribute('aria-expanded', String(open));
+            tagsToggle.setAttribute('data-state', open ? 'open' : '');
+        });
+    }
+
+    const modal = document.getElementById('filter-modal');
+    const sheetBody = modal ? modal.querySelector('.filter-sheet-body') : null;
+    const openBtn = main.querySelector('[data-filter-open]');
+    const filterForm = main.querySelector('#franchises-catalog-filters');
+    if (modal && sheetBody && filterCard && openBtn && filterForm) {
+        const setModal = (open) => {
+            modal.classList.toggle('active', open);
+            modal.setAttribute('aria-hidden', String(!open));
+            document.body.classList.toggle('modal-open', open);
+            if (open) {
+                sheetBody.appendChild(filterCard);
+            } else {
+                filterForm.insertBefore(filterCard, filterForm.firstElementChild);
+            }
+        };
+        openBtn.addEventListener('click', () => setModal(true));
+        modal.querySelectorAll('[data-filter-close]').forEach((el) => {
+            el.addEventListener('click', () => setModal(false));
+        });
+    }
+});
 
 
