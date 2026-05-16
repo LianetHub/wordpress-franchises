@@ -17,12 +17,30 @@
 
 <?php require_once(TEMPLATE_PATH . '_stats-block.php'); ?>
 
+<?php
+$franchises_popular_cat_term = false;
+$popular_all_href = home_url('/');
+if (class_exists('WooCommerce', false) && function_exists('wc_get_page_id')) {
+    $shop_page_id = wc_get_page_id('shop');
+    if ($shop_page_id > 0) {
+        $popular_all_href = (string) get_permalink($shop_page_id);
+    }
+    $franchises_popular_cat_term = get_term_by('name', 'Популярные франшизы', 'product_cat');
+    if (! $franchises_popular_cat_term || is_wp_error($franchises_popular_cat_term)) {
+        $franchises_popular_cat_term = get_term_by('slug', 'popularnye-franshizy', 'product_cat');
+    }
+    if ($franchises_popular_cat_term && ! is_wp_error($franchises_popular_cat_term)) {
+        $tlink = get_term_link($franchises_popular_cat_term);
+        if (! is_wp_error($tlink)) {
+            $popular_all_href = (string) $tlink;
+        }
+    }
+}
+?>
+
 <?php if (class_exists('WooCommerce', false)) : ?>
     <?php
-    $popular_tag_term = get_term_by('name', 'Популярные франшизы', 'product_tag');
-    if (! $popular_tag_term || is_wp_error($popular_tag_term)) {
-        $popular_tag_term = get_term_by('slug', 'popularnye-franshizy', 'product_tag');
-    }
+    $popular_cat_term = $franchises_popular_cat_term;
 
     $popular_franchises_args = [
         'post_type'           => 'product',
@@ -35,20 +53,21 @@
             'date'       => 'DESC',
         ],
     ];
-    if ($popular_tag_term && ! is_wp_error($popular_tag_term)) {
+    if ($popular_cat_term && ! is_wp_error($popular_cat_term)) {
         $popular_franchises_args['tax_query'] = [
             [
-                'taxonomy' => 'product_tag',
-                'field'    => 'term_id',
-                'terms'    => [(int) $popular_tag_term->term_id],
+                'taxonomy'         => 'product_cat',
+                'field'            => 'term_id',
+                'terms'            => [(int) $popular_cat_term->term_id],
+                'include_children' => true,
             ],
         ];
     }
 
     $popular_franchises_query = new WP_Query($popular_franchises_args);
-    $popular_franchises_notice = ($popular_tag_term && ! is_wp_error($popular_tag_term))
-        ? 'Карточки из каталога WooCommerce (тег «Популярные франшизы») и полей ACF.'
-        : 'Тег «Популярные франшизы» в таксономии меток товара не найден — показаны последние опубликованные франшизы.';
+    $popular_franchises_notice = ($popular_cat_term && ! is_wp_error($popular_cat_term))
+        ? 'Карточки из каталога WooCommerce (категория «Популярные франшизы») и полей ACF.'
+        : 'Категория «Популярные франшизы» в каталоге не найдена — показаны последние опубликованные франшизы.';
     ?>
     <section class="popular-section stats-next-tight" aria-label="Популярные франшизы из каталога" data-popular-section>
         <div class="popular-head">
@@ -76,7 +95,7 @@
             <?php endif; ?>
         </div>
         <div class="segment-actions">
-            <a class="btn btn-primary" href="<?php echo esc_url(get_permalink(wc_get_page_id('shop'))); ?>?tag=%D0%9F%D0%BE%D0%BF%D1%83%D0%BB%D1%8F%D1%80%D0%BD%D1%8B%D0%B5%20%D1%84%D1%80%D0%B0%D0%BD%D1%88%D0%B8%D0%B7%D1%8B" data-popular-open>Смотреть все популярные франшизы</a>
+            <a class="btn btn-primary" href="<?php echo esc_url($popular_all_href); ?>" data-popular-open>Смотреть все популярные франшизы</a>
         </div>
     </section>
 <?php endif; ?>
@@ -151,7 +170,7 @@
         </a>
     </div>
     <div class="segment-actions">
-        <a class="btn btn-primary" href="<?php echo esc_url(get_permalink(wc_get_page_id('shop'))); ?>?tag=%D0%9F%D0%BE%D0%BF%D1%83%D0%BB%D1%8F%D1%80%D0%BD%D1%8B%D0%B5%20%D1%84%D1%80%D0%B0%D0%BD%D1%88%D0%B8%D0%B7%D1%8B" data-popular-open>Смотреть все популярные франшизы</a>
+        <a class="btn btn-primary" href="<?php echo esc_url($popular_all_href); ?>" data-popular-open>Смотреть все популярные франшизы</a>
     </div>
 </section>
 
@@ -349,7 +368,7 @@
             </a>
         </div>
         <div class="segment-actions">
-            <a class="btn btn-primary" href="<?php echo esc_url(get_permalink(wc_get_page_id('shop'))); ?>?tag=%D0%9F%D1%80%D0%BE%D0%B2%D0%B5%D1%80%D0%B5%D0%BD%D0%BE" data-collections-open>Смотреть подборку полностью</a>
+            <a class="btn btn-primary" href="<?php echo esc_url(class_exists('WooCommerce', false) && function_exists('wc_get_page_id') ? add_query_arg('verified', '1', (string) get_permalink(wc_get_page_id('shop'))) : home_url('/')); ?>" data-collections-open>Смотреть подборку полностью</a>
         </div>
     </div>
 </section>

@@ -34,8 +34,11 @@ add_action('add_meta_boxes_product', function () {
     remove_meta_box('commentsdiv', 'product', 'normal');
 }, 20);
 
-// 2. Удаляем пункты меню
-add_action('admin_menu', function () {
+/**
+ * Урезанное меню WooCommerce + убрать метки, атрибуты, бренды из подменю «Франшизы».
+ * Приоритет 99999: WooCommerce и доп. плагины успевают зарегистрировать пункты.
+ */
+add_action('admin_menu', static function (): void {
     remove_menu_page('edit.php?post_type=shop_order');
     remove_menu_page('edit.php?post_type=shop_coupon');
     remove_submenu_page('woocommerce', 'wc-reports');
@@ -43,11 +46,34 @@ add_action('admin_menu', function () {
     remove_menu_page('wc-admin&path=/customers');
     remove_menu_page('wc-admin&path=/analytics/overview');
     remove_menu_page('woocommerce-marketing');
-    remove_submenu_page('edit.php?post_type=product', 'product-reviews');
-
     remove_menu_page('wc-admin&path=/payments');
     remove_menu_page('wc-settings&tab=checkout');
-}, 999);
+
+    remove_submenu_page('edit.php?post_type=product', 'product-reviews');
+    remove_submenu_page('edit.php?post_type=product', 'product_attributes');
+    remove_submenu_page('edit.php?post_type=product', 'edit-tags.php?taxonomy=product_tag');
+    remove_submenu_page('edit.php?post_type=product', 'edit-tags.php?taxonomy=product_tag&post_type=product');
+    remove_submenu_page('edit.php?post_type=product', 'edit-tags.php?taxonomy=product_brand');
+    remove_submenu_page('edit.php?post_type=product', 'edit-tags.php?taxonomy=product_brand&post_type=product');
+
+    global $submenu;
+    $parent = 'edit.php?post_type=product';
+    if (isset($submenu[$parent]) && is_array($submenu[$parent])) {
+        foreach ($submenu[$parent] as $index => $item) {
+            if (! is_array($item) || empty($item[2])) {
+                continue;
+            }
+            $slug = (string) $item[2];
+            if (
+                $slug === 'product_attributes'
+                || str_contains($slug, 'taxonomy=product_tag')
+                || str_contains($slug, 'taxonomy=product_brand')
+            ) {
+                unset($submenu[$parent][$index]);
+            }
+        }
+    }
+}, 99999);
 
 // 3. Скрываем вкладки в настройках
 add_filter('woocommerce_settings_tabs_array', function ($tabs) {
@@ -64,18 +90,89 @@ add_filter('woocommerce_settings_tabs_array', function ($tabs) {
     return $tabs;
 }, 999);
 
-// 4. Очищаем метабоксы данных товара
+// 4. Очищаем метабоксы данных товара (вкладка «Атрибуты» в WC — ключ массива «attribute»)
 add_filter('woocommerce_product_data_tabs', function ($tabs) {
     unset(
         $tabs['inventory'],
         $tabs['shipping'],
         $tabs['linked_product'],
         $tabs['attribute'],
+        $tabs['attributes'],
         $tabs['variations'],
         $tabs['advanced']
     );
     return $tabs;
 }, 999);
+
+// Встроенные бренды WooCommerce 9.4+ — выключаем до регистрации таксономии.
+add_filter('pre_option_wc_feature_woocommerce_brands_enabled', static function ($pre) {
+    return 'no';
+}, 5);
+
+// Метки, бренды и глобальные атрибуты не используем — только категории product_cat.
+add_action('init', static function (): void {
+    if (! function_exists('unregister_taxonomy_for_object_type')) {
+        return;
+    }
+    unregister_taxonomy_for_object_type('product_tag', 'product');
+    if (taxonomy_exists('product_brand')) {
+        unregister_taxonomy_for_object_type('product_brand', 'product');
+    }
+}, 100);
+
+add_filter('woocommerce_attribute_taxonomies', static function (): array {
+    return [];
+}, 100);
+
+add_filter('register_taxonomy_product_tag_args', static function ($args) {
+    if (! is_array($args)) {
+        return $args;
+    }
+    $args['show_ui'] = false;
+    $args['show_in_menu'] = false;
+    $args['show_admin_column'] = false;
+    $args['show_in_nav_menus'] = false;
+
+    return $args;
+}, 999);
+
+add_filter('register_taxonomy_product_brand_args', static function ($args) {
+    if (! is_array($args)) {
+        return $args;
+    }
+    $args['show_ui'] = false;
+    $args['show_in_menu'] = false;
+    $args['show_admin_column'] = false;
+    $args['show_in_nav_menus'] = false;
+
+    return $args;
+}, 999);
+
+/** Старые ссылки на архивы меток и брендов товара ведём в каталог. */
+add_action('template_redirect', static function (): void {
+    if (is_admin() || wp_doing_ajax() || wp_doing_cron()) {
+        return;
+    }
+    if (! function_exists('is_tax')) {
+        return;
+    }
+    if (! is_tax('product_tag') && ! is_tax('product_brand')) {
+        return;
+    }
+    if (! function_exists('wc_get_page_id')) {
+        return;
+    }
+    $shop_id = wc_get_page_id('shop');
+    if ($shop_id <= 0) {
+        return;
+    }
+    $url = get_permalink($shop_id);
+    if (! is_string($url) || $url === '') {
+        return;
+    }
+    wp_safe_redirect($url, 301);
+    exit;
+}, 5);
 
 add_filter('woocommerce_is_purchasable', '__return_false');
 
@@ -231,12 +328,6 @@ if (! function_exists('franchises_franchise_card_from_post')) {
                     }
                 }
                 $tags_parts = array_merge($tags_parts, wp_list_pluck($terms, 'name'));
-            }
-        }
-        if (taxonomy_exists('product_tag')) {
-            $ptags = get_the_terms($post_id, 'product_tag');
-            if (is_array($ptags) && $ptags !== []) {
-                $tags_parts = array_merge($tags_parts, wp_list_pluck($ptags, 'name'));
             }
         }
         if ($verified) {
@@ -638,12 +729,12 @@ if (! function_exists('franchises_product_similar_query')) {
 }
 
 if (! function_exists('franchises_product_popular_query')) {
-    /** Как на главной: по тегу «Популярные франшизы», иначе последние товары. */
+    /** По категории «Популярные франшизы» (product_cat), иначе последние товары. */
     function franchises_product_popular_query(int $exclude_id, int $limit = 12): WP_Query
     {
-        $popular_tag_term = get_term_by('name', 'Популярные франшизы', 'product_tag');
-        if (! $popular_tag_term || is_wp_error($popular_tag_term)) {
-            $popular_tag_term = get_term_by('slug', 'popularnye-franshizy', 'product_tag');
+        $popular_cat_term = get_term_by('name', 'Популярные франшизы', 'product_cat');
+        if (! $popular_cat_term || is_wp_error($popular_cat_term)) {
+            $popular_cat_term = get_term_by('slug', 'popularnye-franshizy', 'product_cat');
         }
         $args = [
             'post_type'           => 'product',
@@ -657,12 +748,13 @@ if (! function_exists('franchises_product_popular_query')) {
                 'date'       => 'DESC',
             ],
         ];
-        if ($popular_tag_term && ! is_wp_error($popular_tag_term)) {
+        if ($popular_cat_term && ! is_wp_error($popular_cat_term)) {
             $args['tax_query'] = [
                 [
-                    'taxonomy' => 'product_tag',
-                    'field'    => 'term_id',
-                    'terms'    => [(int) $popular_tag_term->term_id],
+                    'taxonomy'         => 'product_cat',
+                    'field'            => 'term_id',
+                    'terms'            => [(int) $popular_cat_term->term_id],
+                    'include_children' => true,
                 ],
             ];
         }
@@ -877,7 +969,7 @@ if (! function_exists('franchises_is_product_catalog_view')) {
             return false;
         }
 
-        return is_shop() || is_product_category() || is_product_tag();
+        return is_shop() || is_product_category();
     }
 }
 
@@ -915,15 +1007,6 @@ if (! function_exists('franchises_catalog_breadcrumbs')) {
                         ];
                     }
                 }
-                $trail[] = ['label' => (string) $t->name, 'href' => ''];
-            }
-
-            return $trail;
-        }
-
-        if (is_product_tag()) {
-            $t = get_queried_object();
-            if ($t instanceof WP_Term && $t->taxonomy === 'product_tag') {
                 $trail[] = ['label' => (string) $t->name, 'href' => ''];
             }
 
@@ -980,24 +1063,8 @@ add_action('woocommerce_product_query', static function ($q): void {
 
     $extra_tax = [];
 
-    // Сначала архивы таксономий по объекту запроса: при post_type=product в query_vars
-    // is_shop() в WC также true, нельзя трактовать страницу как «только магазин».
-    if ($q->is_tax('product_cat') || $q->is_tax('product_tag')) {
-        $tag = isset($_GET['tag']) ? sanitize_text_field(wp_unslash($_GET['tag'])) : '';
-        if ($tag !== '') {
-            $t = get_term_by('name', $tag, 'product_tag');
-            if (! $t) {
-                $t = get_term_by('slug', sanitize_title($tag), 'product_tag');
-            }
-            if ($t && ! is_wp_error($t)) {
-                $extra_tax[] = [
-                    'taxonomy' => 'product_tag',
-                    'field'    => 'term_id',
-                    'terms'    => [(int) $t->term_id],
-                ];
-            }
-        }
-    } elseif (is_shop()) {
+    // На странице магазина (is_shop() && tax) GET-фильтры по категориям; на архиве категории WC уже задаёт tax_query.
+    if (is_shop()) {
         $category = isset($_GET['category']) ? sanitize_text_field(wp_unslash($_GET['category'])) : '';
         $sphere = isset($_GET['sphere']) ? sanitize_text_field(wp_unslash($_GET['sphere'])) : '';
 
@@ -1025,21 +1092,6 @@ add_action('woocommerce_product_query', static function ($q): void {
                     'field'            => 'term_id',
                     'terms'            => [(int) $term->term_id],
                     'include_children' => true,
-                ];
-            }
-        }
-
-        $tag = isset($_GET['tag']) ? sanitize_text_field(wp_unslash($_GET['tag'])) : '';
-        if ($tag !== '') {
-            $t = get_term_by('name', $tag, 'product_tag');
-            if (! $t) {
-                $t = get_term_by('slug', sanitize_title($tag), 'product_tag');
-            }
-            if ($t && ! is_wp_error($t)) {
-                $extra_tax[] = [
-                    'taxonomy' => 'product_tag',
-                    'field'    => 'term_id',
-                    'terms'    => [(int) $t->term_id],
                 ];
             }
         }

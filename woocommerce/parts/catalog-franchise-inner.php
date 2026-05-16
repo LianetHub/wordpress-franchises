@@ -51,12 +51,6 @@ if (is_product_category()) {
     if (is_string($tdesc) && trim(wp_strip_all_tags($tdesc)) !== '') {
         $hero_sub = wp_strip_all_tags($tdesc);
     }
-} elseif (is_product_tag()) {
-    $hero_title = 'Подборка: ' . (single_term_title('', false) ?: '');
-    $tdesc = term_description();
-    if (is_string($tdesc) && trim(wp_strip_all_tags($tdesc)) !== '') {
-        $hero_sub = wp_strip_all_tags($tdesc);
-    }
 }
 
 $parents = get_terms([
@@ -70,15 +64,16 @@ if (is_wp_error($parents)) {
     $parents = [];
 }
 
-$collection_terms = get_terms([
-    'taxonomy'   => 'product_tag',
-    'hide_empty' => true,
-    'orderby'    => 'count',
-    'order'      => 'DESC',
-    'number'     => 40,
-]);
-if (is_wp_error($collection_terms)) {
-    $collection_terms = [];
+$collection_posts = [];
+if (post_type_exists('selection')) {
+    $collection_posts = get_posts([
+        'post_type'      => 'selection',
+        'post_status'    => 'publish',
+        'posts_per_page' => 40,
+        'orderby'        => 'menu_order title',
+        'order'          => 'ASC',
+        'no_found_rows'  => true,
+    ]);
 }
 
 $orderby_options = function_exists('franchises_wc_catalog_orderby_choices')
@@ -129,17 +124,20 @@ $count_line = $found > 0
             <div class="sidebar-title">Подборки</div>
             <ul class="sidebar-list" data-collections-list>
                 <li>
-                    <a href="<?php echo esc_url($shop_url); ?>" class="sidebar-link<?php echo is_shop() && ! is_product_category() && ! is_product_tag() ? ' active' : ''; ?>">Все франшизы</a>
+                    <a href="<?php echo esc_url($shop_url); ?>" class="sidebar-link<?php echo is_shop() && ! is_product_category() ? ' active' : ''; ?>">Все франшизы</a>
                 </li>
-                <?php foreach ($collection_terms as $ct) :
-                    $link = get_term_link($ct);
-                    if (is_wp_error($link)) {
+                <?php foreach ($collection_posts as $sel_post) :
+                    if (! $sel_post instanceof WP_Post) {
                         continue;
                     }
-                    $active = (is_product_tag() && (int) get_queried_object_id() === (int) $ct->term_id);
+                    $link = get_permalink($sel_post);
+                    if (! is_string($link) || $link === '') {
+                        continue;
+                    }
+                    $active = is_singular('selection') && (int) get_queried_object_id() === (int) $sel_post->ID;
                 ?>
                     <li>
-                        <a href="<?php echo esc_url($link); ?>" class="sidebar-link<?php echo $active ? ' active' : ''; ?>"><?php echo esc_html($ct->name); ?></a>
+                        <a href="<?php echo esc_url($link); ?>" class="sidebar-link<?php echo $active ? ' active' : ''; ?>"><?php echo esc_html(get_the_title($sel_post)); ?></a>
                     </li>
                 <?php endforeach; ?>
             </ul>
@@ -155,15 +153,18 @@ $count_line = $found > 0
 
         <div class="catalog-tags-wrap" aria-label="Подборки для мобильной версии">
             <div class="segment-tabs catalog-tags" aria-label="Подборки" data-collections-tabs>
-                <a class="seg<?php echo is_shop() && ! is_product_category() && ! is_product_tag() ? ' active' : ''; ?>" href="<?php echo esc_url($shop_url); ?>">Все</a>
-                <?php foreach ($collection_terms as $ct) :
-                    $link = get_term_link($ct);
-                    if (is_wp_error($link)) {
+                <a class="seg<?php echo is_shop() && ! is_product_category() ? ' active' : ''; ?>" href="<?php echo esc_url($shop_url); ?>">Все</a>
+                <?php foreach ($collection_posts as $sel_post) :
+                    if (! $sel_post instanceof WP_Post) {
                         continue;
                     }
-                    $active = (is_product_tag() && (int) get_queried_object_id() === (int) $ct->term_id);
+                    $link = get_permalink($sel_post);
+                    if (! is_string($link) || $link === '') {
+                        continue;
+                    }
+                    $active = is_singular('selection') && (int) get_queried_object_id() === (int) $sel_post->ID;
                 ?>
-                    <a class="seg<?php echo $active ? ' active' : ''; ?>" href="<?php echo esc_url($link); ?>"><?php echo esc_html($ct->name); ?></a>
+                    <a class="seg<?php echo $active ? ' active' : ''; ?>" href="<?php echo esc_url($link); ?>"><?php echo esc_html(get_the_title($sel_post)); ?></a>
                 <?php endforeach; ?>
             </div>
             <button class="catalog-tags-toggle" type="button" aria-expanded="false">Показать все</button>
