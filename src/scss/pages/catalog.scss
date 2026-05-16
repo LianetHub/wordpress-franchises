@@ -463,3 +463,69 @@
 
 }
 
+.catalog-empty {
+	display: grid;
+	justify-items: center;
+	gap: 12px;
+	margin-top: 8px;
+	padding: 40px 28px;
+	text-align: center;
+	background: $card;
+	border: 1px solid #e3e6e8;
+	border-radius: $radius;
+	box-shadow: 0 10px 24px rgba(15, 26, 23, 0.04);
+
+	&__visual {
+		display: grid;
+		place-items: center;
+		width: 88px;
+		height: 88px;
+		border-radius: 50%;
+		background: linear-gradient(145deg, #f4f8fc 0%, #eef3f8 100%);
+		color: $btn-accent;
+	}
+
+	&__icon {
+		display: block;
+	}
+
+	&__title {
+		margin: 4px 0 0;
+		font-size: clamp(20px, 2.2vw, 26px);
+		font-weight: 800;
+		line-height: 1.25;
+		color: $text;
+	}
+
+	&__text {
+		margin: 0;
+		max-width: 520px;
+		font-size: 14px;
+		font-weight: 500;
+		line-height: 1.5;
+		color: $muted;
+	}
+
+	&__actions {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 10px;
+		margin-top: 8px;
+	}
+
+	@media (max-width: $md4) {
+		padding: 32px 20px;
+
+		&__actions {
+			flex-direction: column;
+			width: 100%;
+			max-width: 320px;
+
+			.btn {
+				width: 100%;
+			}
+		}
+	}
+}
+

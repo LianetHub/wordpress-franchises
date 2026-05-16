@@ -973,6 +973,72 @@ if (! function_exists('franchises_is_product_catalog_view')) {
     }
 }
 
+if (! function_exists('franchises_catalog_has_active_filters')) {
+    function franchises_catalog_has_active_filters(): bool
+    {
+        if (! empty($_GET['q'])) {
+            return true;
+        }
+        if (! empty($_GET['verified'])) {
+            return true;
+        }
+        if (! empty($_GET['sphere'])) {
+            return true;
+        }
+        if (! empty($_GET['category'])) {
+            return true;
+        }
+        if (isset($_GET['invest_max']) && (int) $_GET['invest_max'] > 0) {
+            return true;
+        }
+        if (isset($_GET['profit_min']) && (int) $_GET['profit_min'] > 0) {
+            return true;
+        }
+        if (isset($_GET['payback_max']) && (int) $_GET['payback_max'] > 0) {
+            return true;
+        }
+
+        if (isset($_GET['orderby']) && $_GET['orderby'] !== '') {
+            $default = function_exists('get_option')
+                ? (string) get_option('woocommerce_default_catalog_orderby', 'menu_order')
+                : 'menu_order';
+            $cur = sanitize_text_field(wp_unslash((string) $_GET['orderby']));
+            if ($cur !== '' && $cur !== $default) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
+if (! function_exists('franchises_catalog_reset_filters_url')) {
+    function franchises_catalog_reset_filters_url(): string
+    {
+        if (function_exists('is_product_category') && is_product_category()) {
+            $term = get_queried_object();
+            if ($term instanceof WP_Term) {
+                $link = get_term_link($term);
+                if (! is_wp_error($link)) {
+                    return (string) $link;
+                }
+            }
+        }
+
+        if (function_exists('wc_get_page_id')) {
+            $shop_id = wc_get_page_id('shop');
+            if ($shop_id > 0) {
+                $permalink = get_permalink($shop_id);
+                if (is_string($permalink) && $permalink !== '') {
+                    return $permalink;
+                }
+            }
+        }
+
+        return home_url('/');
+    }
+}
+
 if (! function_exists('franchises_catalog_breadcrumbs')) {
     /**
      * @return list<array{label: string, href: string}>

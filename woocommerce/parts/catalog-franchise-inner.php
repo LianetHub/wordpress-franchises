@@ -303,7 +303,7 @@ $count_line = $found > 0
             woocommerce_product_loop_end();
             do_action('woocommerce_after_shop_loop');
         } else {
-            do_action('woocommerce_no_products_found');
+            require get_template_directory() . '/woocommerce/parts/catalog-empty-state.php';
         }
         ?>
 
