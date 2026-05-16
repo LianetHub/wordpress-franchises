@@ -129,7 +129,7 @@ $attr = static function (string $k, $v): string {
     ?>>
     <div class="popular-media">
         <?php if ($img !== '') : ?>
-            <img loading="lazy" alt="<?php echo $img_alt; ?>" src="<?php echo $img; ?>">
+            <img loading="lazy" alt="<?php echo $img_alt; ?>" src="<?php echo $img; ?>" class="cover-image">
         <?php endif; ?>
         <?php if ($verified_bool) : ?>
             <span class="popular-badge">Проверено</span>

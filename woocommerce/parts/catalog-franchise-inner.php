@@ -284,7 +284,7 @@ $count_line = $found > 0
             <div class="catalog-count mobile-count" id="catalog-count-mobile"><?php echo esc_html($count_line); ?></div>
             <div class="catalog-toolbar">
                 <div class="catalog-count" id="catalog-count"><?php echo esc_html($count_line); ?></div>
-                <select class="filter-select sort-select filter-select-native" name="orderby" data-sort aria-label="Сортировка" onchange="this.form.submit();">
+                <select class="filter-select sort-select filter-select-native dropdown--fit" name="orderby" data-sort aria-label="Сортировка" onchange="this.form.submit();">
                     <?php foreach ($orderby_options as $val => $label) : ?>
                         <option value="<?php echo esc_attr($val); ?>" <?php selected($cur_orderby, $val); ?>><?php echo esc_html($label); ?></option>
                     <?php endforeach; ?>

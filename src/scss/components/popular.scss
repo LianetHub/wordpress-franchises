@@ -144,12 +144,6 @@
 	text-decoration: none;
 }
 
-.popular-media img {
-	width: 100%;
-	height: 100%;
-	object-fit: contain;
-	display: block;
-}
 
 .popular-card> :not(.popular-media) {
 	padding: 0 16px;
@@ -197,7 +191,7 @@
 
 		&-grid.catalog-cards {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
-			        gap: 12px;
+			gap: 12px;
 		}
 
 		&-grid {
@@ -223,22 +217,22 @@
 	}
 
 	.popular-card> :not(.popular-media),
-	    .preview-card> :not(.preview-media) {
+	.preview-card> :not(.preview-media) {
 		padding: 0 14px;
 	}
 
 	.popular-card> :last-child,
-	    .preview-card> :last-child {
+	.preview-card> :last-child {
 		padding-bottom: 14px;
 	}
 
 	.popular-card,
-	    .preview-card {
+	.preview-card {
 		height: 276px;
 	}
 
 	.popular-brand,
-	    .preview-brand {
+	.preview-brand {
 		font-size: 18px;
 		line-height: 1.15;
 		display: -webkit-box;
@@ -248,7 +242,7 @@
 	}
 
 	.popular-meta,
-	    .preview-meta {
+	.preview-meta {
 		font-size: 12px;
 		line-height: 1.25;
 		min-height: 0;
@@ -256,7 +250,7 @@
 	}
 
 	.popular-desc,
-	    .preview-desc {
+	.preview-desc {
 		font-size: 14px;
 		line-height: 1.25;
 		display: -webkit-box;
@@ -267,15 +261,14 @@
 	}
 
 	.popular-meta .meta-label,
-	    .preview-meta .meta-label {
+	.preview-meta .meta-label {
 		font-size: 11px;
 	}
 
 	.popular-meta .meta-value,
-	    .preview-meta .meta-value {
+	.preview-meta .meta-value {
 		font-size: 18px;
 	}
 
 
 }
-

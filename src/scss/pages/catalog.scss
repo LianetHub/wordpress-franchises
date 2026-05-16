@@ -174,23 +174,22 @@
 }
 
 .catalog-toolbar .sort-select,
-.catalog-toolbar .sort-select.filter-select-native {
+.catalog-toolbar .sort-select.filter-select-native,
+.catalog-toolbar .dropdown--fit .dropdown__button,
+.catalog-toolbar .dropdown--fit .dropdown__button-text {
 	font-family: "Manrope", system-ui, sans-serif !important;
-	    font-size: 13px !important;
-	    font-weight: 600 !important;
-	    line-height: 1.2 !important;
-	    color: #6d7278 !important;
+	font-size: 13px !important;
+	font-weight: 600 !important;
+	line-height: 1.2 !important;
+	color: #6d7278 !important;
 }
 
-.catalog-toolbar .sort-select.filter-select-native {
-	width: auto !important;
-	    min-width: 0 !important;
-	    max-width: 100% !important;
-	    padding-right: 24px !important;
-	    padding-left: 10px !important;
-	    text-align: right !important;
-	    text-align-last: right !important;
-	    background-position: right 7px center !important;
+.catalog-toolbar .dropdown--fit {
+	margin-left: auto;
+}
+
+.catalog-toolbar .dropdown--fit .dropdown__button-text {
+	text-align: right;
 }
 
 .catalog-tags .seg,
@@ -406,10 +405,6 @@
 		        will-change: auto !important;
 	}
 
-	.catalog-toolbar .sort-select.filter-select-native {
-		padding-right: 30px !important;
-		        background-position: right 8px center !important;
-	}
 
 
 }

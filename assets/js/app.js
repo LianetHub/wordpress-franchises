@@ -288,153 +288,452 @@ document.addEventListener('DOMContentLoaded', () => {
             .on('input', onPhoneInput)
             .on('paste', onPhonePaste);
 
-        // custom select
-        // class CustomSelect {
-        //     static openDropdown = null;
-        //     static eventsBound = false;
+        class CustomSelect {
+            static openDropdown = null;
+            static eventsBound = false;
+            static typeahead = '';
+            static typeaheadTimer = null;
 
-        //     constructor(dropdownElement) {
-        //         this.$dropdown = $(dropdownElement);
-        //         this.$input = this.$dropdown.find('input[type="hidden"]');
-        //         this.$button = this.$dropdown.find('.dropdown__button');
-        //         this.$buttonText = this.$dropdown.find('.dropdown__button-text');
-        //         this.$listItems = this.$dropdown.find('.dropdown__list-item');
+            constructor(dropdownElement, options = {}) {
+                this.$dropdown = $(dropdownElement);
+                this.nativeSelect = options.nativeSelect || null;
+                this.$input = this.nativeSelect ? null : this.$dropdown.find('input[type="hidden"]').first();
+                this.$button = this.$dropdown.find('.dropdown__button').first();
+                this.$buttonText = this.$dropdown.find('.dropdown__button-text').first();
+                this.$body = this.$dropdown.find('.dropdown__body').first();
+                this.$list = this.$dropdown.find('.dropdown__list').first();
+                this.$listItems = this.$list.find('.dropdown__list-item');
+                this.activeIndex = -1;
+                this.uid = this.$dropdown.attr('id') || `dropdown-${Math.random().toString(36).slice(2, 9)}`;
+                this.$dropdown.attr('id', this.uid);
 
-        //         this.initialValue = this.$input.val();
-        //         this.initialText = this.$buttonText.text();
+                this.isValid = Boolean(this.$button.length && this.$list.length);
+                if (!this.isValid) return;
 
-        //         this.init();
-        //     }
+                this.setupA11y();
+                this.initialValue = this.getValue();
+                this.initialText = this.$buttonText.text().trim();
+                this.init();
+            }
 
-        //     init() {
-        //         this.setupEvents();
-        //         this.bindGlobalEvents();
-        //         this.syncStateWithInput();
-        //     }
+            init() {
+                this.setupEvents();
+                CustomSelect.bindGlobalEvents();
+                this.syncStateWithInput();
+                this.$dropdown.data('customSelect', this);
+            }
 
-        //     bindGlobalEvents() {
-        //         if (CustomSelect.eventsBound) return;
+            static bindGlobalEvents() {
+                if (CustomSelect.eventsBound) return;
 
-        //         $(document).on('click.customSelectGlobal', (event) => {
-        //             if (CustomSelect.openDropdown && !$(event.target).closest('.dropdown').length) {
-        //                 CustomSelect.openDropdown.closeDropdown();
-        //             }
-        //         });
+                $(document).on('click.customSelectGlobal', (event) => {
+                    if (CustomSelect.openDropdown && !$(event.target).closest('.dropdown').length) {
+                        CustomSelect.openDropdown.closeDropdown();
+                    }
+                });
 
-        //         $(document).on('keydown.customSelectGlobal', (event) => {
-        //             if (event.key === 'Escape' && CustomSelect.openDropdown) {
-        //                 CustomSelect.openDropdown.closeDropdown();
-        //             }
-        //         });
+                $(document).on('keydown.customSelectGlobal', (event) => {
+                    const open = CustomSelect.openDropdown;
+                    if (!open) return;
 
-        //         CustomSelect.eventsBound = true;
-        //     }
+                    if (event.key === 'Escape') {
+                        event.preventDefault();
+                        open.closeDropdown();
+                        open.$button.trigger('focus');
+                        return;
+                    }
 
-        //     setupEvents() {
-        //         this.$button.on('click', (event) => {
-        //             event.preventDefault();
-        //             event.stopPropagation();
-        //             const isOpen = this.$dropdown.hasClass('visible');
-        //             this.toggleDropdown(!isOpen);
-        //         });
+                    if (!open.$dropdown.hasClass('visible')) return;
 
-        //         this.$dropdown.on('click', '.dropdown__list-item', (event) => {
-        //             event.preventDefault();
-        //             event.stopPropagation();
-        //             const item = $(event.currentTarget);
+                    const items = open.getEnabledItems();
+                    if (!items.length) return;
 
-        //             if (!item.hasClass('disabled')) {
-        //                 this.selectOption(item);
-        //             }
-        //         });
+                    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                        event.preventDefault();
+                        const delta = event.key === 'ArrowDown' ? 1 : -1;
+                        const nextIndex = open.activeIndex < 0
+                            ? (delta > 0 ? 0 : items.length - 1)
+                            : Math.max(0, Math.min(items.length - 1, open.activeIndex + delta));
+                        open.setActiveIndex(nextIndex);
+                        return;
+                    }
 
-        //         this.$input.closest('form').on('reset', () => {
-        //             setTimeout(() => this.restoreInitialState(), 0);
-        //         });
-        //     }
+                    if (event.key === 'Home') {
+                        event.preventDefault();
+                        open.setActiveIndex(0);
+                        return;
+                    }
 
-        //     toggleDropdown(isOpen) {
-        //         if (isOpen && CustomSelect.openDropdown && CustomSelect.openDropdown !== this) {
-        //             CustomSelect.openDropdown.closeDropdown();
-        //         }
+                    if (event.key === 'End') {
+                        event.preventDefault();
+                        open.setActiveIndex(items.length - 1);
+                        return;
+                    }
 
-        //         const body = this.$dropdown.find('.dropdown__body');
-        //         const list = this.$dropdown.find('.dropdown__list');
-        //         const hasScroll = list.length && list[0].scrollHeight > list[0].clientHeight;
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        if (open.activeIndex >= 0) {
+                            open.selectOption(items.eq(open.activeIndex));
+                        }
+                        return;
+                    }
 
-        //         this.$dropdown.toggleClass('visible', isOpen);
-        //         this.$button.attr('aria-expanded', isOpen);
-        //         body.attr('aria-hidden', !isOpen);
+                    if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+                        open.handleTypeahead(event.key);
+                    }
+                });
 
-        //         if (isOpen) {
-        //             CustomSelect.openDropdown = this;
-        //             this.$dropdown.removeClass('dropdown-top');
+                CustomSelect.eventsBound = true;
+            }
 
-        //             const dropdownRect = body[0].getBoundingClientRect();
-        //             const viewportHeight = window.innerHeight;
+            setupA11y() {
+                const listboxId = `${this.uid}-listbox`;
+                const buttonId = `${this.uid}-button`;
 
-        //             if (dropdownRect.bottom > viewportHeight) {
-        //                 this.$dropdown.addClass('dropdown-top');
-        //             }
-        //             list.toggleClass('has-scroll', hasScroll);
-        //         } else {
-        //             if (CustomSelect.openDropdown === this) {
-        //                 CustomSelect.openDropdown = null;
-        //             }
-        //         }
-        //     }
+                this.$button.attr({
+                    id: buttonId,
+                    type: 'button',
+                    role: 'combobox',
+                    'aria-haspopup': 'listbox',
+                    'aria-expanded': 'false',
+                    'aria-controls': listboxId,
+                });
 
-        //     closeDropdown() {
-        //         this.toggleDropdown(false);
-        //     }
+                this.$list.attr({
+                    id: listboxId,
+                    role: 'listbox',
+                    tabindex: '-1',
+                });
 
-        //     selectOption(item) {
-        //         const value = item.data('value');
-        //         const text = item.text();
+                this.$body.attr('aria-hidden', 'true');
 
-        //         this.$listItems.removeClass('selected').attr('aria-checked', 'false');
-        //         item.addClass('selected').attr('aria-checked', 'true');
+                const labelId = this.nativeSelect?.id
+                    ? $(`label[for="${this.nativeSelect.id}"]`).attr('id')
+                    : null;
+                const ariaLabel = this.nativeSelect?.getAttribute('aria-label')
+                    || this.$dropdown.data('label')
+                    || null;
 
-        //         this.$button.addClass('selected');
-        //         this.$buttonText.text(text);
+                if (labelId) {
+                    this.$button.attr('aria-labelledby', `${labelId} ${buttonId}`);
+                } else if (ariaLabel) {
+                    this.$button.attr('aria-label', ariaLabel);
+                }
 
-        //         this.$input.val(value).trigger('change');
+                this.$listItems.each((index, element) => {
+                    const $item = $(element);
+                    if (!$item.attr('id')) {
+                        $item.attr('id', `${listboxId}-opt-${index}`);
+                    }
+                    $item.attr({
+                        role: 'option',
+                        'aria-selected': 'false',
+                    });
+                });
 
-        //         this.closeDropdown();
-        //     }
+                if (this.nativeSelect) {
+                    this.nativeSelect.setAttribute('aria-hidden', 'true');
+                    this.nativeSelect.setAttribute('tabindex', '-1');
+                    this.nativeSelect.classList.add('select-native-source');
+                }
+            }
 
-        //     restoreInitialState() {
-        //         this.$input.val(this.initialValue);
-        //         this.$buttonText.text(this.initialText);
+            setupEvents() {
+                this.$button.on('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    if (this.isDisabled()) return;
+                    this.toggleDropdown(!this.$dropdown.hasClass('visible'));
+                });
 
-        //         this.$listItems.removeClass('selected').attr('aria-checked', 'false');
-        //         const initialItem = this.$listItems.filter((_, el) => $(el).data('value') == this.initialValue);
+                this.$button.on('keydown', (event) => {
+                    if (this.isDisabled()) return;
+                    if (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        if (!this.$dropdown.hasClass('visible')) {
+                            this.toggleDropdown(true);
+                        }
+                    }
+                });
 
-        //         if (initialItem.length) {
-        //             initialItem.addClass('selected').attr('aria-checked', 'true');
-        //             this.$button.addClass('selected');
-        //         } else {
-        //             this.$button.removeClass('selected');
-        //         }
-        //     }
+                this.$dropdown.on('click', '.dropdown__list-item', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const item = $(event.currentTarget);
+                    if (this.isItemDisabled(item)) return;
+                    this.selectOption(item);
+                });
 
-        //     syncStateWithInput() {
-        //         const currentValue = this.$input.val();
-        //         const currentItem = this.$listItems.filter((_, el) => $(el).data('value') == currentValue);
+                const $form = this.nativeSelect
+                    ? $(this.nativeSelect).closest('form')
+                    : this.$input?.closest('form');
+                $form?.on('reset', () => {
+                    window.setTimeout(() => this.restoreInitialState(), 0);
+                });
+            }
 
-        //         if (currentItem.length) {
-        //             this.$listItems.removeClass('selected').attr('aria-checked', 'false');
-        //             currentItem.addClass('selected').attr('aria-checked', 'true');
-        //             this.$buttonText.text(currentItem.text());
-        //             this.$button.addClass('selected');
-        //         }
-        //     }
-        // }
+            isDisabled() {
+                return this.$dropdown.hasClass('is-disabled')
+                    || this.$button.is(':disabled')
+                    || Boolean(this.nativeSelect?.disabled);
+            }
 
-        // $('.dropdown').each((index, element) => {
-        //     new CustomSelect(element);
-        // });
+            isItemDisabled($item) {
+                return $item.hasClass('disabled') || $item.attr('aria-disabled') === 'true';
+            }
 
+            getEnabledItems() {
+                return this.$listItems.filter((_, el) => !this.isItemDisabled($(el)));
+            }
+
+            getValue() {
+                if (this.nativeSelect) return String(this.nativeSelect.value ?? '');
+                return String(this.$input?.val() ?? '');
+            }
+
+            setValue(value, triggerChange = true) {
+                if (this.nativeSelect) {
+                    this.nativeSelect.value = value;
+                    if (triggerChange) {
+                        $(this.nativeSelect).trigger('change');
+                    }
+                } else if (this.$input) {
+                    this.$input.val(value);
+                    if (triggerChange) {
+                        this.$input.trigger('change');
+                    }
+                }
+            }
+
+            getItemsByValue(value) {
+                return this.$listItems.filter((_, el) => String($(el).data('value')) === String(value));
+            }
+
+            toggleDropdown(isOpen) {
+                if (this.isDisabled()) return;
+
+                if (isOpen && CustomSelect.openDropdown && CustomSelect.openDropdown !== this) {
+                    CustomSelect.openDropdown.closeDropdown();
+                }
+
+                const hasScroll = this.$list.length && this.$list[0].scrollHeight > this.$list[0].clientHeight;
+
+                this.$dropdown.toggleClass('visible', isOpen);
+                this.$button.attr('aria-expanded', String(isOpen));
+                this.$body.attr('aria-hidden', String(!isOpen));
+
+                if (isOpen) {
+                    CustomSelect.openDropdown = this;
+                    this.$dropdown.removeClass('dropdown-top');
+                    this.syncActiveIndexWithSelection();
+                    this.$list.toggleClass('has-scroll', Boolean(hasScroll));
+
+                    window.requestAnimationFrame(() => {
+                        const dropdownRect = this.$body[0]?.getBoundingClientRect();
+                        if (dropdownRect && dropdownRect.bottom > window.innerHeight) {
+                            this.$dropdown.addClass('dropdown-top');
+                        }
+                        this.scrollActiveItemIntoView();
+                    });
+                } else {
+                    this.clearActiveOption();
+                    if (CustomSelect.openDropdown === this) {
+                        CustomSelect.openDropdown = null;
+                    }
+                }
+            }
+
+            closeDropdown() {
+                this.toggleDropdown(false);
+            }
+
+            clearActiveOption() {
+                this.activeIndex = -1;
+                this.$listItems.removeClass('is-active');
+                this.$button.removeAttr('aria-activedescendant');
+            }
+
+            setActiveIndex(index) {
+                const items = this.getEnabledItems();
+                if (!items.length) return;
+
+                this.activeIndex = Math.max(0, Math.min(index, items.length - 1));
+                items.removeClass('is-active');
+                const $active = items.eq(this.activeIndex).addClass('is-active');
+                this.$button.attr('aria-activedescendant', $active.attr('id') || '');
+                this.scrollActiveItemIntoView();
+            }
+
+            syncActiveIndexWithSelection() {
+                const items = this.getEnabledItems();
+                const selectedIndex = items.index(items.filter('.selected, [aria-selected="true"]').first());
+                this.setActiveIndex(selectedIndex >= 0 ? selectedIndex : 0);
+            }
+
+            scrollActiveItemIntoView() {
+                const active = this.$listItems.filter('.is-active')[0];
+                active?.scrollIntoView({ block: 'nearest' });
+            }
+
+            handleTypeahead(char) {
+                window.clearTimeout(CustomSelect.typeaheadTimer);
+                CustomSelect.typeahead += char.toLowerCase();
+                CustomSelect.typeaheadTimer = window.setTimeout(() => {
+                    CustomSelect.typeahead = '';
+                }, 500);
+
+                const items = this.getEnabledItems();
+                const matchIndex = items.get().findIndex((el) =>
+                    $(el).text().trim().toLowerCase().startsWith(CustomSelect.typeahead)
+                );
+                if (matchIndex >= 0) {
+                    this.setActiveIndex(matchIndex);
+                }
+            }
+
+            selectOption(item) {
+                const value = item.data('value');
+                const text = item.text().trim();
+
+                this.$listItems.removeClass('selected is-active').attr('aria-selected', 'false');
+                item.addClass('selected').attr('aria-selected', 'true');
+
+                this.$button.addClass('selected');
+                this.$buttonText.text(text);
+                this.setValue(value == null ? '' : String(value));
+                this.closeDropdown();
+                this.$button.trigger('focus');
+            }
+
+            restoreInitialState() {
+                this.setValue(this.initialValue, false);
+                this.$buttonText.text(this.initialText);
+                this.syncStateWithInput();
+            }
+
+            syncStateWithInput() {
+                const currentValue = this.getValue();
+                const currentItem = this.getItemsByValue(currentValue);
+                const placeholder = this.$dropdown.data('placeholder')
+                    || this.nativeSelect?.querySelector('option[value=""]')?.textContent?.trim()
+                    || this.$buttonText.text().trim();
+
+                this.$listItems.removeClass('selected is-active').attr('aria-selected', 'false');
+
+                if (currentItem.length) {
+                    currentItem.addClass('selected').attr('aria-selected', 'true');
+                    this.$buttonText.text(currentItem.first().text().trim());
+                    this.$button.addClass('selected');
+                } else {
+                    this.$buttonText.text(placeholder);
+                    this.$button.toggleClass('selected', Boolean(currentValue));
+                }
+            }
+
+            refreshFromNative() {
+                if (!this.nativeSelect) return;
+
+                const currentValue = this.getValue();
+                this.$list.empty();
+
+                Array.from(this.nativeSelect.options).forEach((option, index) => {
+                    if (option.hidden) return;
+
+                    const $item = $('<div>', {
+                        class: 'dropdown__list-item',
+                        'data-value': option.value,
+                        id: `${this.$list.attr('id')}-opt-${index}`,
+                        role: 'option',
+                        'aria-selected': 'false',
+                        text: option.textContent?.trim() || option.label || option.value,
+                    });
+
+                    if (option.disabled) {
+                        $item.addClass('disabled').attr('aria-disabled', 'true');
+                    }
+
+                    this.$list.append($item);
+                });
+
+                this.$listItems = this.$list.find('.dropdown__list-item');
+                this.syncStateWithInput();
+
+                if (currentValue && !this.getItemsByValue(currentValue).length) {
+                    this.setValue('');
+                }
+            }
+
+            static fromNativeSelect(selectElement) {
+                const select = selectElement;
+                const $select = $(select);
+                const existing = $select.data('customSelect');
+                if (existing) return existing;
+
+                if ($select.data('customSelectBuilt')) {
+                    return $select.closest('.dropdown').data('customSelect') || null;
+                }
+
+                const uid = select.id || `select-${Math.random().toString(36).slice(2, 9)}`;
+                const listboxId = `${uid}-listbox`;
+                const buttonId = `${uid}-button`;
+                const label = select.getAttribute('aria-label') || '';
+
+                const $dropdown = $(`
+                    <div class="dropdown" data-native-for="${uid}">
+                        <button type="button" class="dropdown__button" id="${buttonId}" aria-expanded="false">
+                            <span class="dropdown__button-text"></span>
+                        </button>
+                        <div class="dropdown__body" aria-hidden="true">
+                            <div class="dropdown__list" id="${listboxId}" role="listbox"></div>
+                        </div>
+                    </div>
+                `);
+
+                if (label) {
+                    $dropdown.attr('data-label', label);
+                }
+
+                if ($select.hasClass('dropdown--fit') || $select.hasClass('sort-select')) {
+                    $dropdown.addClass('dropdown--fit');
+                }
+
+                $select.after($dropdown).data('customSelectBuilt', true);
+
+                const instance = new CustomSelect($dropdown[0], { nativeSelect: select });
+                if (!instance.isValid) {
+                    $dropdown.remove();
+                    $select.removeData('customSelectBuilt');
+                    return null;
+                }
+                instance.refreshFromNative();
+                $select.data('customSelect', instance);
+                return instance;
+            }
+
+            static initAll(root = document) {
+                const $root = $(root);
+                $root.find('.dropdown').each((_, element) => {
+                    if (!$(element).data('customSelect')) {
+                        const instance = new CustomSelect(element);
+                        if (instance.isValid) {
+                            $(element).data('customSelect', instance);
+                        }
+                    }
+                });
+
+                $root.find('select.select, select[data-custom-select], select.filter-select-native').each((_, element) => {
+                    CustomSelect.fromNativeSelect(element);
+                });
+            }
+        }
+
+        CustomSelect.initAll(document);
+        window.CustomSelect = CustomSelect;
+        window.initCustomSelects = (root) => CustomSelect.initAll(root || document);
+
+        $(document).on('wpcf7domready', () => {
+            CustomSelect.initAll(document);
+        });
 
         $(document).on("wpcf7mailsent", function () {
             if (typeof Fancybox !== "undefined" && Fancybox) Fancybox.close();
@@ -987,6 +1286,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 opt.hidden = ds !== sphere;
             }
         });
+        const categoryCustom = $(categorySelect).data('customSelect');
+        if (categoryCustom?.refreshFromNative) {
+            categoryCustom.refreshFromNative();
+        }
     };
     if (sphereSelect) {
         sphereSelect.addEventListener('change', syncCategoryOptions);
