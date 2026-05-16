@@ -34,27 +34,24 @@ document.addEventListener('DOMContentLoaded', () => {
             Fancybox.show([{ src: selector, type: "inline" }], { dragToClose: false });
         }
 
-        window.__showLeadFeedback = (text, isError = false) => {
-            const node = document.querySelector("[data-lead-feedback]");
-            const textNode = node?.querySelector("[data-lead-feedback-text]");
-            const card = node?.querySelector(".lead-feedback-card");
-            const mark = node?.querySelector("[data-lead-feedback-mark]");
-            if (!node || !textNode || !card) return;
+        window.__showLeadFeedback = (message = "", isError = false) => {
+            const $root = $("[data-lead-feedback]");
+            const $card = $root.find("[data-lead-feedback-card]");
+            if (!$root.length || !$card.length) return;
 
-            const successHtml = "<strong>Заявка отправлена</strong><span>В ближайшее время менеджер свяжется с вами.</span>";
-            if (!isError && /заявка отправлена/i.test(String(text || ""))) {
-                textNode.innerHTML = successHtml;
-            } else {
-                textNode.textContent = text;
+            $card.toggleClass("is-error", isError).toggleClass("is-success", !isError);
+            $root.find("[data-lead-feedback-success-text], [data-lead-feedback-success-block]").toggle(!isError);
+            const $errorText = $root.find("[data-lead-feedback-error-text]");
+            $errorText.toggle(isError);
+            if (isError && message) {
+                $errorText.text(message);
             }
-            card.classList.toggle("is-error", isError);
-            card.classList.toggle("is-success", !isError);
-            if (mark) {
-                mark.classList.remove("animate");
-                if (!isError) {
-                    void mark.offsetWidth;
-                    mark.classList.add("animate");
-                }
+
+            const $mark = $root.find("[data-lead-feedback-mark]");
+            if (!isError && $mark.length) {
+                $mark.removeClass("animate");
+                void $mark[0].offsetWidth;
+                $mark.addClass("animate");
             }
             showInlineFancybox("#lead-feedback");
         };
@@ -93,25 +90,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 100);
         });
 
-        function wrapChildrenAsSwiperSlides(container) {
-            if (!container || container.classList.contains("swiper-initialized")) return null;
-            if (container.querySelector(":scope > .swiper-wrapper")) return container;
-
-            const wrapper = document.createElement("div");
-            wrapper.className = "swiper-wrapper";
-            Array.from(container.children).forEach((child) => {
-                child.classList.add("swiper-slide");
-                wrapper.appendChild(child);
-            });
-            container.classList.add("swiper");
-            container.appendChild(wrapper);
-            return container;
-        }
-
         function initHorizontalStripSwiper(strip, { prevBtn, nextBtn, paginationEl, slidesPerView = "auto", spaceBetween = 14, autoplay = false } = {}) {
             if (typeof Swiper === "undefined" || !strip || strip.swiper) return null;
-
-            wrapChildrenAsSwiperSlides(strip);
 
             const config = {
                 speed: 400,
@@ -456,23 +436,21 @@ document.addEventListener('DOMContentLoaded', () => {
         // });
 
 
-        function getSuccessSubmitting() {
-            Fancybox.close();
-            showInlineFancybox("#success-submitting");
-        }
+        $(document).on("wpcf7mailsent", function () {
+            if (typeof Fancybox !== "undefined" && Fancybox) Fancybox.close();
+            if (typeof window.__showLeadFeedback === "function") {
+                window.__showLeadFeedback("", false);
+            }
+        });
 
-        function getErrorSubmitting() {
-            Fancybox.close();
-            showInlineFancybox("#error-submitting");
-        }
-
-        document.addEventListener('wpcf7mailsent', function () {
-            getSuccessSubmitting()
-        }, false);
-
-        document.addEventListener('wpcf7mailfailed', function () {
-            getErrorSubmitting()
-        }, false);
+        $(document).on("wpcf7mailfailed", function (event) {
+            if (typeof Fancybox !== "undefined" && Fancybox) Fancybox.close();
+            const detail = event?.detail || {};
+            const message = detail.apiResponse?.message || "Не удалось отправить заявку. Попробуйте ещё раз.";
+            if (typeof window.__showLeadFeedback === "function") {
+                window.__showLeadFeedback(message, true);
+            }
+        });
 
 
         // function initYandexMap() {
@@ -710,68 +688,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const initHomeCollections = () => {
         const chips = document.querySelector("[data-collections-chips]");
-        const grid = document.querySelector("[data-collections-grid]");
-        const source = document.querySelector("[data-cards-source]");
-        const openBtn = document.querySelector("[data-collections-open]");
-        if (!chips || !grid || !source) return;
+        if (!chips) return;
 
-        const defaultCollections = [
-            "Новые франшизы",
-            "Для начинающих",
-            "Быстрая окупаемость",
-            "Без роялти",
-            "Без паушального взноса",
-            "Премиум",
-        ];
-        const sourceCards = Array.from(source.querySelectorAll(".popular-card"));
-        const shopUrl = openBtn?.getAttribute("href") || "/";
-
-        chips.innerHTML = defaultCollections
-            .map((name) => `<button type="button" class="collection-tile" data-collection="${escapeHtml(name)}">${escapeHtml(name)}</button>`)
-            .join("");
-
-        const cardHasTag = (card, tagName) => {
-            const tags = String(card.dataset.tags || "")
-                .split(/[|,]/)
-                .map((t) => t.trim())
-                .filter(Boolean);
-            if (tagName === "Проверено") return String(card.dataset.verified || "").trim() === "true";
-            return tags.includes(tagName);
-        };
-
-        const renderCards = (collectionName) => {
-            let cards = sourceCards.slice();
-            if (collectionName === "Проверено") {
-                cards = cards.filter((c) => String(c.dataset.verified || "").trim() === "true");
-            } else if (collectionName === "Популярные франшизы" || collectionName === "Все франшизы") {
-                cards.sort((a, b) => Number(b.dataset.popularity || 0) - Number(a.dataset.popularity || 0));
-            } else if (collectionName === "Новые франшизы") {
-                cards.sort((a, b) => Number(b.dataset.date || 0) - Number(a.dataset.date || 0));
-            } else {
-                cards = cards.filter((c) => cardHasTag(c, collectionName));
-            }
-            grid.innerHTML = "";
-            cards.slice(0, 10).forEach((card) => grid.appendChild(card.cloneNode(true)));
-        };
-
-        const setActive = (name) => {
-            chips.querySelectorAll("[data-collection]").forEach((node) => {
-                node.classList.toggle("active", node.getAttribute("data-collection") === name);
+        const activate = (key) => {
+            chips.querySelectorAll("[data-collection]").forEach((btn) => {
+                const active = btn.getAttribute("data-collection") === key;
+                btn.classList.toggle("active", active);
+                btn.setAttribute("aria-pressed", String(active));
             });
-            if (openBtn) openBtn.href = shopUrl;
+            document.querySelectorAll("[data-collection-panel]").forEach((panel) => {
+                const active = panel.getAttribute("data-collection-panel") === key;
+                panel.hidden = !active;
+            });
         };
 
-        chips.querySelectorAll("[data-collection]").forEach((node) => {
-            node.addEventListener("click", () => {
-                const name = node.getAttribute("data-collection") || "";
-                renderCards(name);
-                setActive(name);
-            });
+        const first = chips.querySelector("[data-collection]");
+        if (first) activate(first.getAttribute("data-collection") || "");
+
+        chips.addEventListener("click", (event) => {
+            const btn = event.target.closest("[data-collection]");
+            if (!btn || !chips.contains(btn)) return;
+            activate(btn.getAttribute("data-collection") || "");
         });
-
-        const first = defaultCollections[0] || "Новые франшизы";
-        renderCards(first);
-        setActive(first);
     };
 
     const initFranchiseGallery = () => {
@@ -922,115 +860,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const initSelectionPopup = () => {
-        const triggerPattern = /(получить подбор|связаться с франчайзером)/i;
-        const popup = document.querySelector("#selection-popup");
-        const form = popup?.querySelector("[data-selection-form]");
-        const nameInput = popup?.querySelector("[data-selection-name]");
-        const phoneInput = popup?.querySelector("[data-selection-phone]");
-        const consentInput = popup?.querySelector("[data-selection-consent]");
-        if (!popup || !form || !nameInput || !phoneInput || !consentInput) return;
-
-        const triggers = Array.from(
-            document.querySelectorAll('a.btn.btn-primary[href], button.btn.btn-primary, [data-selection-open], [data-franchise-contact]')
-        ).filter((node) => {
-            if (!(node instanceof HTMLElement)) return false;
-            if (node.matches("[data-selection-open], [data-franchise-contact]")) return true;
-            if (node.closest(".side-contact")) return true;
-            const label = `${node.textContent || ""} ${node.getAttribute("aria-label") || ""}`.trim();
-            return triggerPattern.test(label);
-        });
-
-        const openPopup = () => {
-            if (typeof Fancybox !== "undefined" && Fancybox) {
-                Fancybox.show([{ src: "#selection-popup", type: "inline" }], { dragToClose: false });
-            }
-        };
-
-        triggers.forEach((trigger) => {
-            if (trigger.dataset.selectionPopupBound === "1") return;
-            trigger.addEventListener("click", (e) => {
-                e.preventDefault();
-                openPopup();
-            });
-            trigger.dataset.selectionPopupBound = "1";
-        });
-
-        if (form.dataset.selectionSubmitBound === "1") return;
-        form.addEventListener("submit", (e) => {
-            e.preventDefault();
-            if (!String(nameInput.value || "").trim()) {
-                nameInput.setCustomValidity("Заполните поле");
-                nameInput.reportValidity();
-                return;
-            }
-            const digits = String(phoneInput.value || "").replace(/\D/g, "").replace(/^[78]/, "").slice(0, 10);
-            if (digits.length < 10) {
-                phoneInput.setCustomValidity("Введите номер телефона полностью.");
-                phoneInput.reportValidity();
-                return;
-            }
-            if (!consentInput.checked) {
-                consentInput.setCustomValidity("Подтвердите согласие с политикой конфиденциальности.");
-                consentInput.reportValidity();
-                return;
-            }
-            if (typeof Fancybox !== "undefined" && Fancybox) Fancybox.close();
-            form.reset();
-            if (typeof window.__showLeadFeedback === "function") {
-                window.__showLeadFeedback("Заявка отправлена. В ближайшее время менеджер свяжется с вами.");
-            }
-        });
-        form.dataset.selectionSubmitBound = "1";
-    };
-
-    const initPlainLeadForms = () => {
-        const leadForms = Array.from(
-            document.querySelectorAll("form.form-grid, form.ask-form-grid, form.final-form")
-        ).filter((form) => form instanceof HTMLFormElement && !form.closest(".wpcf7"));
-
-        leadForms.forEach((form) => {
-            if (form.dataset.leadFormFeedbackBound === "1") return;
-            form.addEventListener("submit", (e) => {
-                if (e.defaultPrevented) return;
-                const consent = form.querySelector('input[type="checkbox"][name*="consent"]');
-                if (consent instanceof HTMLInputElement && !consent.checked) {
-                    e.preventDefault();
-                    consent.reportValidity();
-                    if (typeof window.__showLeadFeedback === "function") {
-                        window.__showLeadFeedback("Подтвердите согласие с политикой конфиденциальности.", true);
-                    }
-                    return;
-                }
-                if (!form.getAttribute("action")) {
-                    e.preventDefault();
-                    if (typeof window.__showLeadFeedback === "function") {
-                        window.__showLeadFeedback("Заявка отправлена. В ближайшее время менеджер свяжется с вами.");
-                    }
-                    form.reset();
-                }
-            });
-            form.dataset.leadFormFeedbackBound = "1";
-        });
-    };
 
     const initSliderSections = () => {
         if (typeof Swiper === "undefined") return;
-        document.querySelectorAll(".slider-section").forEach((section) => {
-            const container = section.querySelector(".slider");
-            const prev = section.querySelector("[data-slider-prev]");
-            const next = section.querySelector("[data-slider-next]");
+        document.querySelectorAll(".slider-section .slider.swiper").forEach((container) => {
+            const section = container.closest(".slider-section");
+            const prev = section?.querySelector("[data-slider-prev]");
+            const next = section?.querySelector("[data-slider-next]");
             if (!container || container.swiper) return;
-            if (!container.querySelector(":scope > .swiper-wrapper")) {
-                const wrapper = document.createElement("div");
-                wrapper.className = "swiper-wrapper";
-                Array.from(container.children).forEach((child) => {
-                    child.classList.add("swiper-slide");
-                    wrapper.appendChild(child);
-                });
-                container.classList.add("swiper");
-                container.appendChild(wrapper);
-            }
             new Swiper(container, {
                 speed: 400,
                 slidesPerView: "auto",
@@ -1048,8 +885,6 @@ document.addEventListener('DOMContentLoaded', () => {
         initFranchiseGallery();
         initMobileToc();
         initHomeStatsCounter();
-        initSelectionPopup();
-        initPlainLeadForms();
         initSliderSections();
     };
 
@@ -1083,55 +918,54 @@ document.addEventListener('DOMContentLoaded', () => {
     const formatMoney = (n) =>
         new Intl.NumberFormat('ru-RU').format(Math.round(Number(n) || 0)) + ' ₽';
 
-    if (investRange && investHidden && investLabel) {
-        const syncInvest = () => {
-            const max = Number(investRange.max) || 3000000;
-            const v = Number(investRange.value) || 0;
-            if (v >= max) {
-                investHidden.value = '0';
-                investLabel.textContent = 'Любые вложения';
-            } else {
-                investHidden.value = String(v);
-                investLabel.textContent = 'до ' + formatMoney(v);
-            }
-        };
-        investRange.addEventListener('input', syncInvest);
-        syncInvest();
-    }
+    const syncCatalogRange = (rangeEl) => {
+        if (!rangeEl) return;
+        const max = Number(rangeEl.max) || 0;
+        const min = Number(rangeEl.min) || 0;
+        const value = Number(rangeEl.value) || 0;
+        const hiddenSel = rangeEl.getAttribute("data-range-hidden");
+        const labelSel = rangeEl.getAttribute("data-range-label");
+        const hidden = hiddenSel ? main.querySelector(hiddenSel) : null;
+        const label = labelSel ? main.querySelector(labelSel) : null;
+        if (!hidden || !label) return;
 
-    if (profitRange && profitHidden && profitLabel) {
-        const syncProfit = () => {
-            const v = Number(profitRange.value) || 0;
-            if (v <= 0) {
-                profitHidden.value = '0';
-                profitLabel.textContent = 'Любая прибыль';
-            } else {
-                profitHidden.value = String(v);
-                profitLabel.textContent = 'от ' + formatMoney(v);
-            }
-        };
-        profitRange.addEventListener('input', syncProfit);
-        syncProfit();
-    }
+        const emptyLabel = rangeEl.getAttribute("data-range-empty-label") || "";
+        const prefix = rangeEl.getAttribute("data-range-prefix") || "";
+        const emptyValue = rangeEl.getAttribute("data-range-empty-value") ?? "0";
+        const emptyAt = rangeEl.getAttribute("data-range-empty-at") || "max";
+        const isEmpty = emptyAt === "min" ? value <= min : value >= max;
 
-    main.querySelectorAll('.preset-btn[data-invest]').forEach((btn) => {
-        btn.addEventListener('click', () => {
-            const v = btn.getAttribute('data-invest');
-            if (investRange && investHidden && investLabel && v) {
+        if (isEmpty) {
+            hidden.value = emptyValue;
+            label.textContent = emptyLabel;
+        } else {
+            hidden.value = String(value);
+            label.textContent = prefix + formatMoney(value);
+        }
+    };
+
+    [investRange, profitRange].forEach((rangeEl) => {
+        if (!rangeEl) return;
+        rangeEl.addEventListener("input", () => syncCatalogRange(rangeEl));
+        syncCatalogRange(rangeEl);
+    });
+
+    main.querySelectorAll(".preset-btn[data-invest]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const v = btn.getAttribute("data-invest");
+            if (investRange && v) {
                 investRange.value = v;
-                investHidden.value = v;
-                investLabel.textContent = 'до ' + formatMoney(v);
+                syncCatalogRange(investRange);
             }
         });
     });
 
-    main.querySelectorAll('.preset-btn[data-profit]').forEach((btn) => {
-        btn.addEventListener('click', () => {
-            const v = btn.getAttribute('data-profit');
-            if (profitRange && profitHidden && profitLabel && v) {
+    main.querySelectorAll(".preset-btn[data-profit]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const v = btn.getAttribute("data-profit");
+            if (profitRange && v) {
                 profitRange.value = v;
-                profitHidden.value = v;
-                profitLabel.textContent = 'от ' + formatMoney(v);
+                syncCatalogRange(profitRange);
             }
         });
     });
@@ -1192,7 +1026,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ===== header menu (разметка в PHP) ===== */
-(() => {
+(function ($) {
+    if (!$) return;
+
     const header = document.querySelector('.site-header');
     if (!header) return;
 
@@ -1201,65 +1037,99 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     window.setHeaderState = setHeaderState;
     setHeaderState();
-    window.addEventListener('scroll', setHeaderState, { passive: true });
+    $(window).on('scroll', setHeaderState);
 
-    const toggle = document.querySelector('.menu-toggle');
-    const menu = document.querySelector('#mobile-menu');
-    if (toggle && menu) {
-        const setMenuOpen = (isOpen) => {
-            menu.classList.toggle('open', isOpen);
-            menu.setAttribute('aria-hidden', String(!isOpen));
-            toggle.setAttribute('aria-expanded', String(isOpen));
-            document.body.classList.toggle('modal-open', isOpen);
-        };
+    const $menu = $('#mobile-menu');
+    const setMenuOpen = (isOpen) => {
+        if (!$menu.length) return;
+        $menu.toggleClass('open', isOpen).attr('aria-hidden', String(!isOpen));
+        $('.menu-toggle').attr('aria-expanded', String(isOpen));
+        $('body').toggleClass('modal-open', isOpen);
+    };
 
-        toggle.addEventListener('click', () => {
-            setMenuOpen(!menu.classList.contains('open'));
-        });
-
-        menu.addEventListener('click', (event) => {
-            const target = event.target;
-            if (!(target instanceof HTMLElement)) return;
-            if (target === menu) {
-                setMenuOpen(false);
-                return;
-            }
-            if (target.hasAttribute('data-mobile-close') || target.closest('[data-mobile-close]')) {
-                setMenuOpen(false);
-                return;
-            }
-            if (target.tagName === 'A') {
+    $(document)
+        .on('click', '.menu-toggle', function (event) {
+            event.preventDefault();
+            setMenuOpen(!$menu.hasClass('open'));
+        })
+        .on('click', '#mobile-menu', function (event) {
+            const $target = $(event.target);
+            if ($target.is('#mobile-menu') || $target.closest('[data-mobile-close]').length || $target.is('a')) {
                 setMenuOpen(false);
             }
-        });
-
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && menu.classList.contains('open')) setMenuOpen(false);
-        });
-
-        const accTriggers = Array.from(menu.querySelectorAll('[data-mobile-acc-trigger]'));
-        const accBlocks = Array.from(menu.querySelectorAll('[data-mobile-acc]'));
-        const setAccOpen = (key, open) => {
-            const block = menu.querySelector(`[data-mobile-acc="${key}"]`);
-            const trigger = menu.querySelector(`[data-mobile-acc-trigger="${key}"]`);
-            if (!block || !trigger) return;
-            block.classList.toggle('open', open);
-            trigger.setAttribute('aria-expanded', String(open));
-        };
-
-        accTriggers.forEach((trigger) => {
-            trigger.addEventListener('click', () => {
-                const key = trigger.getAttribute('data-mobile-acc-trigger');
-                if (!key) return;
-                const isOpen = menu.querySelector(`[data-mobile-acc="${key}"]`)?.classList.contains('open');
-                accBlocks.forEach((block) => {
-                    const otherKey = block.getAttribute('data-mobile-acc');
-                    if (otherKey && otherKey !== key) setAccOpen(otherKey, false);
-                });
-                setAccOpen(key, !isOpen);
+        })
+        .on('click', '[data-mobile-acc-trigger]', function (event) {
+            event.preventDefault();
+            const key = $(this).attr('data-mobile-acc-trigger');
+            if (!key || !$menu.length) return;
+            const $block = $menu.find(`[data-mobile-acc="${key}"]`);
+            const willOpen = !$block.hasClass('open');
+            $menu.find('[data-mobile-acc]').each(function () {
+                const otherKey = $(this).attr('data-mobile-acc');
+                if (otherKey && otherKey !== key) {
+                    $(this).removeClass('open');
+                    $menu.find(`[data-mobile-acc-trigger="${otherKey}"]`).attr('aria-expanded', 'false');
+                }
             });
+            $block.toggleClass('open', willOpen);
+            $(this).attr('aria-expanded', String(willOpen));
+        })
+        .on('click', '[data-categories-backdrop]', function () {
+            $('[data-categories-dropdown], [data-collections-dropdown]').removeClass('is-open open');
+            if (typeof window.syncHeaderDropdownState === 'function') {
+                window.syncHeaderDropdownState();
+            }
+        })
+        .on('click', '[data-collections-trigger]', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const $dropdown = $('[data-collections-dropdown]');
+            if (!$dropdown.length) return;
+            window.clearCollectionsDropdownTimer?.();
+            const willOpen = !$dropdown.hasClass('is-open');
+            if (willOpen) {
+                $('[data-categories-dropdown]').removeClass('is-open open');
+            }
+            $dropdown.toggleClass('is-open', willOpen);
+            $(this).attr('aria-expanded', String(willOpen));
+            if (typeof window.syncHeaderDropdownState === 'function') {
+                window.syncHeaderDropdownState();
+            }
+            if (!willOpen) {
+                $(this).blur();
+            }
+        })
+        .on('click', function (event) {
+            const $collections = $('[data-collections-dropdown]');
+            if (!$collections.length || !$collections.hasClass('is-open')) return;
+            if ($(event.target).closest('[data-collections-dropdown]').length) return;
+            $collections.removeClass('is-open');
+            $('[data-collections-trigger]').attr('aria-expanded', 'false');
+            if (typeof window.syncHeaderDropdownState === 'function') {
+                window.syncHeaderDropdownState();
+            }
         });
-    }
+
+    $(document).on('keydown', function (event) {
+        if (event.key !== 'Escape') return;
+        if ($menu.hasClass('open')) setMenuOpen(false);
+        const $collections = $('[data-collections-dropdown]');
+        if ($collections.hasClass('is-open')) {
+            $collections.removeClass('is-open');
+            $('[data-collections-trigger]').attr('aria-expanded', 'false').blur();
+            if (typeof window.syncHeaderDropdownState === 'function') {
+                window.syncHeaderDropdownState();
+            }
+        }
+        const $categoriesTrigger = $('[data-categories-trigger]');
+        if ($categoriesTrigger.attr('aria-expanded') === 'true') {
+            $('[data-categories-dropdown]').removeClass('is-open');
+            $categoriesTrigger.attr('aria-expanded', 'false').blur();
+            if (typeof window.syncHeaderDropdownState === 'function') {
+                window.syncHeaderDropdownState();
+            }
+        }
+    });
 
     const setupCategoriesDropdown = () => {
         const dropdown = document.querySelector('[data-categories-dropdown]');
@@ -1351,14 +1221,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const categoriesPanel = document.querySelector('[data-categories-panel]');
         const collectionsPanel = document.querySelector('[data-collections-panel]');
 
-        let backdrop = document.querySelector('[data-categories-backdrop]');
-        if (!backdrop) {
-            backdrop = document.createElement('div');
-            backdrop.className = 'catalog-dropdown-backdrop';
-            backdrop.setAttribute('data-categories-backdrop', '');
-            backdrop.setAttribute('aria-hidden', 'true');
-            document.body.appendChild(backdrop);
-        }
+        const backdrop = document.querySelector('[data-categories-backdrop]');
 
         const isDropdownOpen = (el) => !!el && (el.classList.contains('is-open') || el.classList.contains('open'));
 
@@ -1380,8 +1243,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const isCollectionsOpen = isDropdownOpen(collectionsDropdown);
             const opened = isCategoriesOpen || isCollectionsOpen;
             header.classList.toggle('dropdown-open', opened);
-            backdrop.classList.toggle('open', opened);
-            backdrop.setAttribute('aria-hidden', String(!opened));
+            if (backdrop) {
+                backdrop.classList.toggle('open', opened);
+                backdrop.setAttribute('aria-hidden', String(!opened));
+            }
             if (categoriesTrigger) {
                 categoriesTrigger.setAttribute('aria-expanded', String(isCategoriesOpen));
             }
@@ -1391,6 +1256,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setHeaderState();
         };
 
+        window.syncHeaderDropdownState = syncOpenState;
         syncOpenState();
         const observer = new MutationObserver(syncOpenState);
         if (categoriesDropdown) {
@@ -1402,12 +1268,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('resize', syncPanelTop);
         window.addEventListener('scroll', syncPanelTop, { passive: true });
 
-        backdrop.addEventListener('click', () => {
-            categoriesDropdown?.classList.remove('is-open', 'open');
-            collectionsDropdown?.classList.remove('is-open', 'open');
-            syncOpenState();
-        });
-
         if (collectionsDropdown && collectionsTrigger && collectionsPanel) {
             let collectionsCloseTimer = null;
             const clearCollectionsTimer = () => {
@@ -1416,6 +1276,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     collectionsCloseTimer = null;
                 }
             };
+            window.clearCollectionsDropdownTimer = clearCollectionsTimer;
             const setCollectionsOpen = (isOpen) => {
                 if (isOpen) {
                     categoriesDropdown?.classList.remove('is-open', 'open');
@@ -1445,26 +1306,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 closeCollectionsSoon();
             });
 
-            collectionsTrigger.addEventListener('click', (event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                clearCollectionsTimer();
-                setCollectionsOpen(!collectionsDropdown.classList.contains('is-open'));
-            });
-
-            document.addEventListener('click', (event) => {
-                const target = event.target;
-                if (!(target instanceof Node)) return;
-                if (!collectionsDropdown.contains(target)) setCollectionsOpen(false);
-            });
-
-            document.addEventListener('keydown', (event) => {
-                if (event.key !== 'Escape') return;
-                if (collectionsDropdown.classList.contains('is-open')) {
-                    setCollectionsOpen(false);
-                }
-            });
-
             const closeCollectionsIfOpen = () => {
                 if (isDropdownOpen(collectionsDropdown)) {
                     setCollectionsOpen(false);
@@ -1485,5 +1326,5 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         initHeaderMenu();
     }
-})();
+})(window.jQuery);
 

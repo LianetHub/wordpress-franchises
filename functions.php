@@ -14,6 +14,7 @@ $includes = [
     'includes/custom-posts.php',
     'includes/woocommerce-custom.php',
     'includes/header-menu.php',
+    'includes/home-collections.php',
 ];
 
 foreach ($includes as $file) {

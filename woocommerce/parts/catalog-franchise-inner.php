@@ -225,7 +225,20 @@ $count_line = $found > 0
                                 <div class="range-value" id="invest-value"><?php echo $cur_invest_max > 0 ? 'до ' . esc_html(franchises_format_money_ru($cur_invest_max)) : 'Любые вложения'; ?></div>
                             </div>
                             <input type="hidden" name="invest_max" id="invest_max_input" value="<?php echo esc_attr((string) $cur_invest_max); ?>">
-                            <input class="range-input" id="invest-range" type="range" min="50000" max="3000000" step="50000" value="<?php echo esc_attr((string) ($cur_invest_max > 0 ? $cur_invest_max : 3000000)); ?>">
+                            <input
+                                class="range-input"
+                                id="invest-range"
+                                type="range"
+                                min="50000"
+                                max="3000000"
+                                step="50000"
+                                value="<?php echo esc_attr((string) ($cur_invest_max > 0 ? $cur_invest_max : 3000000)); ?>"
+                                data-range-hidden="#invest_max_input"
+                                data-range-label="#invest-value"
+                                data-range-empty-label="<?php echo esc_attr__('Любые вложения', 'franchises'); ?>"
+                                data-range-prefix="<?php echo esc_attr__('до ', 'franchises'); ?>"
+                                data-range-empty-value="0"
+                                data-range-empty-at="max">
                             <div class="preset-row">
                                 <button class="preset-btn" type="button" data-invest="50000">до 50 000 ₽</button>
                                 <button class="preset-btn" type="button" data-invest="100000">до 100 000 ₽</button>
@@ -241,7 +254,20 @@ $count_line = $found > 0
                                 <div class="range-value" id="profit-value"><?php echo $cur_profit_min > 0 ? 'от ' . esc_html(franchises_format_money_ru($cur_profit_min)) : 'Любая прибыль'; ?></div>
                             </div>
                             <input type="hidden" name="profit_min" id="profit_min_input" value="<?php echo esc_attr((string) $cur_profit_min); ?>">
-                            <input class="range-input" id="profit-range" type="range" min="0" max="1000000" step="50000" value="<?php echo esc_attr((string) ($cur_profit_min > 0 ? $cur_profit_min : 0)); ?>">
+                            <input
+                                class="range-input"
+                                id="profit-range"
+                                type="range"
+                                min="0"
+                                max="1000000"
+                                step="50000"
+                                value="<?php echo esc_attr((string) ($cur_profit_min > 0 ? $cur_profit_min : 0)); ?>"
+                                data-range-hidden="#profit_min_input"
+                                data-range-label="#profit-value"
+                                data-range-empty-label="<?php echo esc_attr__('Любая прибыль', 'franchises'); ?>"
+                                data-range-prefix="<?php echo esc_attr__('от ', 'franchises'); ?>"
+                                data-range-empty-value="0"
+                                data-range-empty-at="min">
                             <div class="preset-row">
                                 <button class="preset-btn" type="button" data-profit="100000">от 100 000 ₽</button>
                                 <button class="preset-btn" type="button" data-profit="200000">от 200 000 ₽</button>

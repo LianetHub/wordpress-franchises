@@ -344,7 +344,7 @@ $card = franchises_franchise_card_from_post($post_id);
             </div>
 
             <div class="side-contact card">
-                <button class="btn btn-primary" type="button" data-franchise-contact>Связаться с франчайзером</button>
+                <button class="btn btn-primary" type="button" data-fancybox data-src="#selection-popup">Связаться с франчайзером</button>
             </div>
 
             <div class="side-meta card">
@@ -393,19 +393,23 @@ $card = franchises_franchise_card_from_post($post_id);
                                 <path d="M9 5l7 7-7 7"></path>
                             </svg>
                         </button>
-                        <div class="slider" data-slider="similar">
-                            <?php
-                            $saved_product = $product;
-                            while ($similar_query->have_posts()) :
-                                $similar_query->the_post();
-                                $product = wc_get_product(get_the_ID());
-                                if ($product && $product->is_visible()) {
-                                    get_template_part('templates/components/franchise-card');
-                                }
-                            endwhile;
-                            wp_reset_postdata();
-                            $product = $saved_product;
-                            ?>
+                        <div class="slider swiper" data-slider="similar">
+                            <div class="swiper-wrapper">
+                                <?php
+                                $saved_product = $product;
+                                while ($similar_query->have_posts()) :
+                                    $similar_query->the_post();
+                                    $product = wc_get_product(get_the_ID());
+                                    if ($product && $product->is_visible()) {
+                                        echo '<div class="swiper-slide">';
+                                        get_template_part('templates/components/franchise-card');
+                                        echo '</div>';
+                                    }
+                                endwhile;
+                                wp_reset_postdata();
+                                $product = $saved_product;
+                                ?>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -427,19 +431,23 @@ $card = franchises_franchise_card_from_post($post_id);
                                 <path d="M9 5l7 7-7 7"></path>
                             </svg>
                         </button>
-                        <div class="slider" data-slider="popular">
-                            <?php
-                            $saved_product = $product;
-                            while ($popular_query->have_posts()) :
-                                $popular_query->the_post();
-                                $product = wc_get_product(get_the_ID());
-                                if ($product && $product->is_visible()) {
-                                    get_template_part('templates/components/franchise-card');
-                                }
-                            endwhile;
-                            wp_reset_postdata();
-                            $product = $saved_product;
-                            ?>
+                        <div class="slider swiper" data-slider="popular">
+                            <div class="swiper-wrapper">
+                                <?php
+                                $saved_product = $product;
+                                while ($popular_query->have_posts()) :
+                                    $popular_query->the_post();
+                                    $product = wc_get_product(get_the_ID());
+                                    if ($product && $product->is_visible()) {
+                                        echo '<div class="swiper-slide">';
+                                        get_template_part('templates/components/franchise-card');
+                                        echo '</div>';
+                                    }
+                                endwhile;
+                                wp_reset_postdata();
+                                $product = $saved_product;
+                                ?>
+                            </div>
                         </div>
                     </div>
                 </section>
