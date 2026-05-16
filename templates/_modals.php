@@ -78,3 +78,34 @@
         <?php echo esc_html($success_close_btn) ?>
     </button>
 </div> -->
+
+<div class="popup popup--small lead-feedback-popup" id="lead-feedback" hidden>
+    <div class="lead-feedback-mark" data-lead-feedback-mark aria-hidden="true">
+        <svg class="lead-feedback-check" viewBox="0 0 80 80" focusable="false" aria-hidden="true">
+            <circle class="lead-feedback-check-circle" cx="40" cy="40" r="30"></circle>
+            <path class="lead-feedback-check-path" d="M26 40.5l9 9 19-19"></path>
+        </svg>
+    </div>
+    <p class="lead-feedback-text popup__subtitle" data-lead-feedback-text></p>
+    <button type="button" data-fancybox-close class="popup__btn btn btn-primary lead-feedback-btn">Понятно</button>
+</div>
+
+<div class="popup selection-popup-card-wrap" id="selection-popup" hidden>
+    <h2 class="selection-popup-title popup__title title-md" id="selection-popup-title">Подберем франшизы под ваш бюджет</h2>
+    <p class="selection-popup-subtitle popup__subtitle">Оставьте имя и телефон. В ближайшее время менеджер свяжется с вами.</p>
+    <form class="selection-popup-form form-grid" data-selection-form novalidate>
+        <label class="selection-popup-field field" for="selection-popup-name">
+            <span>Имя</span>
+            <input id="selection-popup-name" class="input" type="text" name="name" autocomplete="name" placeholder="Как к вам обращаться" required data-selection-name>
+        </label>
+        <label class="selection-popup-field field" for="selection-popup-phone">
+            <span>Телефон</span>
+            <input id="selection-popup-phone" class="input" type="tel" name="phone" autocomplete="tel" inputmode="tel" placeholder="+7 (___) ___-__-__" required data-selection-phone>
+        </label>
+        <label class="consent selection-popup-consent">
+            <input type="checkbox" name="consent" required data-selection-consent>
+            <span>Я соглашаюсь на обработку персональных данных и принимаю <a href="<?php echo esc_url(home_url('/privacy-policy/')); ?>">политику конфиденциальности</a>.</span>
+        </label>
+        <button class="btn btn-primary selection-popup-submit" type="submit">Отправить заявку</button>
+    </form>
+</div>

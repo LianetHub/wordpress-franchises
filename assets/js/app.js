@@ -24,13 +24,44 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+(function ($) {
+    if (!$) return;
+
 $(function () {
 
-    //  init Fancybox
+    function showInlineFancybox(selector) {
+        if (typeof Fancybox === "undefined" || !Fancybox) return;
+        Fancybox.show([{ src: selector, type: "inline" }], { dragToClose: false });
+    }
+
+    window.__showLeadFeedback = (text, isError = false) => {
+        const node = document.querySelector("[data-lead-feedback]");
+        const textNode = node?.querySelector("[data-lead-feedback-text]");
+        const card = node?.querySelector(".lead-feedback-card");
+        const mark = node?.querySelector("[data-lead-feedback-mark]");
+        if (!node || !textNode || !card) return;
+
+        const successHtml = "<strong>Заявка отправлена</strong><span>В ближайшее время менеджер свяжется с вами.</span>";
+        if (!isError && /заявка отправлена/i.test(String(text || ""))) {
+            textNode.innerHTML = successHtml;
+        } else {
+            textNode.textContent = text;
+        }
+        card.classList.toggle("is-error", isError);
+        card.classList.toggle("is-success", !isError);
+        if (mark) {
+            mark.classList.remove("animate");
+            if (!isError) {
+                void mark.offsetWidth;
+                mark.classList.add("animate");
+            }
+        }
+        showInlineFancybox("#lead-feedback");
+    };
+
     if (typeof Fancybox !== "undefined" && Fancybox !== null) {
-        Fancybox.bind("[data-fancybox]", {
-            dragToClose: false,
-        });
+        Fancybox.bind("[data-fancybox]", { dragToClose: false });
+        Fancybox.bind("[data-fancybox-inline]", { dragToClose: false });
     }
 
     // detect user OS
@@ -62,11 +93,87 @@ $(function () {
         }, 100);
     });
 
-    // event handlers
-    $(document).on('click', (e) => {
-        const $target = $(e.target);
+    function wrapChildrenAsSwiperSlides(container) {
+        if (!container || container.classList.contains("swiper-initialized")) return null;
+        if (container.querySelector(":scope > .swiper-wrapper")) return container;
 
-    });
+        const wrapper = document.createElement("div");
+        wrapper.className = "swiper-wrapper";
+        Array.from(container.children).forEach((child) => {
+            child.classList.add("swiper-slide");
+            wrapper.appendChild(child);
+        });
+        container.classList.add("swiper");
+        container.appendChild(wrapper);
+        return container;
+    }
+
+    function initHorizontalStripSwiper(strip, { prevBtn, nextBtn, paginationEl, slidesPerView = "auto", spaceBetween = 14, autoplay = false } = {}) {
+        if (typeof Swiper === "undefined" || !strip || strip.swiper) return null;
+
+        wrapChildrenAsSwiperSlides(strip);
+
+        const config = {
+            speed: 400,
+            slidesPerView,
+            spaceBetween,
+            watchOverflow: true,
+        };
+
+        if (prevBtn && nextBtn) {
+            config.navigation = { prevEl: prevBtn, nextEl: nextBtn };
+        }
+        if (paginationEl) {
+            config.pagination = { el: paginationEl, clickable: true };
+        }
+        if (autoplay) {
+            config.autoplay = { delay: 4000, disableOnInteraction: false, pauseOnMouseEnter: true };
+        }
+
+        return new Swiper(strip, config);
+    }
+
+    const logoStrip = document.querySelector(".logo-strip");
+    if (logoStrip) {
+        const logoWrap = logoStrip.closest(".logo-wrap");
+        initHorizontalStripSwiper(logoStrip, {
+            prevBtn: logoWrap?.querySelector(".logo-arrow.prev"),
+            nextBtn: logoWrap?.querySelector(".logo-arrow.next"),
+            spaceBetween: 14,
+        });
+
+        const logoModal = document.querySelector("#logo-modal");
+        const isMobileLogo = () => window.matchMedia("(max-width: 900px)").matches;
+
+        logoStrip.querySelectorAll(".logo-card").forEach((card) => {
+            card.addEventListener("click", () => {
+                if (!isMobileLogo() || !logoModal) return;
+                const img = logoModal.querySelector(".logo-modal-media img");
+                const brand = logoModal.querySelector(".logo-modal-brand");
+                const title = logoModal.querySelector(".logo-modal-title");
+                const meta = logoModal.querySelector(".logo-modal-meta");
+                const link = logoModal.querySelector(".logo-modal-cta");
+                const cardImg = card.querySelector("img");
+                if (img) img.src = card.dataset.image || cardImg?.src || "";
+                if (brand) brand.textContent = card.dataset.brand || "";
+                if (title) title.textContent = card.dataset.title || "";
+                if (meta) meta.textContent = card.dataset.invest || "";
+                if (link) link.href = card.dataset.link || card.getAttribute("href") || "#";
+                showInlineFancybox("#logo-modal");
+            });
+        });
+    }
+
+    const reviewsStrip = document.querySelector(".reviews-strip");
+    if (reviewsStrip) {
+        const reviewsWrap = reviewsStrip.closest(".reviews-wrap");
+        initHorizontalStripSwiper(reviewsStrip, {
+            prevBtn: reviewsWrap?.querySelector(".reviews-arrow.prev"),
+            nextBtn: reviewsWrap?.querySelector(".reviews-arrow.next"),
+            paginationEl: document.querySelector(".reviews-dots"),
+            spaceBetween: 20,
+        });
+    }
 
 
 
@@ -351,18 +458,12 @@ $(function () {
 
     function getSuccessSubmitting() {
         Fancybox.close();
-        Fancybox.show([{
-            src: "#success-submitting",
-            type: "inline"
-        }]);
+        showInlineFancybox("#success-submitting");
     }
 
     function getErrorSubmitting() {
         Fancybox.close();
-        Fancybox.show([{
-            src: "#error-submitting",
-            type: "inline"
-        }]);
+        showInlineFancybox("#error-submitting");
     }
 
     document.addEventListener('wpcf7mailsent', function () {
@@ -470,6 +571,544 @@ $(function () {
 
 });
 
+})(window.jQuery);
+
+/* ===== UI: главная, галерея, общие компоненты (без manifest/DB) ===== */
+(() => {
+    const escapeHtml = (value) =>
+        String(value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#39;");
+
+    const initSegmentTabs = () => {
+        const segButtons = document.querySelectorAll(".seg");
+        const segPanels = document.querySelectorAll(".segment-panel");
+        if (!segButtons.length || !segPanels.length) return;
+        segButtons.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const targetId = btn.getAttribute("data-target");
+                segButtons.forEach((b) => {
+                    b.classList.toggle("active", b === btn);
+                    b.setAttribute("aria-selected", String(b === btn));
+                });
+                segPanels.forEach((panel) => panel.classList.toggle("active", panel.id === targetId));
+            });
+        });
+    };
+
+    const initCategoryBar = () => {
+        const categoryWrap = document.querySelector("#category-grid-wrap");
+        const categoryToggle = document.querySelector(".category-toggle");
+        const categoryGrid = categoryWrap?.querySelector(".category-grid");
+        if (!categoryWrap || !categoryGrid) return;
+
+        let categoryLastScroll = null;
+        const isMobile = () => window.matchMedia("(max-width: 900px)").matches;
+
+        const getCollapsedHeight = () => {
+            const items = Array.from(categoryGrid.children);
+            if (!items.length) return 0;
+            if (isMobile()) return categoryGrid.scrollHeight;
+            const rowsTarget = 2;
+            const rowTops = [];
+            items.forEach((item) => {
+                const top = item.offsetTop;
+                if (!rowTops.find((t) => Math.abs(t - top) <= 2)) rowTops.push(top);
+            });
+            rowTops.sort((a, b) => a - b);
+            if (rowTops.length <= rowsTarget) return categoryGrid.scrollHeight;
+            const targetTop = rowTops[rowsTarget - 1];
+            let maxBottom = 0;
+            items.forEach((item) => {
+                if (Math.abs(item.offsetTop - targetTop) <= 2) {
+                    maxBottom = Math.max(maxBottom, item.offsetTop + item.offsetHeight);
+                }
+            });
+            return maxBottom + 2;
+        };
+
+        const setWrapHeight = (height) => {
+            categoryWrap.style.height = `${Math.max(0, Math.round(height))}px`;
+        };
+
+        const setCollapsedState = () => {
+            categoryWrap.classList.remove("expanded");
+            categoryWrap.classList.add("collapsed");
+            if (categoryToggle) {
+                categoryToggle.textContent = "Показать все отрасли";
+                categoryToggle.setAttribute("aria-expanded", "false");
+            }
+            setWrapHeight(getCollapsedHeight());
+            categoryWrap.style.overflow = "hidden";
+        };
+
+        const setExpandedState = () => {
+            categoryWrap.classList.add("expanded");
+            categoryWrap.classList.remove("collapsed");
+            if (categoryToggle) {
+                categoryToggle.textContent = "Скрыть отрасли";
+                categoryToggle.setAttribute("aria-expanded", "true");
+            }
+            setWrapHeight(categoryGrid.scrollHeight);
+            categoryWrap.style.overflow = "visible";
+        };
+
+        const applyMode = () => {
+            const shouldShowToggle = isMobile() && categoryGrid.children.length > 6;
+            if (shouldShowToggle) {
+                if (categoryToggle) categoryToggle.style.display = "";
+                setCollapsedState();
+                setWrapHeight(getCollapsedHeight());
+                if (categoryToggle && !categoryToggle.dataset.bound) {
+                    categoryToggle.dataset.bound = "true";
+                    categoryToggle.addEventListener("click", () => {
+                        const willExpand = !categoryWrap.classList.contains("expanded");
+                        if (willExpand) {
+                            setWrapHeight(getCollapsedHeight());
+                            categoryWrap.classList.add("expanded");
+                            categoryWrap.classList.remove("collapsed");
+                            requestAnimationFrame(() => setWrapHeight(categoryGrid.scrollHeight));
+                        } else {
+                            setWrapHeight(categoryGrid.scrollHeight);
+                            categoryWrap.classList.remove("expanded");
+                            categoryWrap.classList.add("collapsed");
+                            requestAnimationFrame(() => setWrapHeight(getCollapsedHeight()));
+                        }
+                        const isExpanded = willExpand;
+                        categoryToggle.textContent = isExpanded ? "Скрыть отрасли" : "Показать все отрасли";
+                        categoryToggle.setAttribute("aria-expanded", String(isExpanded));
+                        if (isExpanded) {
+                            categoryLastScroll = window.scrollY;
+                            const section = categoryWrap.closest(".category-bar");
+                            if (section) {
+                                const rootStyles = getComputedStyle(document.documentElement);
+                                const headerHeight = parseFloat(rootStyles.getPropertyValue("--header-height")) || 0;
+                                const top = section.getBoundingClientRect().top + window.scrollY - headerHeight - 12;
+                                window.scrollTo({ top, behavior: "smooth" });
+                            }
+                        } else if (categoryLastScroll !== null) {
+                            window.scrollTo({ top: categoryLastScroll, behavior: "smooth" });
+                            categoryLastScroll = null;
+                        }
+                    });
+                }
+            } else {
+                if (categoryToggle) categoryToggle.style.display = "none";
+                setExpandedState();
+                categoryWrap.style.height = "auto";
+                categoryWrap.style.overflow = "visible";
+            }
+        };
+
+        applyMode();
+        requestAnimationFrame(applyMode);
+        window.addEventListener("resize", applyMode);
+    };
+
+    const initHomeCollections = () => {
+        const chips = document.querySelector("[data-collections-chips]");
+        const grid = document.querySelector("[data-collections-grid]");
+        const source = document.querySelector("[data-cards-source]");
+        const openBtn = document.querySelector("[data-collections-open]");
+        if (!chips || !grid || !source) return;
+
+        const defaultCollections = [
+            "Новые франшизы",
+            "Для начинающих",
+            "Быстрая окупаемость",
+            "Без роялти",
+            "Без паушального взноса",
+            "Премиум",
+        ];
+        const sourceCards = Array.from(source.querySelectorAll(".popular-card"));
+        const shopUrl = openBtn?.getAttribute("href") || "/";
+
+        chips.innerHTML = defaultCollections
+            .map((name) => `<button type="button" class="collection-tile" data-collection="${escapeHtml(name)}">${escapeHtml(name)}</button>`)
+            .join("");
+
+        const cardHasTag = (card, tagName) => {
+            const tags = String(card.dataset.tags || "")
+                .split(/[|,]/)
+                .map((t) => t.trim())
+                .filter(Boolean);
+            if (tagName === "Проверено") return String(card.dataset.verified || "").trim() === "true";
+            return tags.includes(tagName);
+        };
+
+        const renderCards = (collectionName) => {
+            let cards = sourceCards.slice();
+            if (collectionName === "Проверено") {
+                cards = cards.filter((c) => String(c.dataset.verified || "").trim() === "true");
+            } else if (collectionName === "Популярные франшизы" || collectionName === "Все франшизы") {
+                cards.sort((a, b) => Number(b.dataset.popularity || 0) - Number(a.dataset.popularity || 0));
+            } else if (collectionName === "Новые франшизы") {
+                cards.sort((a, b) => Number(b.dataset.date || 0) - Number(a.dataset.date || 0));
+            } else {
+                cards = cards.filter((c) => cardHasTag(c, collectionName));
+            }
+            grid.innerHTML = "";
+            cards.slice(0, 10).forEach((card) => grid.appendChild(card.cloneNode(true)));
+        };
+
+        const setActive = (name) => {
+            chips.querySelectorAll("[data-collection]").forEach((node) => {
+                node.classList.toggle("active", node.getAttribute("data-collection") === name);
+            });
+            if (openBtn) openBtn.href = shopUrl;
+        };
+
+        chips.querySelectorAll("[data-collection]").forEach((node) => {
+            node.addEventListener("click", () => {
+                const name = node.getAttribute("data-collection") || "";
+                renderCards(name);
+                setActive(name);
+            });
+        });
+
+        const first = defaultCollections[0] || "Новые франшизы";
+        renderCards(first);
+        setActive(first);
+    };
+
+    const initFranchiseGallery = () => {
+        const mainImage = document.querySelector("[data-gallery-main]");
+        const galleryThumbs = document.querySelector(".gallery-thumbs");
+        const countLabel = document.querySelector("[data-gallery-count]");
+        const prevBtn = document.querySelector(".gallery-nav-prev");
+        const nextBtn = document.querySelector(".gallery-nav-next");
+        const thumbsScroller = document.querySelector(".gallery-thumbs");
+        const thumbsPrev = document.querySelector(".thumbs-nav-prev");
+        const thumbsNext = document.querySelector(".thumbs-nav-next");
+        const galleryMain = document.querySelector(".gallery-main");
+
+        if (!mainImage || !galleryThumbs || !countLabel) return;
+
+        const thumbs = Array.from(galleryThumbs.querySelectorAll("[data-gallery-thumb]"));
+        if (!thumbs.length) return;
+
+        let currentIndex = 0;
+        const getSrc = (index) => thumbs[index]?.dataset.full || thumbs[index]?.querySelector("img")?.src || mainImage.src;
+
+        const updateCount = () => {
+            countLabel.textContent = `${currentIndex + 1} / ${thumbs.length}`;
+        };
+
+        const showImage = (index, options = {}) => {
+            const { skipScroll = false } = options;
+            const total = thumbs.length;
+            if (!total) return;
+            const safeIndex = (index + total) % total;
+            thumbs.forEach((btn, i) => {
+                const active = i === safeIndex;
+                btn.classList.toggle("is-active", active);
+                btn.setAttribute("aria-selected", String(active));
+            });
+            currentIndex = safeIndex;
+            updateCount();
+            mainImage.style.opacity = "0.45";
+            mainImage.src = getSrc(safeIndex);
+            if (!skipScroll) {
+                thumbs[safeIndex]?.scrollIntoView({ behavior: "smooth", inline: "nearest", block: "nearest" });
+            }
+        };
+
+        mainImage.addEventListener("load", () => {
+            mainImage.style.opacity = "1";
+        });
+
+        thumbs.forEach((thumb, index) => {
+            thumb.addEventListener("click", (e) => {
+                e.preventDefault();
+                showImage(index);
+            });
+        });
+
+        prevBtn?.addEventListener("click", () => showImage(currentIndex - 1));
+        nextBtn?.addEventListener("click", () => showImage(currentIndex + 1));
+
+        const swipeTarget = galleryMain instanceof HTMLElement ? galleryMain : mainImage.parentElement;
+        if (swipeTarget instanceof HTMLElement && swipeTarget.dataset.gallerySwipeBound !== "1") {
+            let touchStartX = null;
+            let touchStartY = null;
+            const reset = () => {
+                touchStartX = null;
+                touchStartY = null;
+            };
+            swipeTarget.addEventListener(
+                "touchstart",
+                (e) => {
+                    const touch = e.changedTouches?.[0];
+                    if (!touch) return;
+                    touchStartX = touch.clientX;
+                    touchStartY = touch.clientY;
+                },
+                { passive: true }
+            );
+            swipeTarget.addEventListener("touchend", (e) => {
+                const touch = e.changedTouches?.[0];
+                if (!touch || touchStartX === null || touchStartY === null) {
+                    reset();
+                    return;
+                }
+                const deltaX = touch.clientX - touchStartX;
+                const deltaY = touch.clientY - touchStartY;
+                reset();
+                if (Math.abs(deltaX) < 36 || Math.abs(deltaY) > Math.abs(deltaX) * 0.8) return;
+                showImage(deltaX < 0 ? currentIndex + 1 : currentIndex - 1);
+            }, { passive: true });
+            swipeTarget.dataset.gallerySwipeBound = "1";
+        }
+
+        if (thumbsScroller && thumbsPrev && thumbsNext) {
+            const updateThumbButtons = () => {
+                const maxScroll = thumbsScroller.scrollWidth - thumbsScroller.clientWidth;
+                thumbsPrev.disabled = thumbsScroller.scrollLeft <= 4;
+                thumbsNext.disabled = thumbsScroller.scrollLeft >= maxScroll - 4;
+            };
+            const scrollThumbs = (dir) => {
+                const first = thumbsScroller.querySelector(".gallery-thumb");
+                const gap = first ? parseFloat(getComputedStyle(thumbsScroller).gap || "0") || 0 : 0;
+                const step = first ? first.getBoundingClientRect().width + gap : thumbsScroller.clientWidth * 0.8;
+                thumbsScroller.scrollBy({ left: dir * step, behavior: "smooth" });
+            };
+            thumbsPrev.addEventListener("click", () => scrollThumbs(-1));
+            thumbsNext.addEventListener("click", () => scrollThumbs(1));
+            thumbsScroller.addEventListener("scroll", updateThumbButtons, { passive: true });
+            updateThumbButtons();
+        }
+
+        showImage(0, { skipScroll: true });
+    };
+
+    const initMobileToc = () => {
+        document.querySelectorAll(".toc-mobile").forEach((block) => {
+            if (block.dataset.tocReady === "1") return;
+            const title = block.querySelector(".toc-title");
+            const list = block.querySelector(".toc-list");
+            if (!title || !list) return;
+            const toggle = document.createElement("button");
+            toggle.type = "button";
+            toggle.className = "toc-mobile-toggle";
+            toggle.setAttribute("aria-expanded", "false");
+            toggle.textContent = title.textContent?.trim() || "Содержание";
+            title.replaceWith(toggle);
+            list.hidden = true;
+            toggle.addEventListener("click", () => {
+                const isOpen = block.classList.toggle("is-open");
+                toggle.setAttribute("aria-expanded", String(isOpen));
+                list.hidden = !isOpen;
+            });
+            block.dataset.tocReady = "1";
+        });
+    };
+
+    const initHomeStatsCounter = () => {
+        if (!document.body.classList.contains("home")) return;
+        const statNodes = Array.from(document.querySelectorAll(".about-stats .stat-value"));
+        if (!statNodes.length) return;
+
+        const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+        const parseNumericText = (text) => {
+            const source = String(text || "").trim();
+            const match = source.match(/(\d[\d\s]*)/);
+            if (!match || typeof match.index !== "number") return null;
+            const target = Number(String(match[1]).replace(/\s+/g, ""));
+            if (!Number.isFinite(target)) return null;
+            return { target, prefix: source.slice(0, match.index), suffix: source.slice(match.index + match[1].length) };
+        };
+
+        const counters = statNodes.map((node) => ({ node, meta: parseNumericText(node.textContent) })).filter((x) => x.meta);
+        if (!counters.length) return;
+
+        const root = document.querySelector(".about-stats") || counters[0].node;
+        let started = false;
+        let hasScrolled = window.scrollY > 0;
+
+        const runAll = () => {
+            if (started) return;
+            started = true;
+            counters.forEach(({ node, meta }) => {
+                if (reduceMotion) {
+                    node.textContent = `${meta.prefix}${meta.target.toLocaleString("ru-RU")}${meta.suffix}`;
+                    return;
+                }
+                const duration = 980;
+                let startedAt = 0;
+                const frame = (ts) => {
+                    if (!startedAt) startedAt = ts;
+                    const progress = Math.min(1, (ts - startedAt) / duration);
+                    const eased = 1 - Math.pow(1 - progress, 3);
+                    const current = Math.floor(meta.target * eased);
+                    node.textContent = `${meta.prefix}${current.toLocaleString("ru-RU")}${meta.suffix}`;
+                    if (progress < 1) requestAnimationFrame(frame);
+                };
+                requestAnimationFrame(frame);
+            });
+        };
+
+        const maybeStart = () => {
+            if (hasScrolled) runAll();
+        };
+
+        window.addEventListener("scroll", () => {
+            hasScrolled = true;
+            maybeStart();
+        }, { passive: true, once: true });
+
+        if ("IntersectionObserver" in window && root instanceof Element) {
+            const observer = new IntersectionObserver((entries) => {
+                if (entries.some((e) => e.isIntersecting && e.intersectionRatio >= 0.32)) {
+                    maybeStart();
+                    observer.disconnect();
+                }
+            }, { threshold: [0, 0.32, 1] });
+            observer.observe(root);
+        } else {
+            maybeStart();
+        }
+    };
+
+    const initSelectionPopup = () => {
+        const triggerPattern = /(получить подбор|связаться с франчайзером)/i;
+        const popup = document.querySelector("#selection-popup");
+        const form = popup?.querySelector("[data-selection-form]");
+        const nameInput = popup?.querySelector("[data-selection-name]");
+        const phoneInput = popup?.querySelector("[data-selection-phone]");
+        const consentInput = popup?.querySelector("[data-selection-consent]");
+        if (!popup || !form || !nameInput || !phoneInput || !consentInput) return;
+
+        const triggers = Array.from(
+            document.querySelectorAll('a.btn.btn-primary[href], button.btn.btn-primary, [data-selection-open], [data-franchise-contact]')
+        ).filter((node) => {
+            if (!(node instanceof HTMLElement)) return false;
+            if (node.matches("[data-selection-open], [data-franchise-contact]")) return true;
+            if (node.closest(".side-contact")) return true;
+            const label = `${node.textContent || ""} ${node.getAttribute("aria-label") || ""}`.trim();
+            return triggerPattern.test(label);
+        });
+
+        const openPopup = () => {
+            if (typeof Fancybox !== "undefined" && Fancybox) {
+                Fancybox.show([{ src: "#selection-popup", type: "inline" }], { dragToClose: false });
+            }
+        };
+
+        triggers.forEach((trigger) => {
+            if (trigger.dataset.selectionPopupBound === "1") return;
+            trigger.addEventListener("click", (e) => {
+                e.preventDefault();
+                openPopup();
+            });
+            trigger.dataset.selectionPopupBound = "1";
+        });
+
+        if (form.dataset.selectionSubmitBound === "1") return;
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            if (!String(nameInput.value || "").trim()) {
+                nameInput.setCustomValidity("Заполните поле");
+                nameInput.reportValidity();
+                return;
+            }
+            const digits = String(phoneInput.value || "").replace(/\D/g, "").replace(/^[78]/, "").slice(0, 10);
+            if (digits.length < 10) {
+                phoneInput.setCustomValidity("Введите номер телефона полностью.");
+                phoneInput.reportValidity();
+                return;
+            }
+            if (!consentInput.checked) {
+                consentInput.setCustomValidity("Подтвердите согласие с политикой конфиденциальности.");
+                consentInput.reportValidity();
+                return;
+            }
+            if (typeof Fancybox !== "undefined" && Fancybox) Fancybox.close();
+            form.reset();
+            if (typeof window.__showLeadFeedback === "function") {
+                window.__showLeadFeedback("Заявка отправлена. В ближайшее время менеджер свяжется с вами.");
+            }
+        });
+        form.dataset.selectionSubmitBound = "1";
+    };
+
+    const initPlainLeadForms = () => {
+        const leadForms = Array.from(
+            document.querySelectorAll("form.form-grid, form.ask-form-grid, form.final-form")
+        ).filter((form) => form instanceof HTMLFormElement && !form.closest(".wpcf7"));
+
+        leadForms.forEach((form) => {
+            if (form.dataset.leadFormFeedbackBound === "1") return;
+            form.addEventListener("submit", (e) => {
+                if (e.defaultPrevented) return;
+                const consent = form.querySelector('input[type="checkbox"][name*="consent"]');
+                if (consent instanceof HTMLInputElement && !consent.checked) {
+                    e.preventDefault();
+                    consent.reportValidity();
+                    if (typeof window.__showLeadFeedback === "function") {
+                        window.__showLeadFeedback("Подтвердите согласие с политикой конфиденциальности.", true);
+                    }
+                    return;
+                }
+                if (!form.getAttribute("action")) {
+                    e.preventDefault();
+                    if (typeof window.__showLeadFeedback === "function") {
+                        window.__showLeadFeedback("Заявка отправлена. В ближайшее время менеджер свяжется с вами.");
+                    }
+                    form.reset();
+                }
+            });
+            form.dataset.leadFormFeedbackBound = "1";
+        });
+    };
+
+    const initSliderSections = () => {
+        if (typeof Swiper === "undefined") return;
+        document.querySelectorAll(".slider-section").forEach((section) => {
+            const container = section.querySelector(".slider");
+            const prev = section.querySelector("[data-slider-prev]");
+            const next = section.querySelector("[data-slider-next]");
+            if (!container || container.swiper) return;
+            if (!container.querySelector(":scope > .swiper-wrapper")) {
+                const wrapper = document.createElement("div");
+                wrapper.className = "swiper-wrapper";
+                Array.from(container.children).forEach((child) => {
+                    child.classList.add("swiper-slide");
+                    wrapper.appendChild(child);
+                });
+                container.classList.add("swiper");
+                container.appendChild(wrapper);
+            }
+            new Swiper(container, {
+                speed: 400,
+                slidesPerView: "auto",
+                spaceBetween: 12,
+                watchOverflow: true,
+                navigation: prev && next ? { prevEl: prev, nextEl: next } : undefined,
+            });
+        });
+    };
+
+    const run = () => {
+        initSegmentTabs();
+        initCategoryBar();
+        initHomeCollections();
+        initFranchiseGallery();
+        initMobileToc();
+        initHomeStatsCounter();
+        initSelectionPopup();
+        initPlainLeadForms();
+        initSliderSections();
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", run, { once: true });
+    } else {
+        run();
+    }
+})();
 
 document.addEventListener('DOMContentLoaded', () => {
     const main = document.querySelector('main.wrap.catalog-page');
@@ -602,4 +1241,299 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+/* ===== header menu (разметка в PHP) ===== */
+(() => {
+    const header = document.querySelector('.site-header');
+    if (!header) return;
+
+    const setHeaderState = () => {
+        header.classList.toggle('scrolled', window.scrollY > 10 || header.classList.contains('dropdown-open'));
+    };
+    window.setHeaderState = setHeaderState;
+    setHeaderState();
+    window.addEventListener('scroll', setHeaderState, { passive: true });
+
+    const toggle = document.querySelector('.menu-toggle');
+    const menu = document.querySelector('#mobile-menu');
+    if (toggle && menu) {
+        const setMenuOpen = (isOpen) => {
+            menu.classList.toggle('open', isOpen);
+            menu.setAttribute('aria-hidden', String(!isOpen));
+            toggle.setAttribute('aria-expanded', String(isOpen));
+            document.body.classList.toggle('modal-open', isOpen);
+        };
+
+        toggle.addEventListener('click', () => {
+            setMenuOpen(!menu.classList.contains('open'));
+        });
+
+        menu.addEventListener('click', (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLElement)) return;
+            if (target === menu) {
+                setMenuOpen(false);
+                return;
+            }
+            if (target.hasAttribute('data-mobile-close') || target.closest('[data-mobile-close]')) {
+                setMenuOpen(false);
+                return;
+            }
+            if (target.tagName === 'A') {
+                setMenuOpen(false);
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && menu.classList.contains('open')) setMenuOpen(false);
+        });
+
+        const accTriggers = Array.from(menu.querySelectorAll('[data-mobile-acc-trigger]'));
+        const accBlocks = Array.from(menu.querySelectorAll('[data-mobile-acc]'));
+        const setAccOpen = (key, open) => {
+            const block = menu.querySelector(`[data-mobile-acc="${key}"]`);
+            const trigger = menu.querySelector(`[data-mobile-acc-trigger="${key}"]`);
+            if (!block || !trigger) return;
+            block.classList.toggle('open', open);
+            trigger.setAttribute('aria-expanded', String(open));
+        };
+
+        accTriggers.forEach((trigger) => {
+            trigger.addEventListener('click', () => {
+                const key = trigger.getAttribute('data-mobile-acc-trigger');
+                if (!key) return;
+                const isOpen = menu.querySelector(`[data-mobile-acc="${key}"]`)?.classList.contains('open');
+                accBlocks.forEach((block) => {
+                    const otherKey = block.getAttribute('data-mobile-acc');
+                    if (otherKey && otherKey !== key) setAccOpen(otherKey, false);
+                });
+                setAccOpen(key, !isOpen);
+            });
+        });
+    }
+
+    const setupCategoriesDropdown = () => {
+        const dropdown = document.querySelector('[data-categories-dropdown]');
+        if (!dropdown) return;
+
+        const trigger = dropdown.querySelector('[data-categories-trigger]');
+        const panel = dropdown.querySelector('[data-categories-panel]');
+        const list = dropdown.querySelector('[data-categories-list]');
+        const panelsWrap = dropdown.querySelector('[data-categories-panels]');
+        if (!trigger || !panel || !list || !panelsWrap) return;
+
+        const panels = Array.from(panelsWrap.querySelectorAll('[data-categories-panel]'));
+        const items = Array.from(list.querySelectorAll('.categories-item'));
+        if (!panels.length || !items.length) return;
+
+        const setActive = (index) => {
+            const i = Math.max(0, Math.min(index, panels.length - 1));
+            items.forEach((btn, idx) => btn.classList.toggle('active', idx === i));
+            panels.forEach((panelEl, idx) => {
+                const active = idx === i;
+                panelEl.classList.toggle('is-active', active);
+                if (active) {
+                    panelEl.removeAttribute('hidden');
+                } else {
+                    panelEl.setAttribute('hidden', '');
+                }
+            });
+        };
+
+        list.addEventListener('mouseover', (event) => {
+            const btn = event.target.closest('.categories-item');
+            if (!btn) return;
+            const idx = Number(btn.dataset.index);
+            if (!Number.isNaN(idx)) setActive(idx);
+        });
+
+        list.addEventListener('focusin', (event) => {
+            const btn = event.target.closest('.categories-item');
+            if (!btn) return;
+            const idx = Number(btn.dataset.index);
+            if (!Number.isNaN(idx)) setActive(idx);
+        });
+
+        const setDropdownOpen = (isOpen) => {
+            dropdown.classList.toggle('is-open', isOpen);
+            trigger.setAttribute('aria-expanded', String(isOpen));
+            header.classList.toggle('dropdown-open', isOpen);
+            setHeaderState();
+            if (!isOpen) trigger.blur();
+        };
+
+        let dropdownCloseTimer = null;
+        const clearDropdownTimer = () => {
+            if (dropdownCloseTimer) {
+                window.clearTimeout(dropdownCloseTimer);
+                dropdownCloseTimer = null;
+            }
+        };
+        const openDropdown = () => {
+            clearDropdownTimer();
+            document.querySelector('[data-collections-dropdown]')?.classList.remove('is-open', 'open');
+            setDropdownOpen(true);
+        };
+        const closeDropdownSoon = () => {
+            clearDropdownTimer();
+            dropdownCloseTimer = window.setTimeout(() => setDropdownOpen(false), 140);
+        };
+
+        dropdown.addEventListener('mouseenter', openDropdown);
+        dropdown.addEventListener('mouseleave', closeDropdownSoon);
+        panel.addEventListener('mouseenter', openDropdown);
+        panel.addEventListener('mouseleave', closeDropdownSoon);
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && trigger.getAttribute('aria-expanded') === 'true') {
+                setDropdownOpen(false);
+                trigger.blur();
+            }
+        });
+
+        setActive(0);
+    };
+
+    const setupHeaderDropdowns = () => {
+        const categoriesDropdown = document.querySelector('[data-categories-dropdown]');
+        const collectionsDropdown = document.querySelector('[data-collections-dropdown]');
+        const categoriesTrigger = document.querySelector('[data-categories-trigger]');
+        const collectionsTrigger = document.querySelector('[data-collections-trigger]');
+        const categoriesPanel = document.querySelector('[data-categories-panel]');
+        const collectionsPanel = document.querySelector('[data-collections-panel]');
+
+        let backdrop = document.querySelector('[data-categories-backdrop]');
+        if (!backdrop) {
+            backdrop = document.createElement('div');
+            backdrop.className = 'catalog-dropdown-backdrop';
+            backdrop.setAttribute('data-categories-backdrop', '');
+            backdrop.setAttribute('aria-hidden', 'true');
+            document.body.appendChild(backdrop);
+        }
+
+        const isDropdownOpen = (el) => !!el && (el.classList.contains('is-open') || el.classList.contains('open'));
+
+        const syncPanelTop = () => {
+            if (!(categoriesPanel instanceof HTMLElement)) return;
+            const headerInner = header.querySelector('.header-inner');
+            const anchor = headerInner instanceof HTMLElement ? headerInner : header;
+            const headerBottom = Math.round(anchor.getBoundingClientRect().bottom);
+            const panelTop = Math.max(0, headerBottom - 1);
+            categoriesPanel.style.setProperty('top', `${panelTop}px`, 'important');
+            if (collectionsPanel instanceof HTMLElement) {
+                collectionsPanel.style.setProperty('top', `${panelTop}px`, 'important');
+            }
+        };
+
+        const syncOpenState = () => {
+            syncPanelTop();
+            const isCategoriesOpen = isDropdownOpen(categoriesDropdown);
+            const isCollectionsOpen = isDropdownOpen(collectionsDropdown);
+            const opened = isCategoriesOpen || isCollectionsOpen;
+            header.classList.toggle('dropdown-open', opened);
+            backdrop.classList.toggle('open', opened);
+            backdrop.setAttribute('aria-hidden', String(!opened));
+            if (categoriesTrigger) {
+                categoriesTrigger.setAttribute('aria-expanded', String(isCategoriesOpen));
+            }
+            if (collectionsTrigger) {
+                collectionsTrigger.setAttribute('aria-expanded', String(isCollectionsOpen));
+            }
+            setHeaderState();
+        };
+
+        syncOpenState();
+        const observer = new MutationObserver(syncOpenState);
+        if (categoriesDropdown) {
+            observer.observe(categoriesDropdown, { attributes: true, attributeFilter: ['class'] });
+        }
+        if (collectionsDropdown) {
+            observer.observe(collectionsDropdown, { attributes: true, attributeFilter: ['class'] });
+        }
+        window.addEventListener('resize', syncPanelTop);
+        window.addEventListener('scroll', syncPanelTop, { passive: true });
+
+        backdrop.addEventListener('click', () => {
+            categoriesDropdown?.classList.remove('is-open', 'open');
+            collectionsDropdown?.classList.remove('is-open', 'open');
+            syncOpenState();
+        });
+
+        if (collectionsDropdown && collectionsTrigger && collectionsPanel) {
+            let collectionsCloseTimer = null;
+            const clearCollectionsTimer = () => {
+                if (collectionsCloseTimer) {
+                    window.clearTimeout(collectionsCloseTimer);
+                    collectionsCloseTimer = null;
+                }
+            };
+            const setCollectionsOpen = (isOpen) => {
+                if (isOpen) {
+                    categoriesDropdown?.classList.remove('is-open', 'open');
+                }
+                collectionsDropdown.classList.toggle('is-open', isOpen);
+                collectionsTrigger.setAttribute('aria-expanded', String(isOpen));
+                syncOpenState();
+                if (!isOpen) collectionsTrigger.blur();
+            };
+            const openCollections = () => {
+                clearCollectionsTimer();
+                setCollectionsOpen(true);
+            };
+            const closeCollectionsSoon = () => {
+                clearCollectionsTimer();
+                collectionsCloseTimer = window.setTimeout(() => setCollectionsOpen(false), 140);
+            };
+
+            collectionsDropdown.addEventListener('mouseenter', openCollections);
+            collectionsDropdown.addEventListener('mouseleave', closeCollectionsSoon);
+            collectionsPanel.addEventListener('mouseenter', openCollections);
+            collectionsPanel.addEventListener('mouseleave', closeCollectionsSoon);
+            collectionsDropdown.addEventListener('focusin', openCollections);
+            collectionsDropdown.addEventListener('focusout', (event) => {
+                const next = event.relatedTarget;
+                if (next instanceof Node && collectionsDropdown.contains(next)) return;
+                closeCollectionsSoon();
+            });
+
+            collectionsTrigger.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                clearCollectionsTimer();
+                setCollectionsOpen(!collectionsDropdown.classList.contains('is-open'));
+            });
+
+            document.addEventListener('click', (event) => {
+                const target = event.target;
+                if (!(target instanceof Node)) return;
+                if (!collectionsDropdown.contains(target)) setCollectionsOpen(false);
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key !== 'Escape') return;
+                if (collectionsDropdown.classList.contains('is-open')) {
+                    setCollectionsOpen(false);
+                }
+            });
+
+            const closeCollectionsIfOpen = () => {
+                if (isDropdownOpen(collectionsDropdown)) {
+                    setCollectionsOpen(false);
+                }
+            };
+            categoriesDropdown?.addEventListener('mouseenter', closeCollectionsIfOpen);
+            categoriesDropdown?.addEventListener('focusin', closeCollectionsIfOpen);
+        }
+    };
+
+    const initHeaderMenu = () => {
+        setupCategoriesDropdown();
+        setupHeaderDropdowns();
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initHeaderMenu, { once: true });
+    } else {
+        initHeaderMenu();
+    }
+})();
 

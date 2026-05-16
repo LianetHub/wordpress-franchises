@@ -13,6 +13,7 @@ $includes = [
     'includes/acf-custom.php',
     'includes/custom-posts.php',
     'includes/woocommerce-custom.php',
+    'includes/header-menu.php',
 ];
 
 foreach ($includes as $file) {
@@ -75,8 +76,6 @@ add_action('wp_enqueue_scripts', function () {
 
     $app_js_ver = filemtime($theme_dir . '/assets/js/app.min.js');
 
-    wp_enqueue_script('initial-js', $theme_uri . '/assets/js/initial-js.js', array(),  $app_js_ver, true);
-
     wp_enqueue_script('app-js', $theme_uri . '/assets/js/app.min.js', array('jquery', 'swiper-js', 'fancybox-js'), $app_js_ver, true);
 
 
@@ -112,12 +111,11 @@ add_filter('script_loader_tag', function ($tag, $handle) {
     if (is_admin()) return $tag;
 
     $defer = [
-        'jquery',
         'current-template-js-js',
         'swiper-js',
         'fancybox-js',
         'app-js',
-        'post-scripts'
+        'post-scripts',
     ];
 
     if (in_array($handle, $defer)) {
