@@ -3,7 +3,6 @@
 @use "mixins" as *;
 @use "variables" as *;
 @use "fonts";
-@use "icons";
 
 .site-header {
     position: fixed;
@@ -770,7 +769,6 @@
 }
 
 
-// .icon-menu {
 //     flex-shrink: 0;
 //     display: flex;
 //     flex-direction: column;

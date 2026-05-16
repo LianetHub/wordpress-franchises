@@ -15,19 +15,19 @@
                     <div class="heading__stats">
                         <time
                             datetime="<?php the_time('c'); ?>"
-                            class="heading__stat icon-calendar">
+                            class="heading__stat heading__stat--calendar">
                             <?php the_time('d.m.Y'); ?>
                         </time>
                         <div
-                            class="heading__stat icon-clock">
+                            class="heading__stat heading__stat--clock">
                             <?php echo $reading_time; ?>
                         </div>
                         <div
-                            class="heading__stat icon-like">
+                            class="heading__stat heading__stat--like">
                             <?php echo (int) get_post_meta(get_the_ID(), 'hard_cleaning_theme_likes', true); ?>
                         </div>
                         <div
-                            class="heading__stat icon-eye">
+                            class="heading__stat heading__stat--eye">
                             <?php echo hard_cleaning_theme_get_post_views(get_the_ID()); ?>
                         </div>
                     </div>
@@ -94,15 +94,15 @@
                     <div class="article__likes">
                         <div class="article__likes-text">Статья была полезной?</div>
                         <div class="article__likes-btns">
-                            <button type="button" class="article__likes-btn article-use__yes icon-like">Да</button>
-                            <button type="button" class="article__likes-btn article-use__no icon-dislike">Нет</button>
+                            <button type="button" class="article__likes-btn article-use__yes">Да</button>
+                            <button type="button" class="article__likes-btn article-use__no">Нет</button>
                         </div>
                     </div>
                     <div class="article__bottom">
 
                         <button
                             type="button"
-                            class="article__copy icon-copy"
+                            class="article__copy"
                             data-url="<?php the_permalink(); ?>">Скопировать</button>
 
                         <?php

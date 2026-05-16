@@ -1,54 +1,42 @@
-<?php get_header(); ?>
-
 <?php
-$image = get_field('hero_image');
-$tags = get_field('hero_tags');
-$phone = get_field('phone', 'option');
-$phone_clean = $phone ? preg_replace('/[^\d+]/', '', $phone) : '';
+
+/**
+ * Шаблон страницы 404.
+ */
+
+get_header();
+
+$home_url = home_url('/');
+$shop_url = $home_url;
+
+if (class_exists('WooCommerce', false) && function_exists('wc_get_page_id')) {
+    $shop_id = wc_get_page_id('shop');
+    if ($shop_id > 0) {
+        $permalink = get_permalink($shop_id);
+        if (is_string($permalink) && $permalink !== '') {
+            $shop_url = $permalink;
+        }
+    }
+}
+
+$help_url = home_url('/#contacts');
 ?>
 
-<section class="hero">
-    <div class="hero__container container">
-        <div class="hero__image">
-            <?php if ($image): ?>
-                <img src="<?php echo esc_url($image['url']); ?>"
-                    alt="<?php echo esc_attr($image['alt']); ?>"
-                    class="hero__image-main"
-                    fetchpriority="high"
-                    loading="eager">
-            <?php else: ?>
-                <img src="<?php echo get_template_directory_uri(); ?>/assets/hero_cleaners.png"
-                    alt="Спецуборка"
-                    class="hero__image-main"
-                    fetchpriority="high"
-                    loading="eager">
-            <?php endif; ?>
+<?php require_once TEMPLATE_PATH . 'components/breadcrumbs.php'; ?>
 
-            <?php if ($tags): ?>
-                <ul class="hero__tags">
-                    <?php foreach ($tags as $tag): ?>
-                        <li class="hero__tag">
-                            <?php if ($tag['icon']): ?>
-                                <div class="hero__tag-icon">
-                                    <img src="<?php echo esc_url($tag['icon']['url']); ?>"
-                                        alt="<?php echo esc_attr($tag['icon']['alt']); ?>">
-                                </div>
-                            <?php endif; ?>
-                            <div class="hero__tag-text"><?php echo esc_html($tag['text']); ?></div>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            <?php endif; ?>
+<section class="error-404" aria-labelledby="error-404-title">
+    <div class="error-404__card" role="status">
+        <div class="error-404__visual" aria-hidden="true">
+            <span class="error-404__code">404</span>
         </div>
-
-        <div class="hero__offer">
-            <h1 class="hero__title title-lg">404 <br> страница не найдена</h1>
-            <div class="hero__btns">
-                <?php if ($phone): ?>
-                    <a href="tel:<?php echo $phone_clean; ?>" class="hero__btn btn btn-primary">Срочный вызов</a>
-                <?php endif; ?>
-                <a href="/" class="hero__btn btn btn-outline">На главную</a>
-            </div>
+        <h1 id="error-404-title" class="error-404__title">Страница не найдена</h1>
+        <p class="error-404__text">
+            Запрашиваемый адрес не существует или был перемещён. Перейдите в каталог франшиз или на главную — мы поможем подобрать подходящее предложение.
+        </p>
+        <div class="error-404__actions">
+            <a class="btn btn-primary" href="<?php echo esc_url($shop_url); ?>">Каталог франшиз</a>
+            <a class="btn btn-outline" href="<?php echo esc_url($home_url); ?>">На главную</a>
+            <a class="btn btn-outline" href="<?php echo esc_url($help_url); ?>">Получить подбор</a>
         </div>
     </div>
 </section>

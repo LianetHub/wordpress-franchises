@@ -3,7 +3,6 @@
 @use "mixins" as *;
 @use "variables" as *;
 @use "fonts";
-@use "icons";
 @use "ui";
 
 @use "./modules/select";
@@ -241,7 +240,6 @@
 // 			&:checked {
 // 				&+.wpcf7-list-item-label {
 // 					&::before {
-// 						// @extend %ic, .icon-check;
 // 					}
 // 				}
 // 			}
@@ -270,7 +268,6 @@
 // 		&:checked {
 // 			&+.checkbox__text {
 // 				&::before {
-// 					// @extend %ic, .icon-check;
 // 				}
 // 			}
 // 		}

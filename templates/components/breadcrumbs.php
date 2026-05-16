@@ -69,7 +69,7 @@ if (is_post_type_archive('services') || is_tax('service_cat') || is_singular('se
     }
     $items[] = ['name' => get_the_title(), 'link' => ''];
 } elseif (is_404()) {
-    $items[] = ['name' => '404', 'link' => ''];
+    $items[] = ['name' => 'Страница не найдена', 'link' => ''];
 } else {
     $items[] = ['name' => get_the_title(), 'link' => ''];
 }

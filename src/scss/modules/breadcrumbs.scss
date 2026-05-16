@@ -3,7 +3,6 @@
 @use "mixins" as *;
 @use "variables" as *;
 @use "fonts";
-@use "icons";
 
 .breadcrumbs {
 	position: relative;
@@ -33,13 +32,12 @@
 			flex-shrink: 1;
 
 			&::before {
-				transform: rotate(-90deg);
+				@include icon-chevron-right(0.5em, 2px);
 				order: 1;
 				display: flex;
 				justify-content: center;
 				align-items: center;
-				@extend %ic, .icon-chevron-down;
-
+				opacity: 0.55;
 			}
 		}
 

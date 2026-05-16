@@ -7,7 +7,6 @@
 *,
 ::before,
 ::after {
-  -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
 }
@@ -65,15 +64,18 @@ address {
 }
 
 a {
-  background-color: transparent;
+  background: transparent;
   text-decoration: none;
   outline: none;
   border: none;
   color: inherit;
 }
-a:focus, a:active {
+
+a:focus,
+a:active {
   outline: none;
 }
+
 a {
   -webkit-tap-highlight-color: transparent;
 }
@@ -102,6 +104,26 @@ textarea {
   font-size: inherit;
 }
 
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+  opacity: 1;
+}
+
+input::-moz-placeholder,
+textarea::-moz-placeholder {
+  opacity: 1;
+}
+
+input:-ms-input-placeholder,
+textarea:-ms-input-placeholder {
+  opacity: 1;
+}
+
+input::-ms-input-placeholder,
+textarea::-ms-input-placeholder {
+  opacity: 1;
+}
+
 input::placeholder,
 textarea::placeholder {
   opacity: 1;
@@ -113,8 +135,8 @@ input::-ms-clear {
 
 button,
 [role=button] {
+  background: inherit;
   cursor: pointer;
-  background-color: inherit;
   font-size: inherit;
   -webkit-tap-highlight-color: transparent;
   color: inherit;
@@ -176,6 +198,7 @@ input[type=number] {
   -webkit-appearance: textfield;
   outline-offset: -2px;
 }
+
 [type=search]::-webkit-search-decoration {
   -webkit-appearance: none;
 }

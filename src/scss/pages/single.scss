@@ -1,0 +1,59 @@
+@use "sass:color";
+@use "sass:math";
+@use "../mixins" as *;
+@use "../variables" as *;
+
+.heading__stat {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35em;
+
+	&::before {
+		flex-shrink: 0;
+	}
+
+	&--calendar::before {
+		@include icon-svg("calendar", 1.125rem);
+	}
+
+	&--clock::before {
+		@include icon-svg("clock", 1.125rem);
+	}
+
+	&--like::before {
+		@include icon-svg("like", 1.125rem);
+	}
+
+	&--eye::before {
+		@include icon-svg("eye", 1.125rem);
+	}
+}
+
+.article__likes-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35em;
+
+	&::before {
+		flex-shrink: 0;
+	}
+
+	&.article-use__yes::before {
+		@include icon-svg("like", 1rem);
+	}
+
+	&.article-use__no::before {
+		@include icon-svg("dislike", 1rem);
+	}
+}
+
+.article__copy {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35em;
+
+	&::before {
+		@include icon-svg("copy", 1rem);
+		flex-shrink: 0;
+	}
+}

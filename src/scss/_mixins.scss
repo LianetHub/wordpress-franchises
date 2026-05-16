@@ -33,6 +33,43 @@
 	position: $pos;
 }
 
+@mixin icon-svg($name, $size: 1em) {
+	content: "";
+	display: inline-block;
+	width: $size;
+	height: $size;
+	flex-shrink: 0;
+	background-color: currentColor;
+	mask-image: url("../img/icons/#{$name}.svg");
+	mask-repeat: no-repeat;
+	mask-position: center;
+	mask-size: contain;
+	-webkit-mask-image: url("../img/icons/#{$name}.svg");
+	-webkit-mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	-webkit-mask-size: contain;
+}
+
+@mixin icon-chevron-right($size: 0.45em, $weight: 2px) {
+	content: "";
+	display: block;
+	width: $size;
+	height: $size;
+	border-right: $weight solid currentColor;
+	border-bottom: $weight solid currentColor;
+	transform: rotate(-45deg);
+}
+
+@mixin icon-chevron-left($size: 0.45em, $weight: 2px) {
+	content: "";
+	display: block;
+	width: $size;
+	height: $size;
+	border-left: $weight solid currentColor;
+	border-bottom: $weight solid currentColor;
+	transform: rotate(45deg);
+}
+
 @mixin drop-border($size, $color) {
 	filter: drop-shadow(0 0 rem(math.div($size, 4)) $color) drop-shadow(0 0 rem(math.div($size, 4)) $color) drop-shadow(0 0 rem(math.div($size, 4)) $color);
 }

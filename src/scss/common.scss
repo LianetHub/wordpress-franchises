@@ -3,7 +3,6 @@
 @use "mixins" as *;
 @use "variables" as *;
 @use "fonts";
-@use "icons";
 @use "ui";
 
 
@@ -69,7 +68,9 @@ body {
 .wrap {
 	max-width: 1200px;
 	margin: 0 auto;
-	padding: calc(var(--header-height) + 32px) 24px 80px !important;
+	padding: calc(var(--header-height) + 16px) 24px 80px !important;
+	flex: 1 1 auto;
+	width: 100%;
 
 	&>section {
 		margin-top: 0;

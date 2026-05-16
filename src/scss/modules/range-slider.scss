@@ -129,10 +129,11 @@
 
 		&::before {
 			visibility: visible;
-			@extend %ic, .icon-rubble;
-			margin: em(0) em(0) em(0) em(2);
+			content: "₽";
+			font-family: inherit;
 			font-size: 0.65rem;
 			line-height: 1.05rem;
+			margin: em(0) em(0) em(0) em(2);
 			display: flex;
 			align-self: center;
 			order: 1;

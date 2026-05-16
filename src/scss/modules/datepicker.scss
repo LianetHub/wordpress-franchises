@@ -1,5 +1,6 @@
 @use "sass:color";
 @use "sass:math";
+@use "../mixins" as *;
 
 @mixin dp-header-button-common {
 	border-color: transparent;
@@ -253,10 +254,8 @@ $dp-one-seventh: math.percentage(math.div(1, 7));
 		font-size: 0;
 		position: relative;
 		&::before {
-			@extend %ic, .icon-chevron;
-			font-size: 1.5rem;
+			@include icon-chevron-right(0.75rem, 2px);
 			color: $accent;
-			height: 1.5rem;
 			display: flex;
 			justify-content: center;
 			align-items: center;

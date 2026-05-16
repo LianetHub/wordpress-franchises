@@ -263,8 +263,8 @@ function franchises_theme_pagination_class_filter($template)
 {
     $template = str_replace('page-numbers', 'pagination__item', $template);
     $template = str_replace('current', 'active', $template);
-    $template = str_replace('prev pagination__item', 'pagination__prev icon-arrow-left', $template);
-    $template = str_replace('next pagination__item', 'pagination__next icon-arrow-right', $template);
+    $template = str_replace('prev pagination__item', 'pagination__prev', $template);
+    $template = str_replace('next pagination__item', 'pagination__next', $template);
     return $template;
 }
 add_filter('paginate_links', 'franchises_theme_pagination_class_filter');
@@ -277,10 +277,10 @@ add_filter('next_posts_link_attributes', 'posts_link_attributes');
 add_filter('previous_posts_link_attributes', 'posts_link_attributes');
 
 add_filter('previous_posts_link_attributes', function () {
-    return 'class="pagination__prev icon-arrow-left"';
+    return 'class="pagination__prev"';
 });
 add_filter('next_posts_link_attributes', function () {
-    return 'class="pagination__next icon-arrow-right"';
+    return 'class="pagination__next"';
 });
 
 

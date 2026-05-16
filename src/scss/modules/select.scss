@@ -3,7 +3,6 @@
 @use "mixins" as *;
 @use "variables" as *;
 @use "fonts";
-@use "icons";
 @use "ui";
 
 select.select {
@@ -175,7 +174,6 @@ select.select {
 
 			&::before {
 				order: 1;
-				// @extend %ic, .icon-check;
 				width: 1.125rem;
 				height: 1.125rem;
 				flex-shrink: 0;
