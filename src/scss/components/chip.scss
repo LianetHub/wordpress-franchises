@@ -1,0 +1,88 @@
+@use "sass:color";
+@use "sass:math";
+@use "mixins" as *;
+@use "variables" as *;
+@use "fonts";
+@use "icons";
+
+.chip {
+	background: #ffffff;
+	border: 1px solid #e3e6e8;
+	color: #3a3f43;
+	padding: 10px 12px;
+	border-radius: 16px;
+	font-size: 14px;
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 8px;
+	text-align: left;
+	font-weight: 700;
+	white-space: normal;
+	text-decoration: none;
+	box-shadow: none;
+	min-height: 44px;
+	transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+
+	&:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 12px 24px rgba(15, 26, 23, 0.1);
+		border-color: #d5d9dd;
+	}
+
+	&-text {
+		line-height: 1.25;
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		overflow: hidden;
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+}
+
+.icon {
+	width: 22px;
+	height: 22px;
+	border-radius: 7px;
+	background: #eef0f2;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 22px;
+
+	svg {
+		width: 14px;
+		height: 14px;
+		stroke: var(--btn-accent);
+		stroke-width: 1.7;
+		fill: none;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+}
+
+@media (max-width: 600px) {
+	.chip {
+		height: 64px;
+		font-size: 13px;
+		padding: 8px 10px;
+		gap: 6px;
+
+		&-text {
+			-webkit-line-clamp: 2;
+		}
+	}
+
+	.icon {
+		width: 20px;
+		height: 20px;
+		flex: 0 0 20px;
+		border-radius: 6px;
+
+		svg {
+			width: 12px;
+			height: 12px;
+		}
+	}
+}

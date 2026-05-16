@@ -1,0 +1,33 @@
+@use "sass:color";
+@use "sass:math";
+@use "mixins" as *;
+@use "variables" as *;
+@use "fonts";
+@use "icons";
+
+@keyframes bar-shift {
+	0% {
+	        background-position: 0 0;
+	    }
+
+	    50% {
+	        background-position: 0 100%;
+	    }
+
+	    100% {
+	        background-position: 0 0;
+	    }
+}
+
+@keyframes lead-check-circle {
+	to {
+	        stroke-dashoffset: 0;
+	    }
+}
+
+@keyframes lead-check-path {
+	to {
+	        stroke-dashoffset: 0;
+	    }
+}
+

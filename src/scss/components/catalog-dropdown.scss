@@ -1,0 +1,23 @@
+@use "sass:color";
+@use "sass:math";
+@use "mixins" as *;
+@use "variables" as *;
+@use "fonts";
+@use "icons";
+
+.catalog-dropdown {
+	&-backdrop {
+		position: fixed;
+		inset: 0;
+		background: rgba(25, 29, 34, 0.38);
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.18s ease;
+		z-index: 84;
+
+		&.open {
+			opacity: 1;
+			pointer-events: auto;
+		}
+	}
+}

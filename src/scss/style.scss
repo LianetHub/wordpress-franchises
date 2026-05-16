@@ -15,8 +15,18 @@
 
 @use "pages/home";
 @use "pages/error";
+@use "pages/catalog";
+@use "pages/franchise";
 
-@use "old-styles";
+@use "components/animations";
+@use "components/chip";
+@use "components/categories-menu";
+@use "components/collections";
+@use "components/catalog-dropdown";
+@use "components/segment";
+@use "components/popular";
+@use "components/content-sections";
+@use "components/catalog-filters";
 
 
 // .nojq {

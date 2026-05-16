@@ -153,49 +153,71 @@ $card = franchises_franchise_card_from_post($post_id);
 
         <div class="main-top">
             <section class="card gallery-card" aria-label="Галерея франшизы">
-                <div class="gallery-main">
-                    <?php
-                    $main_src = $gallery_urls[0] ?? '';
-                    ?>
-                    <img src="<?php echo esc_url($main_src); ?>" alt="<?php echo esc_attr(wp_strip_all_tags($h1)); ?>" data-gallery-main>
-                    <button class="gallery-nav gallery-nav-prev" type="button" aria-label="Предыдущее фото">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M15 18l-6-6 6-6"></path>
-                        </svg>
-                    </button>
-                    <button class="gallery-nav gallery-nav-next" type="button" aria-label="Следующее фото">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M9 6l6 6-6 6"></path>
-                        </svg>
-                    </button>
-                    <div class="gallery-count" data-gallery-count></div>
-                </div>
-                <?php if (count($gallery_urls) > 1) : ?>
-                    <div class="thumbs-wrap">
-                        <button class="thumbs-nav thumbs-nav-prev" type="button" aria-label="Предыдущие превью">
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M15 18l-6-6 6-6"></path>
-                            </svg>
-                        </button>
-                        <button class="thumbs-nav thumbs-nav-next" type="button" aria-label="Следующие превью">
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M9 6l6 6-6 6"></path>
-                            </svg>
-                        </button>
-                        <div class="gallery-thumbs" role="tablist" aria-label="Превью галереи">
+                <?php
+                $gallery_alt   = wp_strip_all_tags($h1);
+                $gallery_total = count($gallery_urls);
+                ?>
+                <?php if ($gallery_total > 0) : ?>
+                    <div class="gallery-main swiper">
+                        <div class="swiper-wrapper">
                             <?php foreach ($gallery_urls as $gi => $gurl) : ?>
-                                <button
-                                    class="gallery-thumb<?php echo $gi === 0 ? ' is-active' : ''; ?>"
-                                    type="button"
-                                    data-gallery-thumb
-                                    data-full="<?php echo esc_url($gurl); ?>"
-                                    aria-label="<?php echo esc_attr('Фото ' . ($gi + 1)); ?>"
-                                    aria-selected="<?php echo $gi === 0 ? 'true' : 'false'; ?>">
-                                    <img src="<?php echo esc_url($gurl); ?>" alt="" loading="<?php echo $gi === 0 ? 'eager' : 'lazy'; ?>" decoding="async">
-                                </button>
+                                <div class="swiper-slide">
+                                    <a
+                                        class="gallery-main-link"
+                                        href="<?php echo esc_url($gurl); ?>"
+                                        data-fancybox="franchise-gallery"
+                                        data-caption="<?php echo esc_attr($gallery_alt); ?>"
+                                        aria-label="<?php echo esc_attr('Открыть фото ' . ($gi + 1)); ?>">
+                                        <img
+                                            src="<?php echo esc_url($gurl); ?>"
+                                            alt="<?php echo esc_attr($gallery_alt); ?>"
+                                            loading="<?php echo $gi === 0 ? 'eager' : 'lazy'; ?>"
+                                            decoding="async">
+                                    </a>
+                                </div>
                             <?php endforeach; ?>
                         </div>
+                        <?php if ($gallery_total > 1) : ?>
+                            <button class="gallery-nav gallery-nav-prev" type="button" aria-label="Предыдущее фото">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M15 18l-6-6 6-6"></path>
+                                </svg>
+                            </button>
+                            <button class="gallery-nav gallery-nav-next" type="button" aria-label="Следующее фото">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M9 6l6 6-6 6"></path>
+                                </svg>
+                            </button>
+                            <div class="gallery-count swiper-pagination" data-gallery-count></div>
+                        <?php endif; ?>
                     </div>
+                    <?php if ($gallery_total > 1) : ?>
+                        <div class="thumbs-wrap">
+                            <button class="thumbs-nav thumbs-nav-prev" type="button" aria-label="Предыдущие превью">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M15 18l-6-6 6-6"></path>
+                                </svg>
+                            </button>
+                            <button class="thumbs-nav thumbs-nav-next" type="button" aria-label="Следующие превью">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M9 6l6 6-6 6"></path>
+                                </svg>
+                            </button>
+                            <div class="gallery-thumbs swiper" aria-label="Превью галереи">
+                                <div class="swiper-wrapper">
+                                    <?php foreach ($gallery_urls as $gi => $gurl) : ?>
+                                        <div class="swiper-slide gallery-thumb">
+                                            <img
+                                                src="<?php echo esc_url($gurl); ?>"
+                                                alt=""
+                                                loading="<?php echo $gi === 0 ? 'eager' : 'lazy'; ?>"
+                                                decoding="async">
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endif; ?>
                 <?php endif; ?>
             </section>
         </div>
