@@ -1009,7 +1009,7 @@ img[loading=lazy].is-loaded {
     border-radius: .5rem
 }
 
-.hidden, select.select, select.select-native-source {
+.hidden, [hidden], select.select, select.select-native-source {
     position: absolute;
     width: 1px;
     height: 1px;

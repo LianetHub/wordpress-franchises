@@ -1008,16 +1008,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const chips = document.querySelector("[data-collections-chips]");
         if (!chips) return;
 
+        const openBtn = document.querySelector("[data-collections-open]");
+
         const activate = (key) => {
+            let activeUrl = "";
             chips.querySelectorAll("[data-collection]").forEach((btn) => {
                 const active = btn.getAttribute("data-collection") === key;
                 btn.classList.toggle("active", active);
                 btn.setAttribute("aria-pressed", String(active));
+                if (active) {
+                    activeUrl = btn.getAttribute("data-collection-url") || "";
+                }
             });
             document.querySelectorAll("[data-collection-panel]").forEach((panel) => {
                 const active = panel.getAttribute("data-collection-panel") === key;
                 panel.hidden = !active;
             });
+            if (openBtn && activeUrl) {
+                openBtn.href = activeUrl;
+            }
         };
 
         const first = chips.querySelector("[data-collection]");

@@ -369,21 +369,24 @@ function franchises_selection_product_ids(int $selection_id, int $max = 500): ar
     $query = new WP_Query(array_merge(
         franchises_selection_products_query_args($selection_id, [
             'posts_per_page' => max(1, $max),
-            'fields'         => 'ids',
             'no_found_rows'  => true,
         ]),
         ['no_found_rows' => true]
     ));
 
     $ids = [];
-    if (is_array($query->posts)) {
-        foreach ($query->posts as $post_id) {
-            $post_id = (int) $post_id;
+    if ($query->have_posts()) {
+        while ($query->have_posts()) {
+            $query->the_post();
+            $post_id = (int) get_the_ID();
             if ($post_id <= 0) {
                 continue;
             }
             if (franchises_product_matches_selection_type($post_id, $type, $selection_id)) {
                 $ids[] = $post_id;
+            }
+            if (count($ids) >= $max) {
+                break;
             }
         }
     }

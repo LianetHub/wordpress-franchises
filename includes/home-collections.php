@@ -4,77 +4,54 @@ defined('ABSPATH') || exit;
 
 if (! function_exists('franchises_home_collections')) {
     /**
-     * Подборки на главной (редактируются в PHP, не в JS).
+     * Подборки на главной из CPT selection (порядок — menu_order в админке).
      *
-     * @return list<array{key: string, label: string, type: string, tag?: string}>
+     * @return list<array{key: string, label: string, id: int, url: string}>
      */
     function franchises_home_collections(): array
     {
-        $items = [
-            ['key' => 'new', 'label' => 'Новые франшизы', 'type' => 'new'],
-            ['key' => 'beginners', 'label' => 'Для начинающих', 'type' => 'tag', 'tag' => 'Для начинающих'],
-            ['key' => 'fast-payback', 'label' => 'Быстрая окупаемость', 'type' => 'tag', 'tag' => 'Быстрая окупаемость'],
-            ['key' => 'no-royalty', 'label' => 'Без роялти', 'type' => 'tag', 'tag' => 'Без роялти'],
-            ['key' => 'no-pausal', 'label' => 'Без паушального взноса', 'type' => 'tag', 'tag' => 'Без паушального взноса'],
-            ['key' => 'premium', 'label' => 'Премиум', 'type' => 'tag', 'tag' => 'Премиум'],
-        ];
+        if (! function_exists('franchises_get_selection_posts')) {
+            return apply_filters('franchises_home_collections', []);
+        }
+
+        $items = [];
+        foreach (franchises_get_selection_posts(40) as $post) {
+            if (! $post instanceof WP_Post) {
+                continue;
+            }
+            $id = (int) $post->ID;
+            $url = get_permalink($post);
+            if (! is_string($url) || $url === '') {
+                continue;
+            }
+            $slug = (string) $post->post_name;
+            $items[] = [
+                'key'   => $slug !== '' ? $slug : 'selection-' . $id,
+                'label' => get_the_title($post),
+                'id'    => $id,
+                'url'   => $url,
+            ];
+        }
 
         return apply_filters('franchises_home_collections', $items);
     }
 }
 
-if (! function_exists('franchises_home_collection_query')) {
-    function franchises_home_collection_query(array $collection, int $limit = 50): WP_Query
+if (! function_exists('franchises_home_collection_product_ids')) {
+    /**
+     * ID франшиз для превью на главной (та же логика, что на странице подборки).
+     *
+     * @return list<int>
+     */
+    function franchises_home_collection_product_ids(int $selection_id, int $limit = 10): array
     {
-        $args = [
-            'post_type'           => 'product',
-            'post_status'         => 'publish',
-            'posts_per_page'      => max(1, $limit),
-            'ignore_sticky_posts' => true,
-            'no_found_rows'       => true,
-        ];
-
-        $type = (string) ($collection['type'] ?? '');
-
-        if ($type === 'new') {
-            $args['orderby'] = 'date';
-            $args['order'] = 'DESC';
-        } elseif ($type === 'popular') {
-            $args['orderby'] = 'menu_order';
-            $args['order'] = 'ASC';
-        } else {
-            $args['orderby'] = 'date';
-            $args['order'] = 'DESC';
+        if ($selection_id <= 0 || ! function_exists('franchises_selection_product_ids')) {
+            return [];
         }
 
-        return new WP_Query($args);
-    }
-}
+        $ids = franchises_selection_product_ids($selection_id, max(50, $limit));
 
-if (! function_exists('franchises_home_collection_matches')) {
-    function franchises_home_collection_matches(array $collection, array $card): bool
-    {
-        $type = (string) ($collection['type'] ?? '');
-
-        if ($type === 'verified') {
-            return ! empty($card['verified']);
-        }
-
-        if ($type === 'new' || $type === 'popular') {
-            return true;
-        }
-
-        if ($type === 'tag') {
-            $needle = (string) ($collection['tag'] ?? '');
-            if ($needle === '') {
-                return true;
-            }
-            $tags = array_filter(array_map('trim', explode('|', (string) ($card['tags'] ?? ''))));
-
-            return in_array($needle, $tags, true);
-        }
-
-        return true;
+        return array_slice($ids, 0, max(1, $limit));
     }
 }
 
@@ -90,15 +67,17 @@ if (! function_exists('franchises_render_home_collections_section')) {
             return;
         }
 
-        $shop_url = home_url('/');
-        if (function_exists('wc_get_page_id')) {
+        $first_key = (string) ($collections[0]['key'] ?? '');
+        $first_url = (string) ($collections[0]['url'] ?? '');
+        if ($first_url === '' && function_exists('wc_get_page_id')) {
             $shop_page_id = wc_get_page_id('shop');
             if ($shop_page_id > 0) {
-                $shop_url = (string) get_permalink($shop_page_id);
+                $first_url = (string) get_permalink($shop_page_id);
             }
         }
-
-        $first_key = (string) ($collections[0]['key'] ?? '');
+        if ($first_url === '') {
+            $first_url = home_url('/');
+        }
 ?>
         <div class="segment-tabs segment-tags" aria-label="<?php esc_attr_e('Подборки', 'franchises'); ?>" data-collections-chips>
             <?php foreach ($collections as $collection) :
@@ -107,11 +86,13 @@ if (! function_exists('franchises_render_home_collections_section')) {
                     continue;
                 }
                 $active = $key === $first_key;
+                $collection_url = (string) ($collection['url'] ?? '');
             ?>
                 <button
                     type="button"
                     class="collection-tile<?php echo $active ? ' active' : ''; ?>"
                     data-collection="<?php echo esc_attr($key); ?>"
+                    data-collection-url="<?php echo esc_url($collection_url); ?>"
                     aria-pressed="<?php echo $active ? 'true' : 'false'; ?>">
                     <?php echo esc_html((string) ($collection['label'] ?? '')); ?>
                 </button>
@@ -120,39 +101,28 @@ if (! function_exists('franchises_render_home_collections_section')) {
 
         <?php foreach ($collections as $collection) :
             $key = (string) ($collection['key'] ?? '');
-            if ($key === '') {
+            $selection_id = (int) ($collection['id'] ?? 0);
+            if ($key === '' || $selection_id <= 0) {
                 continue;
             }
             $is_active = $key === $first_key;
-            $query = franchises_home_collection_query($collection, 50);
+            $product_ids = franchises_home_collection_product_ids($selection_id, 10);
             $shown = 0;
         ?>
             <div
                 class="popular-grid"
+                data-collections-grid
                 data-collection-panel="<?php echo esc_attr($key); ?>"
                 <?php echo $is_active ? '' : ' hidden'; ?>>
                 <?php
-                if ($query->have_posts()) {
-                    $i = 0;
-                    while ($query->have_posts() && $shown < 10) {
-                        $query->the_post();
-                        $card = franchises_franchise_card_from_post(get_the_ID());
-                        if (! franchises_home_collection_matches($collection, $card)) {
-                            continue;
+                if (function_exists('franchises_render_franchise_card_for_product')) {
+                    foreach ($product_ids as $product_id) {
+                        if (franchises_render_franchise_card_for_product((int) $product_id, ['order' => $shown])) {
+                            $shown++;
                         }
-                        $coll_type = (string) ($collection['type'] ?? '');
-                        if ($coll_type === 'popular') {
-                            $card['popularity'] = max(1, 100 - $shown);
-                        }
-                        if ($coll_type === 'new') {
-                            $card['date'] = (int) get_post_time('U', true);
-                        }
-                        $card['order'] = $i++;
-                        get_template_part('templates/components/franchise-card', null, ['franchise_card' => $card]);
-                        $shown++;
                     }
-                    wp_reset_postdata();
                 }
+
                 if ($shown === 0) {
                     echo '<p class="popular-sub" style="grid-column:1/-1;">' . esc_html__('В этой подборке пока нет франшиз.', 'franchises') . '</p>';
                 }
@@ -161,7 +131,7 @@ if (! function_exists('franchises_render_home_collections_section')) {
         <?php endforeach; ?>
 
         <div class="segment-actions">
-            <a class="btn btn-primary" href="<?php echo esc_url($shop_url); ?>" data-collections-open>
+            <a class="btn btn-primary" href="<?php echo esc_url($first_url); ?>" data-collections-open>
                 <?php esc_html_e('Смотреть подборку полностью', 'franchises'); ?>
             </a>
         </div>

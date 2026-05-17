@@ -1037,7 +1037,8 @@ img[loading=lazy].is-loaded {
 
 .hidden,
 select.select,
-select.select-native-source {
+select.select-native-source,
+[hidden] {
   position: absolute;
   width: 1px;
   height: 1px;

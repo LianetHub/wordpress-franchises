@@ -24,6 +24,10 @@ global $product;
 
 $franchise_card = isset($franchise_card) && is_array($franchise_card) ? $franchise_card : [];
 
+if ($franchise_card === [] && isset($args) && is_array($args) && ! empty($args['franchise_card']) && is_array($args['franchise_card'])) {
+    $franchise_card = $args['franchise_card'];
+}
+
 if (
     $franchise_card === []
     && isset($product)

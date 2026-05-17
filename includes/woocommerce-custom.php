@@ -377,6 +377,52 @@ if (! function_exists('franchises_franchise_card_from_post')) {
     }
 }
 
+if (! function_exists('franchises_render_franchise_card')) {
+    /**
+     * @param array<string, mixed> $franchise_card
+     */
+    function franchises_render_franchise_card(array $franchise_card): bool
+    {
+        if ($franchise_card === []) {
+            return false;
+        }
+
+        $template = get_template_directory() . '/templates/components/franchise-card.php';
+        if (! is_readable($template)) {
+            return false;
+        }
+
+        global $product;
+        $saved_product = $product ?? null;
+        $product = null;
+
+        include $template;
+
+        $product = $saved_product;
+
+        return true;
+    }
+}
+
+if (! function_exists('franchises_render_franchise_card_for_product')) {
+    /**
+     * @param array<string, mixed> $overrides
+     */
+    function franchises_render_franchise_card_for_product(int $product_id, array $overrides = []): bool
+    {
+        if ($product_id <= 0 || ! function_exists('franchises_franchise_card_from_post')) {
+            return false;
+        }
+
+        $card = franchises_franchise_card_from_post($product_id);
+        if ($overrides !== []) {
+            $card = array_merge($card, $overrides);
+        }
+
+        return franchises_render_franchise_card($card);
+    }
+}
+
 // -------------------------------------------------------------------------
 // Карточка франшизы (single product): галерея, хлебные крошки, оглавление, FAQ
 // -------------------------------------------------------------------------
