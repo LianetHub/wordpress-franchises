@@ -204,7 +204,8 @@ $card = franchises_franchise_card_from_post($post_id);
                                                 src="<?php echo esc_url($gurl); ?>"
                                                 alt=""
                                                 loading="<?php echo $gi === 0 ? 'eager' : 'lazy'; ?>"
-                                                decoding="async">
+                                                decoding="async"
+                                                class="cover-image">
                                         </div>
                                     <?php endforeach; ?>
                                 </div>

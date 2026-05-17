@@ -107,14 +107,7 @@
 	stroke-linejoin: round;
 }
 
-.gallery-thumb img {
-	width: 100%;
-	height: 100%;
-	object-fit: contain !important;
-	object-position: center;
-	display: block;
-	background: #ffffff;
-}
+
 
 .toc-list a {
 	text-decoration: none;
@@ -429,9 +422,22 @@
 		cursor: pointer;
 		background: #ffffff;
 		outline: none;
-		width: 140px;
 		aspect-ratio: 16 / 9;
-		box-sizing: border-box;
+		display: block;
+		position: relative;
+
+		& img {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			object-position: center;
+			display: block;
+			background: #ffffff;
+		}
+
 	}
 
 	&-thumb.is-active,
@@ -439,6 +445,8 @@
 		border-color: var(--btn-accent);
 		box-shadow: none;
 	}
+
+
 
 }
 
@@ -756,12 +764,7 @@
 
 	}
 
-	.gallery {
-		&-thumb {
-			width: 70px;
-		}
 
-	}
 
 
 }
@@ -874,22 +877,6 @@
 
 		&-mobile-list-card {
 			margin-bottom: 10px;
-		}
-
-	}
-
-
-}
-
-@media (min-width: 641px) {
-	.gallery {
-		--thumb-gap: 10px;
-		--thumb-visible-count: 5;
-
-		&-thumb {
-			width: calc((100% - (var(--thumb-gap) * (var(--thumb-visible-count) - 1))) / var(--thumb-visible-count)) !important;
-			max-width: calc((100% - (var(--thumb-gap) * (var(--thumb-visible-count) - 1))) / var(--thumb-visible-count)) !important;
-			min-width: 0 !important;
 		}
 
 	}

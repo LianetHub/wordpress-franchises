@@ -296,13 +296,13 @@ $count_line = $found > 0
     </main>
 </div>
 
-<section class="help-section catalog-bottom" aria-label="Поможем подобрать франшизу">
-    <div class="help-panel">
-        <h2 class="help-title">Не нашли подходящую франшизу?</h2>
-        <p class="help-text">Оставьте заявку — подберём варианты под ваш бюджет и цели и свяжемся в течение дня.</p>
-        <a class="btn btn-primary" href="<?php echo esc_url(home_url('/#contacts')); ?>">Получить подбор</a>
-    </div>
-</section>
+<?php
+get_template_part('templates/components/help-section', null, [
+    'section_class'   => 'catalog-bottom',
+    'button_href'     => home_url('/#contacts'),
+    'button_fancybox' => false,
+]);
+?>
 
 <div class="filter-modal" id="filter-modal" aria-hidden="true">
     <div class="filter-backdrop" data-filter-close></div>

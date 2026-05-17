@@ -1064,8 +1064,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let thumbsSwiper = null;
         if (thumbsEl && slideCount > 1) {
             thumbsSwiper = new Swiper(thumbsEl, {
-                slidesPerView: "auto",
-                spaceBetween: 10,
+                slidesPerView: 3,
+                spaceBetween: 8,
                 watchSlidesProgress: true,
                 slideToClickedSlide: true,
                 watchOverflow: true,
@@ -1077,8 +1077,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                         : undefined,
                 breakpoints: {
-                    0: { spaceBetween: 8 },
-                    641: { spaceBetween: 10 },
+                    641: {
+                        spaceBetween: 10,
+                        slidesPerView: 5,
+                    },
                 },
             });
         }

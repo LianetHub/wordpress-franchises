@@ -130,13 +130,7 @@ if (class_exists('WooCommerce', false) && function_exists('wc_get_page_id')) {
 </section>
 
 
-<section class="help-section" aria-label="Поможем подобрать франшизу">
-    <div class="help-panel">
-        <h2 class="help-title">Не нашли подходящую франшизу?</h2>
-        <p class="help-text">Оставьте заявку — подберём варианты под ваш бюджет и цели и свяжемся в течение дня.</p>
-        <a class="btn btn-primary" href="#selection-popup" data-fancybox data-src="#selection-popup">Получить подбор</a>
-    </div>
-</section>
+<?php get_template_part('templates/components/help-section'); ?>
 
 <section class="logos-section" aria-label="Логотипы франшиз">
     <div class="section-head">
