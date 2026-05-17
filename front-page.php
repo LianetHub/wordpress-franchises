@@ -172,71 +172,8 @@ if (class_exists('WooCommerce', false) && function_exists('wc_get_page_id')) {
     </div>
 </div>
 
-<section class="reviews-section" aria-label="Отзывы">
-    <h2 class="segment-title">Отзывы предпринимателей, которые уже запустили бизнес</h2>
-    <p class="segment-sub">Опыт запуска реальных людей, их результаты и выводы.</p>
-    <div class="reviews-wrap">
-        <button class="reviews-arrow prev" type="button" aria-label="Предыдущий отзыв"></button>
-        <div class="reviews-strip swiper">
-            <div class="swiper-wrapper">
-                <article class="review-card swiper-slide">
-                    <div class="review-media">Фото
-                        клиента</div>
-                    <div class="review-head">
-                        <div class="review-name">Алексей, Москва</div>
-                        <div class="review-meta">Купил франшизу и открыл кофейню</div>
-                    </div>
-                    <div class="review-text">Купил франшизу через платформу — помогли с подбором и запуском, вышли на стабильные продажи за 2 месяца. Поддержка по маркетингу и персоналу реально ускорила старт, а чек‑листы и обучение команды сняли много рисков.</div>
-                    <div class="review-franchise">
-                        <div class="review-logo">Лого</div>
-                        <a class="review-link" href="franchise.html">Franchise Coffee</a>
-                    </div>
-                </article>
-                <article class="review-card swiper-slide">
-                    <div class="review-media">Фото
-                        клиента</div>
-                    <div class="review-head">
-                        <div class="review-name">Марина, Казань</div>
-                        <div class="review-meta">Купила франшизу салона красоты</div>
-                    </div>
-                    <div class="review-text">Выбрала франшизу, проверили договор и условия. Запуск прошёл без сюрпризов, помогли с локацией и первой поставкой. Уже на второй месяц увидела стабильный поток клиентов.</div>
-                    <div class="review-franchise">
-                        <div class="review-logo">Лого</div>
-                        <a class="review-link" href="franchise.html">Beauty Line</a>
-                    </div>
-                </article>
-                <article class="review-card swiper-slide">
-                    <div class="review-media">Фото
-                        клиента</div>
-                    <div class="review-head">
-                        <div class="review-name">Иван, Екатеринбург</div>
-                        <div class="review-meta">Купил франшизу доставки</div>
-                    </div>
-                    <div class="review-text">Франшизу купил быстро, окупаемость попадает в заявленные сроки. Понравилось, что сразу дали понятный план запуска и KPI, и помогли довести рекламные кампании до первых продаж.</div>
-                    <div class="review-franchise">
-                        <div class="review-logo">Лого</div>
-                        <a class="review-link" href="franchise.html">Fast Delivery</a>
-                    </div>
-                </article>
-                <article class="review-card swiper-slide">
-                    <div class="review-media">Фото
-                        клиента</div>
-                    <div class="review-head">
-                        <div class="review-name">Ольга, Новосибирск</div>
-                        <div class="review-meta">Купила франшизу в ритейле</div>
-                    </div>
-                    <div class="review-text">Купила франшизу через платформу, документы и согласования прошли быстро. Команда франчайзера на связи, дорабатываем формат под мой город и подбираем оптимальный ассортимент.</div>
-                    <div class="review-franchise">
-                        <div class="review-logo">Лого</div>
-                        <a class="review-link" href="franchise.html">City Retail</a>
-                    </div>
-                </article>
-            </div>
-        </div>
-        <button class="reviews-arrow next" type="button" aria-label="Следующий отзыв"></button>
-    </div>
-    <div class="reviews-dots" aria-label="Пагинация отзывов"></div>
-</section>
+<?php require_once(TEMPLATE_PATH . '_reviews-section.php'); ?>
+
 
 <section class="final-section" id="contacts" aria-label="Форма заявки">
     <h2 class="segment-title">Остались вопросы?</h2>

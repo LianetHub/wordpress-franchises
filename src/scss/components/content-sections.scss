@@ -5,36 +5,6 @@
 @use "fonts";
 
 .reviews {
-	&-dots {
-		display: none;
-		justify-content: center;
-		align-items: center;
-		gap: 10px;
-		margin-top: 14px;
-	}
-
-	&-dot {
-		width: 10px;
-		height: 10px;
-		border-radius: 999px;
-		border: none;
-		background: #cbd3d8;
-		cursor: pointer;
-		padding: 0;
-		transition: width 0.2s ease, background 0.2s ease, opacity 0.2s ease;
-		opacity: 0.9;
-	}
-
-	&-dot:hover {
-		opacity: 1;
-	}
-
-	&-dot.active {
-		width: 36px;
-		background: var(--btn-accent);
-		opacity: 1;
-	}
-
 	&-section {
 		background: transparent;
 		border: none;
@@ -42,28 +12,30 @@
 		border-radius: 0;
 	}
 
-	&-strip {
-		display: grid;
-		grid-auto-flow: column;
-		--review-gap: 14px;
-		--review-cols: 3;
-		grid-auto-columns: calc((100% - (var(--review-gap) * (var(--review-cols) - 1))) / var(--review-cols));
-		gap: var(--review-gap);
-		overflow-x: auto;
-		padding-bottom: 0;
-		scrollbar-width: none;
-		flex: 1 1 auto;
-	}
-
-	&-strip::-webkit-scrollbar {
-		display: none;
-	}
-
 	&-wrap {
 		position: relative;
 		display: flex;
-		align-items: center;
-		overflow: visible;
+		align-items: stretch;
+		gap: 0;
+		margin-top: 8px;
+	}
+
+	&-strip.swiper {
+		flex: 1 1 auto;
+		min-width: 0;
+		overflow: hidden;
+		margin: 0;
+	}
+
+	&-strip {
+		.swiper-wrapper {
+			align-items: stretch;
+		}
+
+		.swiper-slide {
+			height: auto;
+			box-sizing: border-box;
+		}
 	}
 
 	&-arrow {
@@ -72,21 +44,28 @@
 		transform: translateY(-50%);
 		width: 56px;
 		height: 56px;
+		margin-top: 0;
 		border-radius: 50%;
 		border: none;
 		background: #e7eaee;
 		color: #6a6f75;
 		display: grid;
 		place-items: center;
-		font-size: 18px;
-		line-height: 1;
-		font-family: "Arial", sans-serif;
 		padding: 0;
 		cursor: pointer;
 		z-index: 2;
 		opacity: 0;
 		transition: opacity 0.2s ease, background 0.2s ease;
 		box-shadow: none;
+
+		&::after {
+			display: none;
+		}
+
+		&.swiper-button-disabled {
+			opacity: 0.35;
+			pointer-events: none;
+		}
 	}
 
 	&-arrow.prev {
@@ -97,10 +76,50 @@
 		right: -28px;
 	}
 
-	&-arrow:hover {
+	&-arrow:hover:not(.swiper-button-disabled) {
 		background: #dde1e6;
 	}
 
+	&-dots.swiper-pagination {
+		position: static;
+		display: none;
+		justify-content: center;
+		align-items: center;
+		gap: 10px;
+		width: 100%;
+		margin-top: 14px;
+		padding: 0;
+		line-height: 1;
+	}
+
+	&-dots {
+		.swiper-pagination-bullet {
+			width: 10px;
+			height: 10px;
+			border-radius: 999px;
+			background: #cbd3d8;
+			opacity: 0.9;
+			margin: 0 !important;
+			transition: width 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+		}
+
+		.swiper-pagination-bullet-active {
+			width: 36px;
+			border-radius: 999px;
+			background: var(--btn-accent);
+			opacity: 1;
+		}
+	}
+
+	&-debug {
+		margin: 12px 0 0;
+		padding: 12px 14px;
+		background: #fff8e6;
+		border: 1px solid #f0d78c;
+		border-radius: 8px;
+		font-size: 13px;
+		color: #5c4a12;
+	}
 }
 
 .help {
@@ -156,10 +175,6 @@
 	z-index: 1;
 }
 
-.logos-section,
-.reviews-section {
-	padding: 0 24px;
-}
 
 .logos-section .logo-wrap {
 	margin-bottom: 48px;
@@ -576,7 +591,7 @@
 	&-media {
 		width: 72px;
 		height: 72px;
-		aspect-ratio: 16 / 9;
+		aspect-ratio: 1;
 		border-radius: 50%;
 		background: #e0e3e6;
 		border: 1px solid #d7dade;
@@ -588,6 +603,28 @@
 		margin: 0 auto;
 		text-align: center;
 		line-height: 1.1;
+		overflow: hidden;
+
+		img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			display: block;
+		}
+
+		&--initial {
+			background: #dfe8f3;
+			border-color: #c5d4e6;
+			color: #1a76d3;
+		}
+
+		&__initial {
+			font-size: 28px;
+			font-weight: 800;
+			line-height: 1;
+			letter-spacing: -0.02em;
+			text-transform: uppercase;
+		}
 	}
 
 	&-head {
@@ -635,6 +672,14 @@
 		font-weight: 700;
 		color: #7a7f85;
 		flex: 0 0 36px;
+		overflow: hidden;
+
+		img {
+			width: 100%;
+			height: 100%;
+			object-fit: contain;
+			display: block;
+		}
 	}
 
 	&-link {
@@ -659,7 +704,7 @@
 			display: none;
 		}
 
-		&-dots {
+		&-dots.swiper-pagination {
 			display: flex;
 		}
 
@@ -667,15 +712,9 @@
 			padding-top: 14px;
 		}
 
-		&-strip {
-			--review-cols: 1;
-			grid-auto-columns: calc(100% - 28px);
+		&-wrap {
 			padding: 0 14px;
-			scroll-snap-type: x mandatory;
-			scroll-padding-left: 14px;
-			scroll-padding-right: 14px;
 		}
-
 	}
 
 	.logo-arrow,

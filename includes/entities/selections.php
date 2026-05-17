@@ -19,7 +19,7 @@ function theme_register_selections()
         ],
         'public'             => true,
         'has_archive'        => true,
-        'rewrite'            => ['slug' => 'podborka'],
+        'rewrite'            => ['slug' => 'podborki'],
         'supports'           => ['title', 'editor', 'thumbnail', 'excerpt'],
         'menu_icon'          => 'dashicons-star-filled',
         'show_in_rest'       => true,

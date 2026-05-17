@@ -2,7 +2,7 @@
 
 @font-face {
     font-family: Manrope;
-    src: url(../fonts/Manrope-VariableFont_wght.woff2?v=1779023941247) format("woff2 supports variations"), url(../fonts/Manrope-VariableFont_wght.woff2?v=1779023941247) format("woff2-variations"), url(../fonts/Manrope-VariableFont_wght.woff?v=1779023941247) format("woff");
+    src: url(../fonts/Manrope-VariableFont_wght.woff2?v=1779026651828) format("woff2 supports variations"), url(../fonts/Manrope-VariableFont_wght.woff2?v=1779026651828) format("woff2-variations"), url(../fonts/Manrope-VariableFont_wght.woff?v=1779026651828) format("woff");
     font-weight: 100 900;
     font-stretch: 75% 125%;
     font-style: normal;
@@ -636,36 +636,8 @@
     width: 1.375rem
 }
 
-.socials {
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-    gap: .375rem
-}
-
-.socials__item {
-    display: -webkit-inline-box;
-    display: -ms-inline-flexbox;
-    display: inline-flex;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-    -webkit-box-pack: center;
-    -ms-flex-pack: center;
-    justify-content: center;
-    -webkit-transition: opacity .2s ease, -webkit-transform .2s ease;
-    transition: opacity .2s ease, -webkit-transform .2s ease;
-    transition: opacity .2s ease, transform .2s ease;
-    transition: opacity .2s ease, transform .2s ease, -webkit-transform .2s ease;
-    background: 0 0 !important;
-    border: none !important;
-    -ms-flex-negative: 0;
-    flex-shrink: 0;
-    width: 1.875rem;
-    height: 1.875rem
+.swiper-button-lock {
+    display: none !important
 }
 
 ._loading {
@@ -6093,41 +6065,6 @@ body {
     margin-top: 8px
 }
 
-.reviews-dots {
-    display: none;
-    -webkit-box-pack: center;
-    -ms-flex-pack: center;
-    justify-content: center;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-    gap: 10px;
-    margin-top: 14px
-}
-
-.reviews-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 999px;
-    border: none;
-    background: #cbd3d8;
-    cursor: pointer;
-    padding: 0;
-    -webkit-transition: width .2s ease, background .2s ease, opacity .2s ease;
-    transition: width .2s ease, background .2s ease, opacity .2s ease;
-    opacity: .9
-}
-
-.reviews-dot:hover {
-    opacity: 1
-}
-
-.reviews-dot.active {
-    width: 36px;
-    background: var(--btn-accent);
-    opacity: 1
-}
-
 .reviews-section {
     background: 0 0;
     border: none;
@@ -6136,35 +6073,37 @@ body {
     border-radius: 0
 }
 
-.reviews-strip {
-    display: -ms-grid;
-    display: grid;
-    grid-auto-flow: column;
-    --review-gap: 14px;
-    --review-cols: 3;
-    grid-auto-columns: calc((100% - var(--review-gap) * (var(--review-cols) - 1))/ var(--review-cols));
-    gap: var(--review-gap);
-    overflow-x: auto;
-    padding-bottom: 0;
-    scrollbar-width: none;
-    -webkit-box-flex: 1;
-    -ms-flex: 1 1 auto;
-    flex: 1 1 auto
-}
-
-.reviews-strip::-webkit-scrollbar {
-    display: none
-}
-
 .reviews-wrap {
     position: relative;
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-    overflow: visible
+    -webkit-box-align: stretch;
+    -ms-flex-align: stretch;
+    align-items: stretch;
+    gap: 0;
+    margin-top: 8px
+}
+
+.reviews-strip.swiper {
+    -webkit-box-flex: 1;
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    margin: 0
+}
+
+.reviews-strip .swiper-wrapper {
+    -webkit-box-align: stretch;
+    -ms-flex-align: stretch;
+    align-items: stretch
+}
+
+.reviews-strip .swiper-slide {
+    height: auto;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box
 }
 
 .reviews-arrow {
@@ -6175,6 +6114,7 @@ body {
     transform: translateY(-50%);
     width: 56px;
     height: 56px;
+    margin-top: 0;
     border-radius: 50%;
     border: none;
     background: #e7eaee;
@@ -6182,9 +6122,6 @@ body {
     display: -ms-grid;
     display: grid;
     place-items: center;
-    font-size: 18px;
-    line-height: 1;
-    font-family: Arial, sans-serif;
     padding: 0;
     cursor: pointer;
     z-index: 2;
@@ -6195,6 +6132,15 @@ body {
     box-shadow: none
 }
 
+.reviews-arrow::after {
+    display: none
+}
+
+.reviews-arrow.swiper-button-disabled {
+    opacity: .35;
+    pointer-events: none
+}
+
 .reviews-arrow.prev {
     left: -28px
 }
@@ -6203,8 +6149,52 @@ body {
     right: -28px
 }
 
-.reviews-arrow:hover {
+.reviews-arrow:hover:not(.swiper-button-disabled) {
     background: #dde1e6
+}
+
+.reviews-dots.swiper-pagination {
+    position: static;
+    display: none;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin-top: 14px;
+    padding: 0;
+    line-height: 1
+}
+
+.reviews-dots .swiper-pagination-bullet {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: #cbd3d8;
+    opacity: .9;
+    margin: 0 !important;
+    -webkit-transition: width .2s ease, background .2s ease, opacity .2s ease;
+    transition: width .2s ease, background .2s ease, opacity .2s ease
+}
+
+.reviews-dots .swiper-pagination-bullet-active {
+    width: 36px;
+    border-radius: 999px;
+    background: var(--btn-accent);
+    opacity: 1
+}
+
+.reviews-debug {
+    margin: 12px 0 0;
+    padding: 12px 14px;
+    background: #fff8e6;
+    border: 1px solid #f0d78c;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #5c4a12
 }
 
 .help-section {
@@ -6256,10 +6246,6 @@ body {
 .final-section>* {
     position: relative;
     z-index: 1
-}
-
-.logos-section, .reviews-section {
-    padding: 0 24px
 }
 
 .logos-section .logo-wrap {
@@ -6732,7 +6718,7 @@ body {
 .review-media {
     width: 72px;
     height: 72px;
-    aspect-ratio: 16/9;
+    aspect-ratio: 1;
     border-radius: 50%;
     background: #e0e3e6;
     border: 1px solid #d7dade;
@@ -6744,7 +6730,30 @@ body {
     color: #7a7f85;
     margin: 0 auto;
     text-align: center;
-    line-height: 1.1
+    line-height: 1.1;
+    overflow: hidden
+}
+
+.review-media img {
+    width: 100%;
+    height: 100%;
+    -o-object-fit: cover;
+    object-fit: cover;
+    display: block
+}
+
+.review-media--initial {
+    background: #dfe8f3;
+    border-color: #c5d4e6;
+    color: #1a76d3
+}
+
+.review-media__initial {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -.02em;
+    text-transform: uppercase
 }
 
 .review-head {
@@ -6801,7 +6810,16 @@ body {
     color: #7a7f85;
     -webkit-box-flex: 0;
     -ms-flex: 0 0 36px;
-    flex: 0 0 36px
+    flex: 0 0 36px;
+    overflow: hidden
+}
+
+.review-logo img {
+    width: 100%;
+    height: 100%;
+    -o-object-fit: contain;
+    object-fit: contain;
+    display: block
 }
 
 .review-link {
@@ -7709,10 +7727,6 @@ body {
         padding: 1rem
     }
 
-    .socials {
-        gap: .5rem
-    }
-
     .custom-table tbody td {
         padding: 1.25rem;
         font-size: 1rem
@@ -7892,10 +7906,6 @@ body {
 @media (min-width:991.98px) {
     .popup {
         max-width: 59.375rem
-    }
-
-    .socials {
-        gap: 1.25rem
     }
 
     .filters .swiper-wrapper {
@@ -9111,7 +9121,7 @@ body {
         display: none
     }
 
-    .reviews-dots {
+    .reviews-dots.swiper-pagination {
         display: -webkit-box;
         display: -ms-flexbox;
         display: flex
@@ -9121,14 +9131,8 @@ body {
         padding-top: 14px
     }
 
-    .reviews-strip {
-        --review-cols: 1;
-        grid-auto-columns: calc(100% - 28px);
-        padding: 0 14px;
-        -ms-scroll-snap-type: x mandatory;
-        scroll-snap-type: x mandatory;
-        scroll-padding-left: 14px;
-        scroll-padding-right: 14px
+    .reviews-wrap {
+        padding: 0 14px
     }
 
     .logo-arrow, .reviews-arrow {
@@ -9267,13 +9271,6 @@ body {
 
     .swiper-button-next:hover, .swiper-button-prev:hover {
         background: rgb(229.5, 229.5, 229.5)
-    }
-
-    .socials__item:hover {
-        opacity: .8;
-        -webkit-transform: translateY(-.125rem);
-        -ms-transform: translateY(-.125rem);
-        transform: translateY(-.125rem)
     }
 
     .typography-block a:not(.article__more, .btn):hover {

@@ -12,7 +12,7 @@ $has_filters = function_exists('franchises_catalog_has_active_filters')
 $reset_url = function_exists('franchises_catalog_reset_filters_url')
     ? franchises_catalog_reset_filters_url()
     : home_url('/');
-$help_url = home_url('/#contacts');
+
 ?>
 <div class="catalog-empty" role="status" aria-live="polite">
     <div class="catalog-empty__visual" aria-hidden="true">
@@ -35,6 +35,6 @@ $help_url = home_url('/#contacts');
         <?php if ($has_filters) : ?>
             <a class="btn btn-primary" href="<?php echo esc_url($reset_url); ?>">Сбросить фильтры</a>
         <?php endif; ?>
-        <a class="btn btn-outline" href="<?php echo esc_url($help_url); ?>">Получить подбор</a>
+        <a class="btn btn-outline" href="#selection-popup" data-fancybox>Получить подбор</a>
     </div>
 </div>

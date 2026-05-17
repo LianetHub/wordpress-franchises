@@ -137,42 +137,8 @@
 	}
 }
 
-.socials {
-	display: flex;
-	align-items: center;
-	gap: 0.375rem;
-
-	@media (min-width:$md5) {
-		gap: 0.5rem;
-	}
-
-	@media (min-width:$md3) {
-		gap: 1.25rem;
-	}
-
-
-	// .socials__item
-	&__item {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-
-		transition: opacity 0.2s ease, transform 0.2s ease;
-		background: none !important;
-		border: none !important;
-		flex-shrink: 0;
-
-		width: 1.875rem;
-		height: 1.875rem;
-
-
-		@media (any-hover: hover) {
-			&:hover {
-				opacity: 0.8;
-				transform: translateY(-0.125rem);
-			}
-		}
-	}
+.swiper-button-lock {
+	display: none !important;
 }
 
 .mobile-hidden {

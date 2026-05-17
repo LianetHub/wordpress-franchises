@@ -100,8 +100,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 100);
         });
 
-        function initHorizontalStripSwiper(strip, { prevBtn, nextBtn, paginationEl, slidesPerView = "auto", spaceBetween = 14, autoplay = false } = {}) {
+        function initHorizontalStripSwiper(strip, { prevBtn, nextBtn, paginationEl, slidesPerView = "auto", spaceBetween = 14, autoplay = false, breakpoints = null } = {}) {
             if (typeof Swiper === "undefined" || !strip || strip.swiper) return null;
+
+            const slideCount = strip.querySelectorAll(".swiper-slide").length;
+            if (!slideCount) return null;
 
             const config = {
                 speed: 400,
@@ -110,6 +113,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 watchOverflow: true,
             };
 
+            if (breakpoints) {
+                config.breakpoints = breakpoints;
+            }
             if (prevBtn && nextBtn) {
                 config.navigation = { prevEl: prevBtn, nextEl: nextBtn };
             }
@@ -160,44 +166,24 @@ document.addEventListener('DOMContentLoaded', () => {
             initHorizontalStripSwiper(reviewsStrip, {
                 prevBtn: reviewsWrap?.querySelector(".reviews-arrow.prev"),
                 nextBtn: reviewsWrap?.querySelector(".reviews-arrow.next"),
-                paginationEl: document.querySelector(".reviews-dots"),
+                paginationEl: reviewsWrap?.closest(".reviews-section")?.querySelector(".reviews-dots"),
                 spaceBetween: 20,
+                watchOverflow: true,
+                slidesPerView: 1,
+                breakpoints: {
+                    601: { slidesPerView: 2, spaceBetween: 16 },
+                    901: { slidesPerView: 3, spaceBetween: 20 },
+                },
             });
         }
 
 
 
         // sliders
-        class MobileSwiper {
-            constructor(sliderName, options, condition = 991.98) {
-                this.$slider = $(sliderName);
-                this.options = options;
-                this.init = false;
-                this.swiper = null;
-                this.condition = condition;
 
-                if (this.$slider.length) {
-                    this.handleResize();
-                    $(window).on("resize", () => this.handleResize());
-                }
-            }
-
-            handleResize() {
-                if (window.innerWidth <= this.condition) {
-                    if (!this.init) {
-                        this.init = true;
-                        this.swiper = new Swiper(this.$slider[0], this.options);
-                    }
-                } else if (this.init) {
-                    this.swiper.destroy();
-                    this.swiper = null;
-                    this.init = false;
-                }
-            }
-        }
 
         if ($('.hero__slider').length) {
-            const heroSlider = new Swiper('.hero__slider', {
+            new Swiper('.hero__slider', {
                 speed: 400,
                 slidesPerView: 1,
                 spaceBetween: 12,
