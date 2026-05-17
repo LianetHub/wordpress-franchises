@@ -2,7 +2,7 @@
 
 @font-face {
     font-family: Manrope;
-    src: url(../fonts/Manrope-VariableFont_wght.woff2?v=1779032607532) format("woff2 supports variations"), url(../fonts/Manrope-VariableFont_wght.woff2?v=1779032607532) format("woff2-variations"), url(../fonts/Manrope-VariableFont_wght.woff?v=1779032607532) format("woff");
+    src: url(../fonts/Manrope-VariableFont_wght.woff2?v=1779034367791) format("woff2 supports variations"), url(../fonts/Manrope-VariableFont_wght.woff2?v=1779034367791) format("woff2-variations"), url(../fonts/Manrope-VariableFont_wght.woff?v=1779034367791) format("woff");
     font-weight: 100 900;
     font-stretch: 75% 125%;
     font-style: normal;
@@ -2615,18 +2615,14 @@ body {
     -ms-flex-align: center;
     align-items: center;
     gap: 8px;
-    border-radius: 999px;
-    border: 1px solid #e3e6e8;
-    background: #fff;
-    -webkit-box-shadow: 0 6px 16px rgba(15, 26, 23, .05);
-    box-shadow: 0 6px 16px rgba(15, 26, 23, .05);
     -webkit-box-flex: 0;
     -ms-flex: 0 1 320px;
     flex: 0 1 320px;
-    min-width: 220px
+    min-width: 220px;
+    border-radius: 999px
 }
 
-.header-search:focus-within {
+.header-search:focus-within input {
     border-color: var(--btn-accent);
     -webkit-box-shadow: 0 0 0 3px rgba(26, 118, 211, .14);
     box-shadow: 0 0 0 3px rgba(26, 118, 211, .14)
@@ -2852,13 +2848,42 @@ body {
 }
 
 .dgwt-wcas-search-wrapp.header-search--fibosearch .dgwt-wcas-ico-magnifier, .dgwt-wcas-search-wrapp.header-search--fibosearch .dgwt-wcas-ico-magnifier-handler {
-    display: none
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -webkit-box-flex: 0;
+    -ms-flex: 0 0 auto;
+    flex: 0 0 auto;
+    width: auto;
+    height: auto;
+    min-width: 0;
+    background: 0 0 !important;
+    background-image: none !important;
+    opacity: 1 !important;
+    position: static !important;
+    pointer-events: none
+}
+
+.dgwt-wcas-search-wrapp.header-search--fibosearch .dgwt-wcas-ico-magnifier-handler::before, .dgwt-wcas-search-wrapp.header-search--fibosearch .dgwt-wcas-ico-magnifier::before {
+    display: none !important
 }
 
 .dgwt-wcas-search-wrapp.header-search--fibosearch .search-icon {
     -webkit-box-flex: 0;
     -ms-flex: 0 0 auto;
-    flex: 0 0 auto
+    flex: 0 0 auto;
+    display: block;
+    width: 18px;
+    height: 18px;
+    stroke: #7b8288;
+    stroke-width: 2;
+    fill: none
 }
 
 .dgwt-wcas-search-wrapp.header-search--fibosearch .dgwt-wcas-sf-wrapp:focus-within, .dgwt-wcas-search-wrapp.header-search--fibosearch:focus-within .dgwt-wcas-sf-wrapp {

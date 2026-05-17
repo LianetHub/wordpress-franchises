@@ -1734,6 +1734,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const shopUrl = franchisesFiboSearch.shopUrl || '';
         const submitLabel = franchisesFiboSearch.i18n?.submit || 'Найти';
         const placeholder = franchisesFiboSearch.i18n?.placeholder || 'Поиск по франшизам';
+        const searchIconHtml =
+            '<svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>';
+
+        const syncSearchIcon = (form) => {
+            const wrapp = form.querySelector('.dgwt-wcas-sf-wrapp');
+            if (!wrapp || wrapp.querySelector('.search-icon')) {
+                return;
+            }
+            const input = wrapp.querySelector('.dgwt-wcas-search-input, input[type="search"]');
+            if (input) {
+                input.insertAdjacentHTML('beforebegin', searchIconHtml);
+            }
+        };
 
         const syncSearchForm = (form) => {
             if (!(form instanceof HTMLFormElement)) {
@@ -1743,6 +1756,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (shopUrl) {
                 form.setAttribute('action', shopUrl);
             }
+
+            syncSearchIcon(form);
 
             const input = form.querySelector('.dgwt-wcas-search-input, input[type="search"]');
             if (input) {

@@ -26,6 +26,18 @@ if (! function_exists('franchises_get_catalog_search_query')) {
     }
 }
 
+if (! function_exists('franchises_header_search_icon_svg')) {
+    function franchises_header_search_icon_svg(string $extra_class = ''): string
+    {
+        $class = trim('search-icon ' . $extra_class);
+
+        return '<svg class="' . esc_attr($class) . '" viewBox="0 0 24 24" aria-hidden="true">'
+            . '<circle cx="11" cy="11" r="7"></circle>'
+            . '<path d="M20 20l-3.5-3.5"></path>'
+            . '</svg>';
+    }
+}
+
 if (! function_exists('franchises_render_header_search')) {
     /**
      * @param string $context desktop|mobile-menu|mobile-bar
@@ -49,10 +61,8 @@ if (! function_exists('franchises_render_header_search')) {
 
 ?>
         <form class="header-search" role="search" method="get" action="<?php echo esc_url($shop_url); ?>" aria-label="<?php esc_attr_e('Поиск франшизы', 'franchises'); ?>">
-            <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="11" cy="11" r="7"></circle>
-                <path d="M20 20l-3.5-3.5"></path>
-            </svg>
+            <?php echo franchises_header_search_icon_svg(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped 
+            ?>
             <input type="search" name="q" placeholder="<?php esc_attr_e('Поиск по франшизам', 'franchises'); ?>" aria-label="<?php esc_attr_e('Введите запрос', 'franchises'); ?>" value="<?php echo esc_attr($search_val); ?>">
             <button class="search-btn" type="submit"><?php esc_html_e('Найти', 'franchises'); ?></button>
         </form>
@@ -70,9 +80,9 @@ if (franchises_fibosearch_is_active()) {
     });
 
     add_filter('dgwt/wcas/form/magnifier_ico', static function (string $html, string $class): string {
-        unset($html, $class);
+        unset($html);
 
-        return '<svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>';
+        return franchises_header_search_icon_svg($class);
     }, 10, 2);
 
     add_filter('dgwt/wcas/form/html', static function (string $html): string {
@@ -91,6 +101,16 @@ if (franchises_fibosearch_is_active()) {
             $html,
             1
         ) ?? $html;
+
+        if (strpos($html, 'search-icon') === false) {
+            $icon = franchises_header_search_icon_svg('dgwt-wcas-ico-magnifier');
+            $html = preg_replace(
+                '#(<div class="[^"]*dgwt-wcas-sf-wrapp[^"]*">)#i',
+                '$1' . $icon,
+                $html,
+                1
+            ) ?? $html;
+        }
 
         return $html;
     });

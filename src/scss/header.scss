@@ -306,16 +306,15 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    border-radius: 999px;
-    border: 1px solid #e3e6e8;
-    background: #ffffff;
-    box-shadow: 0 6px 16px rgba(15, 26, 23, 0.05);
     flex: 0 1 320px;
     min-width: 220px;
+    border-radius: 999px;
 
     &:focus-within {
-        border-color: var(--btn-accent);
-        box-shadow: 0 0 0 3px rgba(26, 118, 211, 0.14);
+        & input {
+            border-color: var(--btn-accent);
+            box-shadow: 0 0 0 3px rgba(26, 118, 211, 0.14);
+        }
     }
 
     input {
@@ -494,11 +493,32 @@
 
     .dgwt-wcas-ico-magnifier,
     .dgwt-wcas-ico-magnifier-handler {
-        display: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        width: auto;
+        height: auto;
+        min-width: 0;
+        background: none !important;
+        background-image: none !important;
+        opacity: 1 !important;
+        position: static !important;
+        pointer-events: none;
+
+        &::before {
+            display: none !important;
+        }
     }
 
     .search-icon {
         flex: 0 0 auto;
+        display: block;
+        width: 18px;
+        height: 18px;
+        stroke: #7b8288;
+        stroke-width: 2;
+        fill: none;
     }
 
     &:focus-within .dgwt-wcas-sf-wrapp,
