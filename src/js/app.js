@@ -760,98 +760,121 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
 
-        // function initYandexMap() {
-        //     const $mapContainer = $('#yandex-map');
-        //     if (!$mapContainer.length) return;
+        const initYandexMap = () => {
+            const mapContainer = document.getElementById('map');
+            if (!mapContainer) return;
 
-        //     let myMap, myPlacemark;
+            let myMap;
+            let placemark;
+            let resizeTimer;
+            const iconPath = mapContainer.dataset.icon || '';
 
-        //     const syncOffset = () => {
-        //         const $card = $('.baloon__card');
-        //         if (!$card.length || !myPlacemark) return;
+            const getIconParams = () => {
+                const width = window.innerWidth;
+                let size = [104, 116];
 
-        //         const w = $card.outerWidth();
-        //         const h = $card.outerHeight();
-        //         const gap = window.innerWidth <= 768 ? 8 : 10;
+                if (width <= 767) {
+                    size = [78, 88];
+                } else if (width <= 1024) {
+                    size = [67, 75];
+                }
 
-        //         myPlacemark.options.set('balloonOffset', [
-        //             -Math.round(w / 2),
-        //             -Math.round(h + gap)
-        //         ]);
-        //     };
+                return {
+                    size,
+                    offset: [-(size[0] / 2), -size[1]]
+                };
+            };
 
-        //     const init = () => {
-        //         const rawCoords = $mapContainer.data('coords');
-        //         const centerCoords = rawCoords ? rawCoords.split(',').map(Number) : [59.957545, 30.412431];
-        //         const balloonHtml = $('#map-balloon-template').html();
+            const applyPlacemarkIcon = () => {
+                if (!placemark || !iconPath) return;
 
-        //         myMap = new ymaps.Map('yandex-map', {
-        //             center: centerCoords,
-        //             zoom: 17,
-        //             controls: ['zoomControl']
-        //         });
+                const { size, offset } = getIconParams();
+                placemark.options.set('iconImageSize', size);
+                placemark.options.set('iconImageOffset', offset);
+            };
 
-        //         myMap.behaviors.disable('scrollZoom');
+            const init = () => {
+                const rawCoords = mapContainer.dataset.coords;
+                if (!rawCoords) return;
 
-        //         const MyBalloonLayout = ymaps.templateLayoutFactory.createClass(
-        //             `<div class="map-balloon-wrapper">${balloonHtml}</div>`
-        //         );
+                const coords = rawCoords
+                    .split(',')
+                    .map((item) => parseFloat(item.trim()))
+                    .filter((value) => Number.isFinite(value));
 
-        //         myPlacemark = new ymaps.Placemark(centerCoords, {}, {
-        //             balloonLayout: MyBalloonLayout,
-        //             balloonCloseButton: false,
-        //             balloonPanelMaxMapArea: 0,
-        //             hideIconOnBalloonOpen: false,
-        //             balloonOffset: [0, 0]
-        //         });
+                if (coords.length < 2) return;
 
-        //         myPlacemark.events.add('balloonopen', () => {
-        //             requestAnimationFrame(() => {
-        //                 requestAnimationFrame(syncOffset);
-        //             });
-        //             setTimeout(syncOffset, 120);
-        //         });
+                const zoom = parseInt(mapContainer.dataset.zoom, 10) || 16;
+                const iconParams = getIconParams();
 
-        //         myMap.geoObjects.add(myPlacemark);
-        //         myPlacemark.balloon.open();
+                myMap = new ymaps.Map(mapContainer, {
+                    center: coords,
+                    zoom,
+                    controls: ['zoomControl']
+                });
 
-        //         $(window).on('resize', () => {
-        //             clearTimeout(window.mapResizeTimer);
-        //             window.mapResizeTimer = setTimeout(() => {
-        //                 if (myPlacemark && myPlacemark.balloon.isOpen()) {
-        //                     syncOffset();
-        //                 }
-        //             }, 150);
-        //         });
-        //     };
+                myMap.behaviors.disable('scrollZoom');
 
-        //     const loadScript = () => {
-        //         if (typeof ymaps !== 'undefined') return;
+                const placemarkOptions = {};
 
-        //         const script = document.createElement('script');
-        //         script.src = 'https://api-maps.yandex.ru/2.1/?apikey=496cd84c-0a7a-4b7e-a9d5-bd9261e5f0a6&lang=ru_RU';
-        //         script.type = 'text/javascript';
-        //         script.onload = () => {
-        //             ymaps.ready(init);
-        //         };
-        //         document.head.appendChild(script);
-        //     };
+                if (iconPath) {
+                    Object.assign(placemarkOptions, {
+                        iconLayout: 'default#image',
+                        iconImageHref: iconPath,
+                        iconImageSize: iconParams.size,
+                        iconImageOffset: iconParams.offset
+                    });
+                }
 
-        //     const observer = new IntersectionObserver((entries) => {
-        //         entries.forEach(entry => {
-        //             if (entry.isIntersecting) {
-        //                 loadScript();
-        //                 observer.unobserve(entry.target);
-        //             }
-        //         });
-        //     }, {
-        //         rootMargin: '200px'
-        //     });
+                placemark = new ymaps.Placemark(coords, {}, placemarkOptions);
+                myMap.geoObjects.add(placemark);
+                mapContainer.classList.add('is-loaded');
 
-        //     observer.observe($mapContainer[0]);
-        // }
+                window.addEventListener('resize', () => {
+                    clearTimeout(resizeTimer);
+                    resizeTimer = setTimeout(applyPlacemarkIcon, 150);
+                });
+            };
 
-        // initYandexMap();
+            const loadScript = () => {
+                if (typeof ymaps !== 'undefined') {
+                    ymaps.ready(init);
+                    return;
+                }
+
+                const apiKey = mapContainer.dataset.apikey || '';
+                const script = document.createElement('script');
+                script.src = apiKey
+                    ? `https://api-maps.yandex.ru/2.1/?apikey=${encodeURIComponent(apiKey)}&lang=ru_RU`
+                    : 'https://api-maps.yandex.ru/2.1/?lang=ru_RU';
+                script.type = 'text/javascript';
+                script.async = true;
+                script.onload = () => {
+                    ymaps.ready(init);
+                };
+                document.head.appendChild(script);
+            };
+
+            if (!('IntersectionObserver' in window)) {
+                loadScript();
+                return;
+            }
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        loadScript();
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                rootMargin: '200px'
+            });
+
+            observer.observe(mapContainer);
+        };
+
+        initYandexMap();
 
 
     });

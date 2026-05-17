@@ -1,0 +1,210 @@
+@use "sass:color";
+@use "sass:math";
+@use "mixins" as *;
+@use "variables" as *;
+@use "fonts";
+
+
+.contacts {
+
+    padding: 2.5rem 0 rem(38);
+
+    @media (min-width:$md3) {
+        padding: rem(28) 0 rem(52);
+
+    }
+
+
+    // .contacts__container
+    &__container {}
+
+    // .contacts__title
+    &__title {
+        font-weight: 600;
+    }
+
+    // .contacts__list
+    &__list {
+        display: grid;
+        gap: rem(14);
+        margin-top: rem(30);
+
+        @media (min-width:$md4) {
+            margin-top: rem(24);
+            grid-template-columns: 1.5fr 1fr;
+            gap: 2.5rem;
+        }
+
+        @media (min-width:$md3) {
+            grid-template-columns: repeat(2, 1fr);
+
+        }
+
+        @media (min-width:$md2) {
+            margin-top: rem(37);
+
+        }
+    }
+
+    // .contacts__item
+    &__item {
+        position: relative;
+        padding-left: 2rem;
+
+        @media (min-width:$md5) {
+            padding-left: 1.75rem;
+        }
+
+        @media (min-width:$md2) {
+            padding-left: rem(38);
+
+        }
+
+        &::before {
+            position: absolute;
+            top: 0;
+            left: 0;
+            color: $accent;
+            width: 1.25rem;
+            height: 1.25rem;
+
+            @media (min-width:$md2) {
+                width: 1.5rem;
+                height: 1.5rem;
+            }
+        }
+
+        &.icon-location::before {
+            @include icon-svg("location", 1.25rem);
+
+            @media (min-width:$md2) {
+                @include icon-svg("location", 1.5rem);
+            }
+        }
+
+        &.icon-envelope::before {
+            @include icon-svg("envelope", 1.25rem);
+
+            @media (min-width:$md2) {
+                @include icon-svg("envelope", 1.5rem);
+            }
+        }
+
+        &.icon-phone::before {
+            @include icon-svg("phone", 1.25rem);
+
+            @media (min-width:$md2) {
+                @include icon-svg("phone", 1.5rem);
+            }
+        }
+    }
+
+    // .contacts__item-caption
+    &__item-caption {
+        color: $accent;
+        font-weight: 500;
+        line-height: 130%;
+        letter-spacing: -0.00938rem;
+        margin-bottom: 0.25rem;
+        font-size: 1rem;
+
+        @media (min-width:$md2) {
+            margin-bottom: 0.325rem;
+            font-size: 1.125rem;
+
+        }
+    }
+
+    // .contacts__item-address
+    &__item-address {
+        color: #4A5565;
+        font-weight: 500;
+        line-height: 130%;
+        letter-spacing: -0.00938rem;
+        max-width: 32.9375rem;
+        font-size: 0.875rem;
+
+        @media (min-width:$md3) {
+            line-height: 140%;
+            font-size: 1rem;
+        }
+
+        @media (min-width:$md2) {
+            font-size: 1.25rem;
+
+        }
+    }
+
+    // .contacts__item-link
+    &__item-link {
+        color: #4A5565;
+        font-weight: 500;
+        font-size: 0.875rem;
+        letter-spacing: -0.00938rem;
+        display: inline-block;
+        transition: color 0.3s ease;
+
+        @media (min-width:$md3) {
+            line-height: 140%;
+            font-size: 1rem;
+        }
+
+        @media (min-width:$md2) {
+            font-size: 1.25rem;
+        }
+
+        @media (any-hover: hover) {
+            &:hover {
+                color: $accent;
+            }
+        }
+    }
+
+    // .contacts__map
+    &__map {
+        margin-top: 1.75rem;
+        border-radius: 1.5rem;
+        overflow: hidden;
+        height: 18.125rem;
+        position: relative;
+
+        &:not(.is-loaded) {
+            background: linear-gradient(90deg,
+                    rgba($color: $accent, $alpha: 0.1) 25%,
+                    rgba($color: $accent, $alpha: 0.2) 50%,
+                    rgba($color: $accent, $alpha: 0.1) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 3s infinite linear;
+        }
+
+        & iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
+
+
+        @media (min-width:$md5) {
+            height: 16.375rem;
+            margin-top: 3.25rem;
+        }
+
+        @media (min-width:$md3) {
+            height: 23.5rem;
+            margin-top: 2.75rem;
+        }
+    }
+}

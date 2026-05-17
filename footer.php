@@ -45,7 +45,7 @@
                     <div class="footer-title">Разделы</div>
                     <ul class="footer-list">
                         <li class="footer-item"><a href="<?php echo esc_url(get_permalink(wc_get_page_id('shop'))); ?>">Каталог</a></li>
-                        <li class="footer-item"><a href="#contacts">Контакты</a></li>
+                        <li class="footer-item"><a href="<?php echo esc_url(function_exists('franchises_contacts_page_url') ? franchises_contacts_page_url() : home_url('/#contacts')); ?>">Контакты</a></li>
                     </ul>
                 </div>
             </div>

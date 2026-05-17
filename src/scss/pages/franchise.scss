@@ -171,7 +171,8 @@
 	padding: 0;
 	list-style: none;
 	display: flex;
-	flex-wrap: wrap;
+	flex-direction: column;
+	align-items: flex-start;
 	gap: 8px;
 }
 
@@ -192,7 +193,6 @@
 	font-weight: 500;
 	line-height: 1.25;
 	text-decoration: none;
-	white-space: nowrap;
 }
 
 .toc-desktop .toc-list a:hover {

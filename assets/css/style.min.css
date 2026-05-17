@@ -2,7 +2,7 @@
 
 @font-face {
     font-family: Manrope;
-    src: url(../fonts/Manrope-VariableFont_wght.woff2?v=1779005828607) format("woff2 supports variations"), url(../fonts/Manrope-VariableFont_wght.woff2?v=1779005828607) format("woff2-variations"), url(../fonts/Manrope-VariableFont_wght.woff?v=1779005828607) format("woff");
+    src: url(../fonts/Manrope-VariableFont_wght.woff2?v=1779008529753) format("woff2 supports variations"), url(../fonts/Manrope-VariableFont_wght.woff2?v=1779008529753) format("woff2-variations"), url(../fonts/Manrope-VariableFont_wght.woff?v=1779008529753) format("woff");
     font-weight: 100 900;
     font-stretch: 75% 125%;
     font-style: normal;
@@ -1106,7 +1106,7 @@ body.header-solid::before {
 .wrap {
     max-width: 1200px;
     margin: 0 auto;
-    padding: calc(var(--header-height) + 16px) 24px 80px !important;
+    padding: var(--header-height) 24px 80px !important;
     -webkit-box-flex: 1;
     -ms-flex: 1 1 auto;
     flex: 1 1 auto;
@@ -4408,8 +4408,13 @@ body {
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
-    -ms-flex-wrap: wrap;
-    flex-wrap: wrap;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -webkit-box-align: start;
+    -ms-flex-align: start;
+    align-items: flex-start;
     gap: 8px
 }
 
@@ -4433,8 +4438,7 @@ body {
     font-size: 14px;
     font-weight: 500;
     line-height: 1.25;
-    text-decoration: none;
-    white-space: nowrap
+    text-decoration: none
 }
 
 .toc-desktop .toc-list a:hover {
@@ -5207,6 +5211,151 @@ body {
     -webkit-mask-position: center;
     -webkit-mask-size: contain;
     flex-shrink: 0
+}
+
+.contacts {
+    padding: 2.5rem 0 2.375rem
+}
+
+.contacts__title {
+    font-weight: 600
+}
+
+.contacts__list {
+    display: -ms-grid;
+    display: grid;
+    gap: .875rem;
+    margin-top: 1.875rem
+}
+
+.contacts__item {
+    position: relative;
+    padding-left: 2rem
+}
+
+.contacts__item::before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: #1a76d3;
+    width: 1.25rem;
+    height: 1.25rem
+}
+
+.contacts__item.icon-location::before {
+    content: "";
+    display: inline-block;
+    width: 1.25rem;
+    height: 1.25rem;
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+    background-color: currentColor;
+    mask-image: url(../img/icons/location.svg);
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+    -webkit-mask-image: url(../img/icons/location.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: contain
+}
+
+.contacts__item.icon-envelope::before {
+    content: "";
+    display: inline-block;
+    width: 1.25rem;
+    height: 1.25rem;
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+    background-color: currentColor;
+    mask-image: url(../img/icons/envelope.svg);
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+    -webkit-mask-image: url(../img/icons/envelope.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: contain
+}
+
+.contacts__item.icon-phone::before {
+    content: "";
+    display: inline-block;
+    width: 1.25rem;
+    height: 1.25rem;
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+    background-color: currentColor;
+    mask-image: url(../img/icons/phone.svg);
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+    -webkit-mask-image: url(../img/icons/phone.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: contain
+}
+
+.contacts__item-caption {
+    color: #1a76d3;
+    font-weight: 500;
+    line-height: 130%;
+    letter-spacing: -.00938rem;
+    margin-bottom: .25rem;
+    font-size: 1rem
+}
+
+.contacts__item-address {
+    color: #4a5565;
+    font-weight: 500;
+    line-height: 130%;
+    letter-spacing: -.00938rem;
+    max-width: 32.9375rem;
+    font-size: .875rem
+}
+
+.contacts__item-link {
+    color: #4a5565;
+    font-weight: 500;
+    font-size: .875rem;
+    letter-spacing: -.00938rem;
+    display: inline-block;
+    -webkit-transition: color .3s ease;
+    transition: color .3s ease
+}
+
+.contacts__map {
+    margin-top: 1.75rem;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    height: 18.125rem;
+    position: relative
+}
+
+.contacts__map:not(.is-loaded) {
+    background: -webkit-gradient(linear, left top, right top, color-stop(25%, rgba(26, 118, 211, .1)), color-stop(50%, rgba(26, 118, 211, .2)), color-stop(75%, rgba(26, 118, 211, .1)));
+    background: linear-gradient(90deg, rgba(26, 118, 211, .1) 25%, rgba(26, 118, 211, .2) 50%, rgba(26, 118, 211, .1) 75%);
+    background-size: 200% 100%;
+    -webkit-animation: shimmer 3s infinite linear;
+    animation: shimmer 3s infinite linear
+}
+
+.contacts__map iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0
+    }
+
+    100% {
+        background-position: 200% 0
+    }
 }
 
 @-webkit-keyframes bar-shift {
@@ -7599,6 +7748,15 @@ body {
         line-height: 142.857%;
         font-size: .875rem
     }
+
+    .contacts__item {
+        padding-left: 1.75rem
+    }
+
+    .contacts__map {
+        height: 16.375rem;
+        margin-top: 3.25rem
+    }
 }
 
 @media (min-width:641px) {
@@ -7688,6 +7846,13 @@ body {
     .custom-table tbody td {
         font-size: 1.25rem
     }
+
+    .contacts__list {
+        margin-top: 1.5rem;
+        -ms-grid-columns: 1.5fr 1fr;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 2.5rem
+    }
 }
 
 @media (min-width:901px) {
@@ -7775,6 +7940,112 @@ body {
 
     .form__checkbox .wpcf7-list-item-label, .form__checkbox-content {
         font-size: 1rem
+    }
+
+    .contacts {
+        padding: 1.75rem 0 3.25rem
+    }
+
+    .contacts__list {
+        -ms-grid-columns: (1fr)[2];
+        grid-template-columns: repeat(2, 1fr)
+    }
+
+    .contacts__item-address {
+        line-height: 140%;
+        font-size: 1rem
+    }
+
+    .contacts__item-link {
+        line-height: 140%;
+        font-size: 1rem
+    }
+
+    .contacts__map {
+        height: 23.5rem;
+        margin-top: 2.75rem
+    }
+}
+
+@media (min-width:1199.98px) {
+    .contacts__list {
+        margin-top: 2.3125rem
+    }
+
+    .contacts__item {
+        padding-left: 2.375rem
+    }
+
+    .contacts__item::before {
+        width: 1.5rem;
+        height: 1.5rem
+    }
+
+    .contacts__item.icon-location::before {
+        content: "";
+        display: inline-block;
+        width: 1.5rem;
+        height: 1.5rem;
+        -ms-flex-negative: 0;
+        flex-shrink: 0;
+        background-color: currentColor;
+        mask-image: url(../img/icons/location.svg);
+        mask-repeat: no-repeat;
+        mask-position: center;
+        mask-size: contain;
+        -webkit-mask-image: url(../img/icons/location.svg);
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        -webkit-mask-size: contain
+    }
+
+    .contacts__item.icon-envelope::before {
+        content: "";
+        display: inline-block;
+        width: 1.5rem;
+        height: 1.5rem;
+        -ms-flex-negative: 0;
+        flex-shrink: 0;
+        background-color: currentColor;
+        mask-image: url(../img/icons/envelope.svg);
+        mask-repeat: no-repeat;
+        mask-position: center;
+        mask-size: contain;
+        -webkit-mask-image: url(../img/icons/envelope.svg);
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        -webkit-mask-size: contain
+    }
+
+    .contacts__item.icon-phone::before {
+        content: "";
+        display: inline-block;
+        width: 1.5rem;
+        height: 1.5rem;
+        -ms-flex-negative: 0;
+        flex-shrink: 0;
+        background-color: currentColor;
+        mask-image: url(../img/icons/phone.svg);
+        mask-repeat: no-repeat;
+        mask-position: center;
+        mask-size: contain;
+        -webkit-mask-image: url(../img/icons/phone.svg);
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        -webkit-mask-size: contain
+    }
+
+    .contacts__item-caption {
+        margin-bottom: .325rem;
+        font-size: 1.125rem
+    }
+
+    .contacts__item-address {
+        font-size: 1.25rem
+    }
+
+    .contacts__item-link {
+        font-size: 1.25rem
     }
 }
 
@@ -9143,6 +9414,10 @@ body {
 
     .form__checkbox-text a:hover {
         text-decoration: none
+    }
+
+    .contacts__item-link:hover {
+        color: #1a76d3
     }
 }
 

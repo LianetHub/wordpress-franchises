@@ -20,8 +20,12 @@ $includes = [
 ];
 
 foreach ($includes as $file) {
-    if (!$filepath = locate_template($file)) {
-        trigger_error(sprintf('Ошибка: файл %s не найден', $file), E_USER_ERROR);
+    $filepath = locate_template($file);
+    if (! $filepath) {
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            trigger_error(sprintf('Ошибка: файл %s не найден', $file), E_USER_WARNING);
+        }
+        continue;
     }
     require_once $filepath;
 }
