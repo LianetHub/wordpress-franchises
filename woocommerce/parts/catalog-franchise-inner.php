@@ -53,9 +53,19 @@ if (function_exists('franchises_catalog_url_for_selection')) {
     }
 }
 
+$current_selection_id = function_exists('franchises_get_current_selection_id')
+    ? franchises_get_current_selection_id()
+    : 0;
+
 $hero_base_title = 'Каталог франшиз';
 $hero_sub = 'Подберите франшизу по бюджету, отрасли и сроку окупаемости.';
-if ($cur_category !== '') {
+if ($current_selection_id > 0) {
+    $hero_base_title = get_the_title($current_selection_id) ?: $hero_base_title;
+    $selection_excerpt = get_post_field('post_excerpt', $current_selection_id);
+    if (is_string($selection_excerpt) && trim($selection_excerpt) !== '') {
+        $hero_sub = $selection_excerpt;
+    }
+} elseif ($cur_category !== '') {
     $hero_base_title = $cur_category;
 } elseif ($cur_sphere !== '') {
     $hero_base_title = $cur_sphere;
@@ -90,17 +100,9 @@ if (is_wp_error($parents)) {
     $parents = [];
 }
 
-$collection_posts = [];
-if (post_type_exists('selection')) {
-    $collection_posts = get_posts([
-        'post_type'      => 'selection',
-        'post_status'    => 'publish',
-        'posts_per_page' => 40,
-        'orderby'        => 'menu_order title',
-        'order'          => 'ASC',
-        'no_found_rows'  => true,
-    ]);
-}
+$collection_posts = function_exists('franchises_get_selection_posts')
+    ? franchises_get_selection_posts(40)
+    : [];
 
 $orderby_options = function_exists('franchises_wc_catalog_orderby_choices')
     ? franchises_wc_catalog_orderby_choices()
@@ -146,7 +148,7 @@ $count_line = $found > 0
                     if (! is_string($link) || $link === '') {
                         continue;
                     }
-                    $active = is_singular('selection') && (int) get_queried_object_id() === (int) $sel_post->ID;
+                    $active = $current_selection_id > 0 && $current_selection_id === (int) $sel_post->ID;
                 ?>
                     <li>
                         <a href="<?php echo esc_url($link); ?>" class="sidebar-link<?php echo $active ? ' active' : ''; ?>"><?php echo esc_html(get_the_title($sel_post)); ?></a>
@@ -174,7 +176,7 @@ $count_line = $found > 0
                     if (! is_string($link) || $link === '') {
                         continue;
                     }
-                    $active = is_singular('selection') && (int) get_queried_object_id() === (int) $sel_post->ID;
+                    $active = $current_selection_id > 0 && $current_selection_id === (int) $sel_post->ID;
                 ?>
                     <a class="seg<?php echo $active ? ' active' : ''; ?>" href="<?php echo esc_url($link); ?>"><?php echo esc_html(get_the_title($sel_post)); ?></a>
                 <?php endforeach; ?>

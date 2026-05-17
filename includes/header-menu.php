@@ -253,14 +253,9 @@ if (! function_exists('franchises_header_get_collections')) {
             return [];
         }
 
-        $posts = get_posts([
-            'post_type'      => 'selection',
-            'post_status'    => 'publish',
-            'posts_per_page' => 40,
-            'orderby'        => 'menu_order title',
-            'order'          => 'ASC',
-            'no_found_rows'  => true,
-        ]);
+        $posts = function_exists('franchises_get_selection_posts')
+            ? franchises_get_selection_posts(40)
+            : [];
 
         $items = [];
         foreach ($posts as $post) {
@@ -275,7 +270,8 @@ if (! function_exists('franchises_header_get_collections')) {
                 'id'     => (int) $post->ID,
                 'title'  => get_the_title($post),
                 'url'    => $link,
-                'active' => is_singular('selection') && (int) get_queried_object_id() === (int) $post->ID,
+                'active' => function_exists('franchises_get_current_selection_id')
+                    && franchises_get_current_selection_id() === (int) $post->ID,
             ];
         }
 

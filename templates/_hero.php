@@ -1,7 +1,9 @@
 <?php
 $title = get_field('hero_title');
 $subtitle = get_field('hero_subtitle');
-$slides = get_field('hero_slides');
+$slides = function_exists('franchises_hero_slides_from_selections')
+    ? franchises_hero_slides_from_selections()
+    : [];
 ?>
 
 <section class="hero">
@@ -13,21 +15,15 @@ $slides = get_field('hero_slides');
         <p class="hero__subtitle"><?php echo esc_html($subtitle); ?></p>
     <?php endif; ?>
 
-    <?php if ($slides && is_array($slides)): ?>
+    <?php if ($slides !== []): ?>
         <div class="hero__slider swiper">
             <div class="swiper-wrapper">
-                <?php foreach ($slides as $slide):
-                    $text = isset($slide['slide_text']) ? $slide['slide_text'] : '';
-                    $link = isset($slide['slide_link']) ? $slide['slide_link'] : '#';
-                    $image_data = isset($slide['slide_image']) ? $slide['slide_image'] : '';
-
-                    $image_url = '';
-                    if (is_array($image_data)) {
-                        $image_url = $image_data['url'];
-                    } elseif (is_numeric($image_data)) {
-                        $image_url = wp_get_attachment_url($image_data);
-                    } else {
-                        $image_url = $image_data;
+                <?php foreach ($slides as $slide) :
+                    $text = (string) ($slide['text'] ?? '');
+                    $link = (string) ($slide['link'] ?? '#');
+                    $image_url = (string) ($slide['image_url'] ?? '');
+                    if ($image_url === '') {
+                        continue;
                     }
                 ?>
                     <a href="<?php echo esc_url($link); ?>"
