@@ -44,6 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
             $root.find("[data-lead-feedback-success-text]").toggle(!isError);
             const $errorText = $root.find("[data-lead-feedback-error-text]");
             $errorText.toggle(isError);
+            $root.find("[data-lead-feedback-success-close]").toggle(!isError);
+            $root.find("[data-lead-feedback-error-close]").toggle(isError);
             if (isError && message) {
                 $root.find("[data-lead-feedback-error-message]").text(message);
             }

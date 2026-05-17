@@ -1,6 +1,25 @@
 <?php
 
 defined('ABSPATH') || exit;
+
+$get_modal_option = static function (string $field, string $default): string {
+    if (function_exists('franchises_get_theme_option')) {
+        return (string) franchises_get_theme_option($field, $default);
+    }
+
+    return $default;
+};
+
+$selection_title    = $get_modal_option('selection_form_title', __('Подберем франшизы под ваш бюджет', 'franchises'));
+$selection_subtitle = $get_modal_option('selection_form_subtitle', __('Оставьте имя и телефон. В ближайшее время менеджер свяжется с вами.', 'franchises'));
+
+$success_title     = $get_modal_option('success_title', __('Заявка отправлена', 'franchises'));
+$success_subtitle  = $get_modal_option('success_subtitle', __('В ближайшее время менеджер свяжется с вами.', 'franchises'));
+$success_close_btn = $get_modal_option('success_close_btn', __('Понятно', 'franchises'));
+
+$error_title       = $get_modal_option('error_title', __('Не удалось отправить заявку', 'franchises'));
+$error_subtitle    = $get_modal_option('error_subtitle', __('Попробуйте ещё раз.', 'franchises'));
+$error_close_btn   = $get_modal_option('error_close_btn', __('Понятно', 'franchises'));
 ?>
 <div class="popup popup--small lead-feedback-popup" id="lead-feedback" data-lead-feedback hidden>
     <div class="lead-feedback-card" data-lead-feedback-card>
@@ -18,25 +37,26 @@ defined('ABSPATH') || exit;
             </svg>
         </div>
         <p class="lead-feedback-text popup__subtitle" data-lead-feedback-success-text>
-            <strong><?php esc_html_e('Заявка отправлена', 'franchises'); ?></strong>
-            <span><?php esc_html_e('В ближайшее время менеджер свяжется с вами.', 'franchises'); ?></span>
+            <strong><?php echo esc_html($success_title); ?></strong>
+            <span><?php echo esc_html($success_subtitle); ?></span>
         </p>
         <p class="lead-feedback-text popup__subtitle" data-lead-feedback-error-text hidden>
-            <strong><?php esc_html_e('Не удалось отправить заявку', 'franchises'); ?></strong>
-            <span data-lead-feedback-error-message><?php esc_html_e('Попробуйте ещё раз.', 'franchises'); ?></span>
+            <strong><?php echo esc_html($error_title); ?></strong>
+            <span data-lead-feedback-error-message><?php echo esc_html($error_subtitle); ?></span>
         </p>
     </div>
     <button type="button" data-fancybox-close class="popup__btn btn btn-primary lead-feedback-btn">
-        <?php esc_html_e('Понятно', 'franchises'); ?>
+        <span data-lead-feedback-success-close><?php echo esc_html($success_close_btn); ?></span>
+        <span data-lead-feedback-error-close hidden><?php echo esc_html($error_close_btn); ?></span>
     </button>
 </div>
 
 <div class="popup selection-popup-card-wrap" id="selection-popup" hidden>
     <h2 class="selection-popup-title popup__title title-md" id="selection-popup-title">
-        <?php esc_html_e('Подберем франшизы под ваш бюджет', 'franchises'); ?>
+        <?php echo esc_html($selection_title); ?>
     </h2>
     <p class="selection-popup-subtitle popup__subtitle">
-        <?php esc_html_e('Оставьте имя и телефон. В ближайшее время менеджер свяжется с вами.', 'franchises'); ?>
+        <?php echo esc_html($selection_subtitle); ?>
     </p>
     <div class="selection-popup-form-wrap">
         <?php franchises_render_selection_popup_cf7(); ?>
