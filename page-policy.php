@@ -10,7 +10,7 @@ get_header(); ?>
 <section class="heading">
     <div class="heading__container container">
         <div class="heading__offer">
-            <h1 class="heading__title title-lg">
+            <h1 class="heading__title title">
                 <?php the_title(); ?>
             </h1>
         </div>

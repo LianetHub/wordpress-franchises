@@ -2,7 +2,7 @@
 
 @font-face {
   font-family: "Manrope";
-  src: url("../fonts/Manrope-VariableFont_wght.woff2?v=1779002102906") format("woff2 supports variations"), url("../fonts/Manrope-VariableFont_wght.woff2?v=1779002102906") format("woff2-variations"), url("../fonts/Manrope-VariableFont_wght.woff?v=1779002102906") format("woff");
+  src: url("../fonts/Manrope-VariableFont_wght.woff2?v=1779002932365") format("woff2 supports variations"), url("../fonts/Manrope-VariableFont_wght.woff2?v=1779002932365") format("woff2-variations"), url("../fonts/Manrope-VariableFont_wght.woff?v=1779002932365") format("woff");
   font-weight: 100 900;
   font-stretch: 75% 125%;
   font-style: normal;
@@ -552,8 +552,7 @@
   background: transparent;
 }
 
-.title,
-.typography-block h1 {
+.title {
   font-size: clamp(32px, 4vw, 52px);
   line-height: 1.1;
   margin: 0 0 24px;
@@ -561,14 +560,11 @@
   letter-spacing: -0.02em;
 }
 
-.title-md,
-.typography-block h2 {
+.title-md {
   font-size: clamp(1.125rem, 0.85rem + 1.85vw, 2.1875rem);
 }
 
-.title-sm,
-.typography-block h4,
-.typography-block h3 {
+.title-sm {
   font-size: clamp(0.875rem, 0.15rem + 2.5vw, 1.25rem);
 }
 
@@ -704,18 +700,6 @@
   height: 1.875rem;
 }
 
-.info-highlight-box,
-.typography-block cite,
-.typography-block blockquote {
-  background: #EEF6FD;
-  border-left: 0.1875rem solid #467E9E;
-  padding: 1.25rem;
-  border-radius: 0 0.625rem 0.625rem 0;
-  font-weight: 400;
-  font-size: 1.125rem;
-  line-height: 1.4;
-}
-
 ._loading {
   color: transparent !important;
   pointer-events: none;
@@ -778,17 +762,21 @@
 .typography-block h4,
 .typography-block h5,
 .typography-block h6 {
-  line-height: 116.667%;
   font-weight: 600;
 }
 
 .typography-block h1 {
   margin-top: 0;
   margin-bottom: 2.4rem;
+  font-size: 3rem;
+  font-weight: 500;
+  line-height: 1.25;
 }
 
 .typography-block h2 {
   margin: 2.5rem 0 1.25rem;
+  font-size: 2.25rem;
+  line-height: 116.667%;
 }
 
 .typography-block h2:first-child {
@@ -796,7 +784,9 @@
 }
 
 .typography-block h3 {
+  font-size: 1.75rem;
   margin: 2rem 0 1rem;
+  line-height: 128.571%;
 }
 
 .typography-block h3:first-child {
@@ -804,6 +794,8 @@
 }
 
 .typography-block h4 {
+  font-size: 1.5rem;
+  line-height: 1.45;
   margin: 2rem 0 1rem;
 }
 
@@ -812,8 +804,7 @@
 }
 
 .typography-block p a {
-  color: #1a76d3;
-  text-decoration: underline;
+  color: #1570ef;
 }
 
 .typography-block p:not(:last-child) {
@@ -830,30 +821,23 @@
   margin-bottom: 0;
 }
 
-.typography-block ul li,
-.typography-block ol li {
+.typography-block ul > li,
+.typography-block ol > li {
   position: relative;
   padding-left: 2.2rem;
 }
 
-.typography-block ul li:not(:last-child),
-.typography-block ol li:not(:last-child) {
-  margin-bottom: 0.25rem;
-}
-
-.typography-block ul li::before,
-.typography-block ol li::before {
+.typography-block ul > li::before,
+.typography-block ol > li::before {
   content: "";
   display: block;
   position: absolute;
-  color: #1a76d3;
-  font-weight: 800;
   left: 0.3em;
 }
 
-.typography-block ul li::before {
-  width: 0.25rem;
-  height: 0.25rem;
+.typography-block ul > li::before {
+  width: 4px;
+  height: 4px;
   top: 0.7em;
   background: #1a76d3;
   border-radius: 50%;
@@ -863,20 +847,47 @@
   counter-reset: i;
 }
 
-.typography-block ol li::before {
+.typography-block ol > li::before {
   counter-increment: i;
   content: counter(i) ".";
+  color: #1a76d3;
+  font-weight: 700;
   top: 0;
 }
 
-.typography-block a:not(.btn) {
+.typography-block dfn {
+  font-weight: 600;
   color: #1a76d3;
-  text-decoration: underline;
+}
+
+.typography-block a:not(.article__more, .btn) {
+  color: #1570ef;
 }
 
 .typography-block cite,
 .typography-block blockquote {
   margin: 1.5rem 0 2rem;
+  padding: 1.125rem;
+  border-radius: 0.5rem;
+  background: #f5f5f5;
+  color: #181d27;
+  font-weight: 600;
+  line-height: 155.556%;
+  display: block;
+  font-size: 1.125rem;
+  padding-left: 2.625rem;
+  position: relative;
+}
+
+.typography-block cite::before,
+.typography-block blockquote::before {
+  content: "";
+  position: absolute;
+  top: 1.125rem;
+  left: 1.125rem;
+  bottom: 1.125rem;
+  width: 0.25rem;
+  background: #1a76d3;
 }
 
 .typography-block figure {
@@ -942,14 +953,9 @@
      object-fit: cover;
 }
 
-.typography-block .wp-block-image {
-  border-radius: 1.25rem;
-}
-
 .typography-block .wp-block-image img {
-  border-radius: 1.25rem !important;
   width: 100% !important;
-  height: auto !important;
+  height: 100% !important;
 }
 
 .filters {
@@ -975,8 +981,7 @@
           box-shadow: 0 0.25rem 0.625rem 0 rgba(49, 112, 142, 0.4);
 }
 
-.custom-table,
-.typography-block .wp-block-table {
+.custom-table {
   margin-top: 40px;
   overflow: hidden;
   border-radius: 1.25rem;
@@ -984,58 +989,49 @@
           box-shadow: 0 0.375rem 1.5rem rgba(0, 0, 0, 0.13);
 }
 
-.custom-table table,
-.typography-block .wp-block-table table {
+.custom-table table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.custom-table thead,
-.typography-block .wp-block-table thead {
+.custom-table thead {
   background-color: #467E9E;
   color: #fff;
   text-align: left;
 }
 
-.custom-table thead th,
-.typography-block .wp-block-table thead th {
+.custom-table thead th {
   padding: 1.5625rem 1.25rem;
   font-size: 1.25rem;
   font-weight: 700;
   border: 0;
 }
 
-.custom-table tbody tr,
-.typography-block .wp-block-table tbody tr {
+.custom-table tbody tr {
   border-bottom: 1px solid #DDE6F0;
   background: #fff;
 }
 
-.custom-table tbody tr.is-hidden,
-.typography-block .wp-block-table tbody tr.is-hidden {
+.custom-table tbody tr.is-hidden {
   display: none;
 }
 
-.custom-table tbody tr:last-child,
-.typography-block .wp-block-table tbody tr:last-child {
+.custom-table tbody tr:last-child {
   border-bottom: none;
 }
 
-.custom-table tbody tr:nth-child(even),
-.typography-block .wp-block-table tbody tr:nth-child(even) {
+.custom-table tbody tr:nth-child(even) {
   background-color: #F8FAFB;
 }
 
-.custom-table tbody td,
-.typography-block .wp-block-table tbody td {
+.custom-table tbody td {
   vertical-align: middle;
   border: 0;
   padding: 0.625rem;
   font-size: 0.875rem;
 }
 
-.custom-table tbody td a,
-.typography-block .wp-block-table tbody td a {
+.custom-table tbody td a {
   text-decoration: underline;
   color: #1a76d3;
 }
@@ -7802,14 +7798,7 @@ body {
     gap: 0.5rem;
   }
 
-  .info-highlight-box,
-  .typography-block cite,
-  .typography-block blockquote {
-    padding: 0.375rem 0.8125rem;
-  }
-
-  .custom-table tbody td,
-  .typography-block .wp-block-table tbody td {
+  .custom-table tbody td {
     padding: 1.25rem;
     font-size: 1rem;
   }
@@ -7925,15 +7914,7 @@ body {
     display: inline;
   }
 
-  .info-highlight-box,
-  .typography-block cite,
-  .typography-block blockquote {
-    padding: 1.25rem 1.875rem;
-    border-radius: 0 1.25rem 1.25rem 0;
-  }
-
-  .custom-table tbody td,
-  .typography-block .wp-block-table tbody td {
+  .custom-table tbody td {
     font-size: 1.25rem;
   }
 }
@@ -8780,13 +8761,11 @@ body {
     display: none;
   }
 
-  .custom-table thead,
-  .typography-block .wp-block-table thead {
+  .custom-table thead {
     display: none;
   }
 
-  .custom-table td,
-  .typography-block .wp-block-table td {
+  .custom-table td {
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
@@ -8799,8 +8778,7 @@ body {
     font-size: 1rem;
   }
 
-  .custom-table td:before,
-  .typography-block .wp-block-table td:before {
+  .custom-table td:before {
     content: attr(data-label);
     text-align: left;
     font-weight: 700;
@@ -9423,12 +9401,8 @@ body {
             transform: translateY(-0.125rem);
   }
 
-  .typography-block p a:hover {
-    text-decoration: none;
-  }
-
-  .typography-block a:not(.btn):hover {
-    text-decoration: none;
+  .typography-block a:not(.article__more, .btn):hover {
+    text-decoration: underline;
   }
 
   .filters__item.active.btn:hover {
@@ -9439,8 +9413,7 @@ body {
             box-shadow: 0 0.375rem 0.9375rem 0 rgba(49, 112, 142, 0.5);
   }
 
-  .custom-table tbody td a:hover,
-  .typography-block .wp-block-table tbody td a:hover {
+  .custom-table tbody td a:hover {
     text-decoration: none;
   }
 
