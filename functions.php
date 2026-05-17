@@ -12,6 +12,7 @@ $includes = [
     'includes/admin-custom.php',
     'includes/acf-custom.php',
     'includes/custom-posts.php',
+    'includes/breadcrumbs.php',
     'includes/woocommerce-custom.php',
     'includes/header-menu.php',
     'includes/home-collections.php',

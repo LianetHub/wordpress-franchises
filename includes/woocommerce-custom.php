@@ -424,7 +424,7 @@ if (! function_exists('franchises_product_gallery_urls')) {
 
 if (! function_exists('franchises_product_breadcrumb_trail')) {
     /**
-     * Цепочка для верстки .page-head .breadcrumbs (как в макете каталога).
+     * Цепочка хлебных крошек для карточки товара (franchises_render_breadcrumbs).
      *
      * @return list<array{label: string, href: string}>
      */

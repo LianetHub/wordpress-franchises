@@ -4,7 +4,7 @@
  * Верстка страницы франшизы (динамика из товара WooCommerce + ACF).
  *
  * Подключается только из woocommerce/content-single-product.php через require:
- * переменные $product, $gallery_urls, $breadcrumbs, $toc_items, $content_html,
+ * переменные $product, $gallery_urls, $breadcrumbs (опц.), $toc_items, $content_html,
  * $faq_rows, $similar_query, $popular_query, $post_id уже заданы родителем.
  */
 
@@ -17,7 +17,6 @@ if (! isset($product) || ! is_object($product) || ! is_a($product, 'WC_Product',
 }
 
 $gallery_urls = isset($gallery_urls) && is_array($gallery_urls) ? $gallery_urls : [];
-$breadcrumbs  = isset($breadcrumbs) && is_array($breadcrumbs) ? $breadcrumbs : [];
 $toc_items    = isset($toc_items) && is_array($toc_items) ? $toc_items : [];
 $content_html = isset($content_html) ? (string) $content_html : '';
 $faq_rows     = isset($faq_rows) && is_array($faq_rows) ? $faq_rows : [];
@@ -128,21 +127,15 @@ $card = franchises_franchise_card_from_post($post_id);
 
     <div class="page-grid">
         <div class="page-head">
-            <nav class="breadcrumbs" aria-label="Хлебные крошки">
-                <?php foreach ($breadcrumbs as $i => $cr) : ?>
-                    <?php
-                    $is_last = $i === count($breadcrumbs) - 1;
-                    $href = isset($cr['href']) ? (string) $cr['href'] : '';
-                    ?>
-                    <span>
-                        <?php if (! $is_last && $href !== '') : ?>
-                            <a href="<?php echo esc_url($href); ?>"><?php echo esc_html($cr['label']); ?></a>
-                        <?php else : ?>
-                            <?php echo esc_html($cr['label']); ?>
-                        <?php endif; ?>
-                    </span>
-                <?php endforeach; ?>
-            </nav>
+            <?php
+            franchises_render_breadcrumbs(
+                isset($breadcrumbs) && is_array($breadcrumbs) ? $breadcrumbs : [],
+                [
+                    'with_container' => false,
+                    'inline'         => true,
+                ]
+            );
+            ?>
 
             <h1 class="page-title"><?php echo esc_html($h1); ?></h1>
             <?php if ($subtitle !== '') : ?>

@@ -99,21 +99,7 @@ $count_line = $found > 0
 
 ?>
 <section class="catalog-hero" aria-label="Каталог франшиз">
-    <div class="breadcrumbs" aria-label="Хлебные крошки">
-        <?php
-        $crumbs = function_exists('franchises_catalog_breadcrumbs') ? franchises_catalog_breadcrumbs() : [];
-        foreach ($crumbs as $i => $c) {
-            $is_last = $i === count($crumbs) - 1;
-            echo '<span>';
-            if (! $is_last && ! empty($c['href'])) {
-                echo '<a href="' . esc_url($c['href']) . '">' . esc_html($c['label']) . '</a>';
-            } else {
-                echo esc_html($c['label']);
-            }
-            echo '</span>';
-        }
-        ?>
-    </div>
+    <?php franchises_render_breadcrumbs([], ['with_container' => false, 'inline' => true]); ?>
     <h1 class="page-title"><?php echo esc_html($hero_title); ?></h1>
     <h2 class="page-subtitle"><?php echo esc_html($hero_sub); ?></h2>
 </section>
