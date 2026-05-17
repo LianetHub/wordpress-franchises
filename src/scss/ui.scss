@@ -592,8 +592,7 @@ $scrollbarHover: color.adjust($accent, $lightness: -10%);
 //============ ОБЩИЕ ЭЛЕМЕНТЫ ============
 
 // ========== ВСПОМОГАТЕЛЬНЫЕ КЛАССЫ ======
-.hidden,
-[hidden] {
+.hidden {
 	position: absolute;
 	width: 1px;
 	height: 1px;

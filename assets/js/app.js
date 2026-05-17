@@ -1871,3 +1871,189 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 })(window.jQuery);
 
+/* ===== Motion: reveal / intro ===== */
+(() => {
+    const setupModernAnimations = () => {
+        const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+        if (reducedMotion) return;
+
+        const path = (window.location.pathname.split('/').pop() || '').toLowerCase();
+        const isHomePage =
+            document.body.classList.contains('home') ||
+            path === '' ||
+            path === 'index' ||
+            path === 'index.html';
+        const isCatalogPage =
+            !!document.querySelector('main.wrap.catalog-page') ||
+            path === 'catalog' ||
+            path === 'catalog.html';
+        const isFranchisePage =
+            document.body.classList.contains('woocommerce-single-franchise') ||
+            document.body.classList.contains('single-product') ||
+            /^franchise(?:-[a-z0-9-]+)?\.html$/i.test(path);
+
+        if (!document.getElementById('shared-motion-style')) {
+            const style = document.createElement('style');
+            style.id = 'shared-motion-style';
+            style.textContent = `
+        @media (prefers-reduced-motion: no-preference) {
+          .fx-intro,
+          .fx-reveal {
+            opacity: 0;
+            transform: translate3d(0, var(--fx-shift, 30px), 0);
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+            transition:
+              opacity var(--fx-opacity-duration, .42s) cubic-bezier(.22,.61,.36,1),
+              transform var(--fx-transform-duration, .58s) cubic-bezier(.22,.61,.36,1);
+            transition-delay: var(--fx-delay, 0ms);
+          }
+
+          .fx-intro {
+            --fx-shift: 20px;
+            --fx-opacity-duration: .4s;
+            --fx-transform-duration: .52s;
+          }
+
+          .fx-reveal {
+            --fx-shift: 34px;
+          }
+
+          .fx-intro.is-visible,
+          .fx-reveal.is-visible {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+          }
+        }
+      `;
+            document.head.appendChild(style);
+        }
+
+        const unique = (list) => Array.from(new Set(list.filter(Boolean)));
+        const introTargets = unique([
+            document.querySelector('.header-inner'),
+            !isFranchisePage ? document.querySelector('.breadcrumbs') : null,
+            !isFranchisePage ? document.querySelector('.page-title') : null,
+            document.querySelector('.hero-title'),
+            document.querySelector('.hero-sub'),
+            document.querySelector('.catalog-hero'),
+            !isFranchisePage ? document.querySelector('.franchise-head') : null,
+        ]);
+
+        introTargets.forEach((el, index) => {
+            el.classList.add('fx-intro');
+            el.style.setProperty('--fx-delay', `${index * 55}ms`);
+        });
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                introTargets.forEach((el) => el.classList.add('is-visible'));
+            });
+        });
+
+        const revealSelector = [
+            '.wrap > section',
+            '.catalog-layout',
+            '.catalog-toolbar',
+            '.pagination',
+            '.pagination .page-btn',
+            '.pagination .page-ellipsis',
+            '.sidebar-block',
+            '.catalog-cards .popular-card',
+            '.popular-grid .popular-card',
+            '.preview-grid .preview-card',
+            '.info-grid .info-item',
+            '.franchise-layout > .main-column',
+            '.franchise-layout > .side-column',
+            '.card',
+            '.help-card',
+            '.faq-item',
+            '.collection-block',
+            '.popular-section',
+        ].join(', ');
+
+        const prepared = new WeakSet();
+        let sequence = 0;
+
+        const observer = 'IntersectionObserver' in window
+            ? new IntersectionObserver((entries, obs) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.add('is-visible');
+                    obs.unobserve(entry.target);
+                });
+            }, { threshold: 0.14, rootMargin: '0px 0px -8% 0px' })
+            : null;
+
+        const prepareEl = (el) => {
+            if (!(el instanceof HTMLElement)) return;
+            if (prepared.has(el)) return;
+            if (el.closest('.about-stats')) return;
+            if (el.closest('.mobile-menu') || el.closest('.nav-dropdown-panel')) return;
+            if (
+                isCatalogPage &&
+                (el.closest('.catalog-cards') || el.closest('.pagination') || el.closest('.catalog-toolbar'))
+            ) return;
+            if (
+                isFranchisePage &&
+                (
+                    el.matches('.page-head, .info-row, .cta-card, .content-section, .faq-section, .ask-box, .toc-desktop, .toc-mobile, .side-meta, .key-list') ||
+                    el.closest('.page-head, .info-row, .cta-card, .content-section, .faq-section, .ask-box, .toc-desktop, .toc-mobile, .side-meta, .key-list')
+                )
+            ) return;
+            if (
+                isHomePage &&
+                (el.matches('.popular-section .popular-card, [data-collections-section] .popular-card') ||
+                    el.closest('.popular-section .popular-card, [data-collections-section] .popular-card'))
+            ) return;
+            if (window.getComputedStyle(el).display === 'none') return;
+            prepared.add(el);
+
+            el.classList.add('fx-reveal');
+            if (!el.style.getPropertyValue('--fx-delay')) {
+                const delay = Math.min(sequence, 10) * 50;
+                el.style.setProperty('--fx-delay', `${delay}ms`);
+            }
+            sequence += 1;
+
+            const rect = el.getBoundingClientRect();
+            const mostlyVisible = rect.top < window.innerHeight * 1.02;
+            if (mostlyVisible || !observer) {
+                requestAnimationFrame(() => el.classList.add('is-visible'));
+                return;
+            }
+            observer.observe(el);
+        };
+
+        const registerTargets = (root = document) => {
+            if (root instanceof HTMLElement && root.matches(revealSelector)) {
+                prepareEl(root);
+            }
+            root.querySelectorAll?.(revealSelector).forEach(prepareEl);
+        };
+
+        registerTargets(document);
+        window.setTimeout(() => registerTargets(document), 320);
+        window.setTimeout(() => registerTargets(document), 1100);
+        window.addEventListener('load', () => registerTargets(document), { once: true });
+
+        const wrap = document.querySelector('.wrap') || document.body;
+        if (wrap instanceof HTMLElement && 'MutationObserver' in window) {
+            const mo = new MutationObserver((mutations) => {
+                mutations.forEach((m) => {
+                    m.addedNodes.forEach((node) => {
+                        if (node instanceof HTMLElement) registerTargets(node);
+                    });
+                });
+            });
+            mo.observe(wrap, { childList: true, subtree: true });
+        }
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupModernAnimations, { once: true });
+    } else {
+        setupModernAnimations();
+    }
+})();
+

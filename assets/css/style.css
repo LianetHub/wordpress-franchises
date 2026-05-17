@@ -2,7 +2,7 @@
 
 @font-face {
   font-family: "Manrope";
-  src: url("../fonts/Manrope-VariableFont_wght.woff2?v=1779035167213") format("woff2 supports variations"), url("../fonts/Manrope-VariableFont_wght.woff2?v=1779035167213") format("woff2-variations"), url("../fonts/Manrope-VariableFont_wght.woff?v=1779035167213") format("woff");
+  src: url("../fonts/Manrope-VariableFont_wght.woff2?v=1779035558689") format("woff2 supports variations"), url("../fonts/Manrope-VariableFont_wght.woff2?v=1779035558689") format("woff2-variations"), url("../fonts/Manrope-VariableFont_wght.woff?v=1779035558689") format("woff");
   font-weight: 100 900;
   font-stretch: 75% 125%;
   font-style: normal;
@@ -1037,8 +1037,7 @@ img[loading=lazy].is-loaded {
 
 .hidden,
 select.select,
-select.select-native-source,
-[hidden] {
+select.select-native-source {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -6222,6 +6221,10 @@ body {
   overscroll-behavior-y: auto;
   overscroll-behavior-x: none;
   scrollbar-gutter: stable;
+}
+
+.popular-grid[hidden] {
+  display: none;
 }
 
 .popular-grid.catalog-cards {
