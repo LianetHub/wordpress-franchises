@@ -274,13 +274,6 @@ if (! function_exists('franchises_franchise_card_from_post')) {
         $raw_acf = function_exists('get_fields') ? get_fields($post_id) : false;
         $acf = is_array($raw_acf) ? $raw_acf : [];
 
-        $title = '';
-        if (isset($acf['product_full_title']) && $acf['product_full_title'] !== '') {
-            $title = (string) $acf['product_full_title'];
-        } else {
-            $title = get_the_title($post_id);
-        }
-
         $verified = ! empty($acf['verified']);
 
         $pausal = isset($acf['pausal']) && $acf['pausal'] !== '' ? (int) $acf['pausal'] : null;
@@ -346,6 +339,7 @@ if (! function_exists('franchises_franchise_card_from_post')) {
         }
 
         return [
+            'post_id'          => $post_id,
             'href'             => $permalink,
             'order'            => 0,
             'date'             => (int) get_post_time('U', true, $post_id),
@@ -357,7 +351,7 @@ if (! function_exists('franchises_franchise_card_from_post')) {
             'profit'           => $profit_for_filter,
             'verified'         => $verified,
             'tags'             => $tags_pipe,
-            'name'             => $title,
+            'name'             => get_the_title($post_id),
             'desc'             => $excerpt,
             'image'            => $thumb,
             'franchise_id'     => $slug,

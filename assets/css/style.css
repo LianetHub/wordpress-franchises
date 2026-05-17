@@ -2,7 +2,7 @@
 
 @font-face {
   font-family: "Manrope";
-  src: url("../fonts/Manrope-VariableFont_wght.woff2?v=1779035558689") format("woff2 supports variations"), url("../fonts/Manrope-VariableFont_wght.woff2?v=1779035558689") format("woff2-variations"), url("../fonts/Manrope-VariableFont_wght.woff?v=1779035558689") format("woff");
+  src: url("../fonts/Manrope-VariableFont_wght.woff2?v=1779036194551") format("woff2 supports variations"), url("../fonts/Manrope-VariableFont_wght.woff2?v=1779036194551") format("woff2-variations"), url("../fonts/Manrope-VariableFont_wght.woff?v=1779036194551") format("woff");
   font-weight: 100 900;
   font-stretch: 75% 125%;
   font-style: normal;
@@ -6310,10 +6310,6 @@ body {
   color: #2f3236;
   font-size: 18px;
   line-height: 1.15;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .popular-desc {
@@ -9449,10 +9445,6 @@ body {
   .preview-brand {
     font-size: 18px;
     line-height: 1.15;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
   }
 
   .popular-meta,

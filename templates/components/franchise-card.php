@@ -8,7 +8,7 @@
  * 2) Через get_template_part( ..., null, [ 'franchise_card' => $arr ] ).
  * 3) В цикле WooCommerce: глобальный $product — поля подтянутся из ACF поста товара.
  *
- * Поля ACF (имена): product_full_title, year_founded, franchise_since, own_stores,
+ * Поля ACF (имена): year_founded, franchise_since, own_stores,
  * franch_stores, tm_number, monthly_profit_min, monthly_profit_max, payback_min,
  * payback_max, verified, pausal, royalty.
  *
@@ -54,6 +54,7 @@ $defaults = [
     'profit'           => null,
     'verified'         => false,
     'tags'             => '',
+    'post_id'          => 0,
     'name'             => '',
     'desc'             => '',
     'image'            => '',
@@ -84,10 +85,32 @@ $profit_int = $c['profit'] !== null && $c['profit'] !== '' ? (int) $c['profit'] 
 $meta_value = $invest_int > 0 ? franchises_format_money_ru($invest_int) : '';
 
 $href = esc_url($c['href']);
-$name = esc_html((string) $c['name']);
+
+$card_post_id = (int) $c['post_id'];
+if ($card_post_id <= 0 && isset($product) && class_exists('WC_Product') && is_a($product, 'WC_Product', true)) {
+    $card_post_id = (int) $product->get_id();
+}
+if ($card_post_id <= 0 && (string) $c['franchise_id'] !== '') {
+    $slug_post = get_page_by_path((string) $c['franchise_id'], OBJECT, 'product');
+    if ($slug_post instanceof WP_Post) {
+        $card_post_id = (int) $slug_post->ID;
+    }
+}
+if ($card_post_id <= 0 && (string) $c['href'] !== '' && (string) $c['href'] !== '#') {
+    $card_post_id = (int) url_to_postid((string) $c['href']);
+}
+
+// popular-brand: заголовок товара (post_title), не ACF product_full_title (H1).
+$brand_title = $card_post_id > 0
+    ? get_the_title($card_post_id)
+    : (string) $c['name'];
+
+$name = esc_html($brand_title);
+$brand_title_attr = wp_strip_all_tags($brand_title);
+
 $desc = esc_html((string) $c['desc']);
 $img = esc_url((string) $c['image']);
-$img_alt = esc_attr(wp_strip_all_tags((string) $c['name']));
+$img_alt = esc_attr($brand_title_attr);
 
 $franchise_id = esc_attr((string) $c['franchise_id']);
 $franchise_url = esc_url((string) $c['franchise_url']);
@@ -113,7 +136,7 @@ $attr = static function (string $k, $v): string {
     data-profit="<?php echo esc_attr((string) $profit_int); ?>"
     data-verified="<?php echo esc_attr($verified_attr); ?>"
     data-tags="<?php echo esc_attr((string) $c['tags']); ?>"
-    data-name="<?php echo esc_attr(wp_strip_all_tags((string) $c['name'])); ?>"
+    data-name="<?php echo esc_attr($brand_title_attr); ?>"
     data-desc="<?php echo esc_attr(wp_strip_all_tags((string) $c['desc'])); ?>"
     data-image="<?php echo $img; ?>"
     data-franchise-id="<?php echo $franchise_id; ?>"
