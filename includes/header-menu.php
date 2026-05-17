@@ -139,6 +139,9 @@ if (! function_exists('franchises_header_contacts_url')) {
 if (! function_exists('franchises_product_cat_term_url')) {
     function franchises_product_cat_term_url(WP_Term $term): string
     {
+        if (function_exists('franchises_product_cat_flat_url')) {
+            return franchises_product_cat_flat_url($term);
+        }
         $link = get_term_link($term);
         return is_wp_error($link) ? '' : (string) $link;
     }

@@ -38,20 +38,46 @@ if (is_product_category()) {
 $default_orderby = function_exists('get_option') ? get_option('woocommerce_default_catalog_orderby', 'menu_order') : 'menu_order';
 $cur_orderby = isset($_GET['orderby']) ? sanitize_text_field(wp_unslash($_GET['orderby'])) : $default_orderby;
 
-$form_action = is_shop() ? $shop_url : get_term_link(get_queried_object());
-if (is_wp_error($form_action)) {
-    $form_action = $shop_url;
+$form_action = $shop_url;
+if (function_exists('franchises_catalog_url_for_selection')) {
+    $form_action = franchises_catalog_url_for_selection($cur_sphere, $cur_category);
+} elseif (is_product_category()) {
+    $term = get_queried_object();
+    if ($term instanceof WP_Term && function_exists('franchises_product_cat_flat_url')) {
+        $form_action = franchises_product_cat_flat_url($term);
+    } else {
+        $link = get_term_link(get_queried_object());
+        if (! is_wp_error($link)) {
+            $form_action = (string) $link;
+        }
+    }
 }
 
-$hero_title = 'Каталог франшиз';
+$hero_base_title = 'Каталог франшиз';
 $hero_sub = 'Подберите франшизу по бюджету, отрасли и сроку окупаемости.';
-if (is_product_category()) {
-    $hero_title = single_term_title('', false) ?: $hero_title;
+if ($cur_category !== '') {
+    $hero_base_title = $cur_category;
+} elseif ($cur_sphere !== '') {
+    $hero_base_title = $cur_sphere;
+} elseif (is_product_category()) {
+    $hero_base_title = single_term_title('', false) ?: $hero_base_title;
     $tdesc = term_description();
     if (is_string($tdesc) && trim(wp_strip_all_tags($tdesc)) !== '') {
         $hero_sub = wp_strip_all_tags($tdesc);
     }
 }
+
+$cur_search_q = isset($_GET['q']) ? sanitize_text_field(wp_unslash((string) $_GET['q'])) : '';
+$hero_title = function_exists('franchises_catalog_build_hero_title')
+    ? franchises_catalog_build_hero_title(
+        $hero_base_title,
+        $cur_verified,
+        $cur_invest_max,
+        $cur_profit_min,
+        $cur_payback_max,
+        $cur_search_q
+    )
+    : $hero_base_title;
 
 $parents = get_terms([
     'taxonomy'   => 'product_cat',
@@ -101,7 +127,7 @@ $count_line = $found > 0
 <section class="catalog-hero" aria-label="Каталог франшиз">
     <?php franchises_render_breadcrumbs([], ['with_container' => false, 'inline' => true]); ?>
     <h1 class="page-title"><?php echo esc_html($hero_title); ?></h1>
-    <h2 class="page-subtitle"><?php echo esc_html($hero_sub); ?></h2>
+    <p class="page-subtitle"><?php echo esc_html($hero_sub); ?></p>
 </section>
 
 <div class="catalog-layout">
@@ -160,123 +186,29 @@ $count_line = $found > 0
             <button class="btn btn-primary mobile-filter-btn" type="button" data-filter-open>Фильтры</button>
         </div>
 
-        <form method="get" action="<?php echo esc_url($form_action); ?>" aria-label="Фильтр каталога" id="franchises-catalog-filters">
-            <div class="filter-card advanced-collapsed">
-                <div class="filter-grid">
-                    <select class="filter-select filter-select-native" name="sphere" data-filter="sphere" aria-label="Сфера бизнеса">
-                        <option value=""><?php esc_html_e('Все сферы', 'woocommerce'); ?></option>
-                        <?php foreach ($parents as $p) : ?>
-                            <option value="<?php echo esc_attr($p->name); ?>" <?php selected($cur_sphere, $p->name); ?>><?php echo esc_html($p->name); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                    <select class="filter-select filter-select-native" name="category" data-filter="category" aria-label="Категория франшизы">
-                        <option value=""><?php esc_html_e('Все категории', 'woocommerce'); ?></option>
-                        <?php foreach ($parents as $p) :
-                            $children = get_terms([
-                                'taxonomy'   => 'product_cat',
-                                'hide_empty' => true,
-                                'parent'     => (int) $p->term_id,
-                                'orderby'    => 'name',
-                                'order'      => 'ASC',
-                            ]);
-                            if (is_wp_error($children) || ! $children) {
-                                continue;
-                            }
-                            foreach ($children as $ch) :
-                        ?>
-                                <option value="<?php echo esc_attr($ch->name); ?>" data-sphere="<?php echo esc_attr($p->name); ?>" <?php selected($cur_category, $ch->name); ?>><?php echo esc_html($ch->name); ?></option>
-                        <?php
-                            endforeach;
-                        endforeach; ?>
-                    </select>
-                    <select class="filter-select filter-select-native" name="payback_max" data-filter="payback" aria-label="Окупаемость">
-                        <option value="0">Любая окупаемость</option>
-                        <option value="12" <?php selected($cur_payback_max, 12); ?>>до 12 мес.</option>
-                        <option value="18" <?php selected($cur_payback_max, 18); ?>>до 18 мес.</option>
-                        <option value="24" <?php selected($cur_payback_max, 24); ?>>до 24 мес.</option>
-                        <option value="36" <?php selected($cur_payback_max, 36); ?>>до 36 мес.</option>
-                    </select>
-                    <button class="btn btn-primary filter-btn" type="submit">Подобрать</button>
-                </div>
-                <label class="filter-check filter-check-inline">
-                    <input type="checkbox" name="verified" value="1" <?php checked($cur_verified); ?>>
-                    <span>Только проверенные франшизы</span>
-                </label>
 
-                <div class="filter-advanced">
-                    <div class="range-filters" aria-label="Фильтры по вложениям и прибыли">
-                        <div class="range-card">
-                            <div class="range-head">
-                                <div class="range-title">Вложения</div>
-                                <div class="range-value" id="invest-value"><?php echo $cur_invest_max > 0 ? 'до ' . esc_html(franchises_format_money_ru($cur_invest_max)) : 'Любые вложения'; ?></div>
-                            </div>
-                            <input type="hidden" name="invest_max" id="invest_max_input" value="<?php echo esc_attr((string) $cur_invest_max); ?>">
-                            <input
-                                class="range-input"
-                                id="invest-range"
-                                type="range"
-                                min="50000"
-                                max="3000000"
-                                step="50000"
-                                value="<?php echo esc_attr((string) ($cur_invest_max > 0 ? $cur_invest_max : 3000000)); ?>"
-                                data-range-hidden="#invest_max_input"
-                                data-range-label="#invest-value"
-                                data-range-empty-label="<?php echo esc_attr__('Любые вложения', 'franchises'); ?>"
-                                data-range-prefix="<?php echo esc_attr__('до ', 'franchises'); ?>"
-                                data-range-empty-value="0"
-                                data-range-empty-at="max">
-                            <div class="preset-row">
-                                <button class="preset-btn" type="button" data-invest="50000">до 50 000 ₽</button>
-                                <button class="preset-btn" type="button" data-invest="100000">до 100 000 ₽</button>
-                                <button class="preset-btn" type="button" data-invest="300000">до 300 000 ₽</button>
-                                <button class="preset-btn" type="button" data-invest="500000">до 500 000 ₽</button>
-                                <button class="preset-btn" type="button" data-invest="1000000">до 1 000 000 ₽</button>
-                                <button class="preset-btn" type="button" data-invest="3000000">до 3 000 000 ₽</button>
-                            </div>
-                        </div>
-                        <div class="range-card">
-                            <div class="range-head">
-                                <div class="range-title">Прибыль в месяц</div>
-                                <div class="range-value" id="profit-value"><?php echo $cur_profit_min > 0 ? 'от ' . esc_html(franchises_format_money_ru($cur_profit_min)) : 'Любая прибыль'; ?></div>
-                            </div>
-                            <input type="hidden" name="profit_min" id="profit_min_input" value="<?php echo esc_attr((string) $cur_profit_min); ?>">
-                            <input
-                                class="range-input"
-                                id="profit-range"
-                                type="range"
-                                min="0"
-                                max="1000000"
-                                step="50000"
-                                value="<?php echo esc_attr((string) ($cur_profit_min > 0 ? $cur_profit_min : 0)); ?>"
-                                data-range-hidden="#profit_min_input"
-                                data-range-label="#profit-value"
-                                data-range-empty-label="<?php echo esc_attr__('Любая прибыль', 'franchises'); ?>"
-                                data-range-prefix="<?php echo esc_attr__('от ', 'franchises'); ?>"
-                                data-range-empty-value="0"
-                                data-range-empty-at="min">
-                            <div class="preset-row">
-                                <button class="preset-btn" type="button" data-profit="100000">от 100 000 ₽</button>
-                                <button class="preset-btn" type="button" data-profit="200000">от 200 000 ₽</button>
-                                <button class="preset-btn" type="button" data-profit="300000">от 300 000 ₽</button>
-                                <button class="preset-btn" type="button" data-profit="500000">от 500 000 ₽</button>
-                                <button class="preset-btn" type="button" data-profit="1000000">от 1 000 000 ₽</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <button class="filter-toggle" type="button" aria-expanded="false">Показать дополнительные фильтры</button>
-            </div>
+        <?php
+        wc_get_template(
+            'parts/catalog-filters.php',
+            [
+                'shop_url'        => $shop_url,
+                'form_action'     => $form_action,
+                'parents'         => $parents,
+                'cur_sphere'      => $cur_sphere,
+                'cur_category'    => $cur_category,
+                'cur_payback_max' => $cur_payback_max,
+                'cur_verified'    => $cur_verified,
+                'cur_invest_max'  => $cur_invest_max,
+                'cur_profit_min'  => $cur_profit_min,
+                'cur_orderby'     => $cur_orderby,
+                'orderby_options' => $orderby_options,
+                'count_line'      => $count_line,
+            ],
+            '',
+            get_template_directory() . '/woocommerce/'
+        );
+        ?>
 
-            <div class="catalog-count mobile-count" id="catalog-count-mobile"><?php echo esc_html($count_line); ?></div>
-            <div class="catalog-toolbar">
-                <div class="catalog-count" id="catalog-count"><?php echo esc_html($count_line); ?></div>
-                <select class="filter-select sort-select filter-select-native dropdown--fit" name="orderby" data-sort aria-label="Сортировка" onchange="this.form.submit();">
-                    <?php foreach ($orderby_options as $val => $label) : ?>
-                        <option value="<?php echo esc_attr($val); ?>" <?php selected($cur_orderby, $val); ?>><?php echo esc_html($label); ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-        </form>
 
         <?php
         if (have_posts()) {

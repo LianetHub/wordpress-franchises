@@ -1236,9 +1236,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterCard = main.querySelector('.filter-card');
     const filterToggle = main.querySelector('.filter-toggle');
     if (filterToggle && filterCard) {
+        const labelShow = filterToggle.getAttribute('data-label-show') || 'Показать дополнительные фильтры';
+        const labelHide = filterToggle.getAttribute('data-label-hide') || 'Скрыть дополнительные фильтры';
+        const syncFilterToggleLabel = (collapsed) => {
+            filterToggle.textContent = collapsed ? labelShow : labelHide;
+        };
+        syncFilterToggleLabel(filterCard.classList.contains('advanced-collapsed'));
         filterToggle.addEventListener('click', () => {
             const collapsed = filterCard.classList.toggle('advanced-collapsed');
             filterToggle.setAttribute('aria-expanded', String(!collapsed));
+            syncFilterToggleLabel(collapsed);
         });
     }
 
@@ -1304,8 +1311,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    const filterForm = main.querySelector('#franchises-catalog-filters');
     const sphereSelect = main.querySelector('select[name="sphere"]');
     const categorySelect = main.querySelector('select[name="category"]');
+    const refreshNativeSelect = (selectEl) => {
+        if (!selectEl) return;
+        const custom = $(selectEl).data('customSelect');
+        if (custom?.refreshFromNative) {
+            custom.refreshFromNative();
+        }
+    };
     const syncCategoryOptions = () => {
         if (!sphereSelect || !categorySelect) return;
         const sphere = String(sphereSelect.value || '').trim();
@@ -1321,15 +1336,58 @@ document.addEventListener('DOMContentLoaded', () => {
                 opt.hidden = ds !== sphere;
             }
         });
-        const categoryCustom = $(categorySelect).data('customSelect');
-        if (categoryCustom?.refreshFromNative) {
-            categoryCustom.refreshFromNative();
+        refreshNativeSelect(categorySelect);
+    };
+    const syncSphereFromCategory = () => {
+        if (!sphereSelect || !categorySelect) return;
+        const categoryOpt = categorySelect.selectedOptions?.[0];
+        if (!categoryOpt?.value) return;
+        const sphereName = String(categoryOpt.getAttribute('data-sphere') || '').trim();
+        if (!sphereName) return;
+        const match = Array.from(sphereSelect.options).find((opt) => opt.value === sphereName);
+        if (!match) return;
+        sphereSelect.value = sphereName;
+        refreshNativeSelect(sphereSelect);
+    };
+    const updateCatalogFormAction = () => {
+        if (!filterForm) return;
+        const shopUrl = String(filterForm.getAttribute('data-shop-url') || '').trim();
+        const categoryOpt = categorySelect?.selectedOptions?.[0];
+        const sphereOpt = sphereSelect?.selectedOptions?.[0];
+        const categoryUrl = categoryOpt ? String(categoryOpt.getAttribute('data-url') || '').trim() : '';
+        const sphereUrl = sphereOpt ? String(sphereOpt.getAttribute('data-url') || '').trim() : '';
+        if (categoryUrl) {
+            filterForm.action = categoryUrl;
+        } else if (sphereUrl) {
+            filterForm.action = sphereUrl;
+        } else if (shopUrl) {
+            filterForm.action = shopUrl;
         }
     };
     if (sphereSelect) {
-        sphereSelect.addEventListener('change', syncCategoryOptions);
+        sphereSelect.addEventListener('change', () => {
+            const sphere = String(sphereSelect.value || '').trim();
+            const categoryOpt = categorySelect?.selectedOptions?.[0];
+            if (categoryOpt?.value) {
+                const ds = String(categoryOpt.getAttribute('data-sphere') || '').trim();
+                if (sphere && ds !== sphere) {
+                    categorySelect.value = '';
+                    refreshNativeSelect(categorySelect);
+                }
+            }
+            syncCategoryOptions();
+            updateCatalogFormAction();
+        });
         syncCategoryOptions();
     }
+    if (categorySelect) {
+        categorySelect.addEventListener('change', () => {
+            syncSphereFromCategory();
+            syncCategoryOptions();
+            updateCatalogFormAction();
+        });
+    }
+    updateCatalogFormAction();
 
     const tagsToggle = main.querySelector('.catalog-tags-toggle');
     const tagsEl = main.querySelector('.catalog-tags.segment-tabs');
@@ -1344,7 +1402,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('filter-modal');
     const sheetBody = modal ? modal.querySelector('.filter-sheet-body') : null;
     const openBtn = main.querySelector('[data-filter-open]');
-    const filterForm = main.querySelector('#franchises-catalog-filters');
     if (modal && sheetBody && filterCard && openBtn && filterForm) {
         const setModal = (open) => {
             modal.classList.toggle('active', open);

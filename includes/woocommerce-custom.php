@@ -836,6 +836,197 @@ if (! function_exists('franchises_request_uri_relative_path')) {
     }
 }
 
+if (! function_exists('franchises_shop_page_slug')) {
+    function franchises_shop_page_slug(): string
+    {
+        if (! function_exists('wc_get_page_id')) {
+            return '';
+        }
+        $shop_id = wc_get_page_id('shop');
+        if ($shop_id <= 0) {
+            return '';
+        }
+        $shop = get_post($shop_id);
+        if (! $shop instanceof WP_Post) {
+            return '';
+        }
+
+        return (string) $shop->post_name;
+    }
+}
+
+if (! function_exists('franchises_shop_catalog_url')) {
+    function franchises_shop_catalog_url(): string
+    {
+        if (! function_exists('wc_get_page_id')) {
+            return home_url('/');
+        }
+        $shop_id = wc_get_page_id('shop');
+        if ($shop_id <= 0) {
+            return home_url('/');
+        }
+        $permalink = get_permalink($shop_id);
+
+        return is_string($permalink) && $permalink !== '' ? $permalink : home_url('/');
+    }
+}
+
+if (! function_exists('franchises_resolve_product_cat_term')) {
+    function franchises_resolve_product_cat_term(string $value, int $parent_id = 0): ?WP_Term
+    {
+        if ($value === '' || ! taxonomy_exists('product_cat')) {
+            return null;
+        }
+
+        $term = get_term_by('name', $value, 'product_cat');
+        if (! $term) {
+            $term = get_term_by('slug', $value, 'product_cat');
+        }
+        if (! $term) {
+            $term = get_term_by('slug', sanitize_title($value), 'product_cat');
+        }
+        if (! $term || is_wp_error($term)) {
+            return null;
+        }
+        if ($parent_id > 0 && (int) $term->parent !== $parent_id) {
+            return null;
+        }
+
+        return $term;
+    }
+}
+
+if (! function_exists('franchises_product_cat_flat_url')) {
+    function franchises_product_cat_flat_url(WP_Term $term): string
+    {
+        $base = trailingslashit(franchises_shop_catalog_url());
+
+        return $base . $term->slug . '/';
+    }
+}
+
+if (! function_exists('franchises_product_cat_ancestor_slugs')) {
+    /**
+     * @return list<string>
+     */
+    function franchises_product_cat_ancestor_slugs(WP_Term $term): array
+    {
+        $slugs = [];
+        $parent_id = (int) $term->parent;
+        while ($parent_id > 0) {
+            $parent = get_term($parent_id, 'product_cat');
+            if (! $parent instanceof WP_Term || is_wp_error($parent)) {
+                break;
+            }
+            array_unshift($slugs, (string) $parent->slug);
+            $parent_id = (int) $parent->parent;
+        }
+
+        return $slugs;
+    }
+}
+
+if (! function_exists('franchises_product_cat_path_matches_term')) {
+    /** @param list<string> $path_slugs */
+    function franchises_product_cat_path_matches_term(array $path_slugs, WP_Term $term): bool
+    {
+        if ($path_slugs === []) {
+            return true;
+        }
+
+        return $path_slugs === franchises_product_cat_ancestor_slugs($term);
+    }
+}
+
+if (! function_exists('franchises_catalog_filter_query_args')) {
+    /**
+     * GET-параметры каталога без сферы и категории (они задаются путём URL).
+     *
+     * @return array<string, string|int>
+     */
+    function franchises_catalog_filter_query_args(): array
+    {
+        $args = [];
+        if (! empty($_GET['verified'])) {
+            $args['verified'] = '1';
+        }
+        if (isset($_GET['invest_max']) && (int) $_GET['invest_max'] > 0) {
+            $args['invest_max'] = (int) $_GET['invest_max'];
+        }
+        if (isset($_GET['profit_min']) && (int) $_GET['profit_min'] > 0) {
+            $args['profit_min'] = (int) $_GET['profit_min'];
+        }
+        if (isset($_GET['payback_max']) && (int) $_GET['payback_max'] > 0) {
+            $args['payback_max'] = (int) $_GET['payback_max'];
+        }
+        if (! empty($_GET['q'])) {
+            $args['q'] = sanitize_text_field(wp_unslash((string) $_GET['q']));
+        }
+        if (isset($_GET['orderby']) && $_GET['orderby'] !== '') {
+            $default = function_exists('get_option')
+                ? (string) get_option('woocommerce_default_catalog_orderby', 'menu_order')
+                : 'menu_order';
+            $orderby = sanitize_text_field(wp_unslash((string) $_GET['orderby']));
+            if ($orderby !== '' && $orderby !== $default) {
+                $args['orderby'] = $orderby;
+            }
+        }
+        if (isset($_GET['paged']) && (int) $_GET['paged'] > 1) {
+            $args['paged'] = (int) $_GET['paged'];
+        }
+
+        return $args;
+    }
+}
+
+if (! function_exists('franchises_catalog_url_for_selection')) {
+    function franchises_catalog_url_for_selection(string $sphere = '', string $category = ''): string
+    {
+        $shop_url = franchises_shop_catalog_url();
+
+        if ($category !== '') {
+            $parent_id = 0;
+            if ($sphere !== '') {
+                $parent = franchises_resolve_product_cat_term($sphere);
+                $parent_id = $parent ? (int) $parent->term_id : 0;
+            }
+            $term = franchises_resolve_product_cat_term($category, $parent_id);
+            if (! $term && $parent_id > 0) {
+                $term = franchises_resolve_product_cat_term($category);
+            }
+            if ($term instanceof WP_Term) {
+                return franchises_product_cat_flat_url($term);
+            }
+        } elseif ($sphere !== '') {
+            $term = franchises_resolve_product_cat_term($sphere);
+            if ($term instanceof WP_Term && (int) $term->parent === 0) {
+                return franchises_product_cat_flat_url($term);
+            }
+        }
+
+        return $shop_url;
+    }
+}
+
+if (! function_exists('franchises_catalog_url_with_filters')) {
+    function franchises_catalog_url_with_filters(string $base_url, array $extra_args = []): string
+    {
+        $args = array_merge(franchises_catalog_filter_query_args(), $extra_args);
+
+        return $args !== [] ? add_query_arg($args, $base_url) : $base_url;
+    }
+}
+
+if (! function_exists('franchises_normalize_url_path')) {
+    function franchises_normalize_url_path(string $url): string
+    {
+        $path = (string) wp_parse_url($url, PHP_URL_PATH);
+        $path = $path !== '' ? $path : '/';
+
+        return trailingslashit($path);
+    }
+}
+
 if (! function_exists('franchises_fix_shop_prefixed_product_cat_request')) {
     /**
      * WooCommerce отдаёт канонические ссылки вида /{shop}/{родитель}/{категория}/, но правила
@@ -908,21 +1099,7 @@ if (! function_exists('franchises_fix_shop_prefixed_product_cat_request')) {
             return $query_vars;
         }
 
-        $check = $term;
-        foreach (array_reverse($ancestors) as $anc_slug) {
-            if ((int) $check->parent <= 0) {
-                return $query_vars;
-            }
-            $parent = get_term((int) $check->parent, 'product_cat');
-            if (! $parent instanceof WP_Term || is_wp_error($parent) || $parent->slug !== $anc_slug) {
-                return $query_vars;
-            }
-            $check = $parent;
-        }
-        if ($ancestors === [] && (int) $term->parent > 0) {
-            return $query_vars;
-        }
-        if ((int) $check->parent !== 0) {
+        if (! franchises_product_cat_path_matches_term($ancestors, $term)) {
             return $query_vars;
         }
 
@@ -962,6 +1139,93 @@ if (! function_exists('franchises_fix_shop_prefixed_product_cat_request')) {
 
 add_filter('request', 'franchises_fix_shop_prefixed_product_cat_request', 999);
 
+add_action('pre_get_posts', static function (WP_Query $q): void {
+    if (is_admin() || ! $q->is_main_query()) {
+        return;
+    }
+    if ($q->is_tax('product_cat')) {
+        $q->set('post_type', 'product');
+    }
+}, 1);
+
+add_filter('term_link', static function ($termlink, $term, $taxonomy) {
+    if ($taxonomy !== 'product_cat' || ! ($term instanceof WP_Term)) {
+        return $termlink;
+    }
+    if (! function_exists('wc_get_page_id') || wc_get_page_id('shop') <= 0) {
+        return $termlink;
+    }
+
+    return franchises_product_cat_flat_url($term);
+}, 10, 3);
+
+add_action('template_redirect', static function (): void {
+    if (is_admin() || wp_doing_ajax() || wp_doing_cron()) {
+        return;
+    }
+    if (! function_exists('is_product_category') || ! function_exists('is_shop')) {
+        return;
+    }
+
+    $filter_args = franchises_catalog_filter_query_args();
+    $sphere = isset($_GET['sphere']) ? sanitize_text_field(wp_unslash((string) $_GET['sphere'])) : '';
+    $category = isset($_GET['category']) ? sanitize_text_field(wp_unslash((string) $_GET['category'])) : '';
+
+    if ($sphere !== '' || $category !== '') {
+        if (is_shop() || is_product_category()) {
+            $target_base = franchises_catalog_url_for_selection($sphere, $category);
+            $target = franchises_catalog_url_with_filters($target_base);
+            $current_path = franchises_normalize_url_path(
+                isset($_SERVER['REQUEST_URI']) ? (string) wp_unslash($_SERVER['REQUEST_URI']) : '/'
+            );
+            $target_path = franchises_normalize_url_path($target);
+            if ($current_path !== $target_path || isset($_GET['sphere']) || isset($_GET['category'])) {
+                wp_safe_redirect($target, 302);
+                exit;
+            }
+        }
+    }
+
+    if (! is_product_category()) {
+        return;
+    }
+
+    $term = get_queried_object();
+    if (! $term instanceof WP_Term || $term->taxonomy !== 'product_cat' || (int) $term->parent <= 0) {
+        return;
+    }
+
+    $shop_slug = franchises_shop_page_slug();
+    if ($shop_slug === '') {
+        return;
+    }
+
+    $path = franchises_request_uri_relative_path();
+    if ($path === '') {
+        return;
+    }
+
+    $parts = array_values(array_filter(explode('/', $path), 'strlen'));
+    if ($parts === [] || $parts[0] !== $shop_slug) {
+        return;
+    }
+
+    array_shift($parts);
+    if (count($parts) < 2 || (string) end($parts) !== $term->slug) {
+        return;
+    }
+
+    $canonical = franchises_catalog_url_with_filters(franchises_product_cat_flat_url($term));
+    $current_path = franchises_normalize_url_path(
+        isset($_SERVER['REQUEST_URI']) ? (string) wp_unslash($_SERVER['REQUEST_URI']) : '/'
+    );
+    $canonical_path = franchises_normalize_url_path($canonical);
+    if ($current_path !== $canonical_path) {
+        wp_safe_redirect($canonical, 301);
+        exit;
+    }
+}, 5);
+
 if (! function_exists('franchises_is_product_catalog_view')) {
     function franchises_is_product_catalog_view(): bool
     {
@@ -970,6 +1234,107 @@ if (! function_exists('franchises_is_product_catalog_view')) {
         }
 
         return is_shop() || is_product_category();
+    }
+}
+
+if (! function_exists('franchises_lcfirst_utf8')) {
+    function franchises_lcfirst_utf8(string $text): string
+    {
+        if ($text === '') {
+            return $text;
+        }
+
+        return mb_strtolower(mb_substr($text, 0, 1)) . mb_substr($text, 1);
+    }
+}
+
+if (! function_exists('franchises_ru_months_genitive')) {
+    function franchises_ru_months_genitive(int $months): string
+    {
+        $months = abs($months);
+        $mod100 = $months % 100;
+        $mod10 = $months % 10;
+        if ($mod10 === 1 && $mod100 !== 11) {
+            return 'месяца';
+        }
+
+        return 'месяцев';
+    }
+}
+
+if (! function_exists('franchises_catalog_has_extra_title_filters')) {
+    function franchises_catalog_has_extra_title_filters(
+        bool $verified = false,
+        int $invest_max = 0,
+        int $profit_min = 0,
+        int $payback_max = 0,
+        string $search_q = ''
+    ): bool {
+        if ($verified) {
+            return true;
+        }
+        if ($invest_max > 0 || $profit_min > 0 || $payback_max > 0) {
+            return true;
+        }
+
+        return $search_q !== '';
+    }
+}
+
+if (! function_exists('franchises_catalog_build_hero_title')) {
+    function franchises_catalog_build_hero_title(
+        string $base_title,
+        bool $verified = false,
+        int $invest_max = 0,
+        int $profit_min = 0,
+        int $payback_max = 0,
+        string $search_q = ''
+    ): string {
+        $clauses = [];
+
+        if ($invest_max > 0) {
+            $clauses[] = 'с вложениями до ' . franchises_format_money_ru($invest_max);
+        }
+        if ($profit_min > 0) {
+            $clauses[] = 'с прибылью в месяц от ' . franchises_format_money_ru($profit_min);
+        }
+        if ($payback_max > 0) {
+            $clauses[] = sprintf(
+                'с окупаемостью до %d %s',
+                $payback_max,
+                franchises_ru_months_genitive($payback_max)
+            );
+        }
+        if ($search_q !== '') {
+            $clauses[] = 'по запросу «' . $search_q . '»';
+        }
+
+        if (! franchises_catalog_has_extra_title_filters($verified, $invest_max, $profit_min, $payback_max, $search_q)) {
+            return $base_title;
+        }
+
+        $title = $base_title;
+
+        if ($verified) {
+            if (preg_match('/^Франшиз/ui', $title)) {
+                $title = 'Проверенные ' . franchises_lcfirst_utf8($title);
+            } elseif (preg_match('/^Каталог/ui', $title)) {
+                $title = 'Каталог проверенных франшиз';
+            } else {
+                $title = 'Проверенные ' . franchises_lcfirst_utf8($title);
+            }
+        }
+
+        if ($clauses !== []) {
+            if (count($clauses) > 1) {
+                $last = array_pop($clauses);
+                $title .= ' ' . implode(', ', $clauses) . ' и ' . $last;
+            } else {
+                $title .= ' ' . $clauses[0];
+            }
+        }
+
+        return $title;
     }
 }
 
@@ -1135,11 +1500,16 @@ add_action('woocommerce_product_query', static function ($q): void {
         $sphere = isset($_GET['sphere']) ? sanitize_text_field(wp_unslash($_GET['sphere'])) : '';
 
         if ($category !== '') {
-            $term = get_term_by('name', $category, 'product_cat');
-            if (! $term) {
-                $term = get_term_by('slug', sanitize_title($category), 'product_cat');
+            $parent_id = 0;
+            if ($sphere !== '') {
+                $parent = franchises_resolve_product_cat_term($sphere);
+                $parent_id = $parent ? (int) $parent->term_id : 0;
             }
-            if ($term && ! is_wp_error($term)) {
+            $term = franchises_resolve_product_cat_term($category, $parent_id);
+            if (! $term && $parent_id > 0) {
+                $term = franchises_resolve_product_cat_term($category);
+            }
+            if ($term instanceof WP_Term) {
                 $extra_tax[] = [
                     'taxonomy'         => 'product_cat',
                     'field'            => 'term_id',
@@ -1148,11 +1518,8 @@ add_action('woocommerce_product_query', static function ($q): void {
                 ];
             }
         } elseif ($sphere !== '') {
-            $term = get_term_by('name', $sphere, 'product_cat');
-            if (! $term) {
-                $term = get_term_by('slug', sanitize_title($sphere), 'product_cat');
-            }
-            if ($term && ! is_wp_error($term)) {
+            $term = franchises_resolve_product_cat_term($sphere);
+            if ($term instanceof WP_Term) {
                 $extra_tax[] = [
                     'taxonomy'         => 'product_cat',
                     'field'            => 'term_id',
