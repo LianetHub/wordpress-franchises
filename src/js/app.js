@@ -39,20 +39,28 @@ document.addEventListener('DOMContentLoaded', () => {
             const $card = $root.find("[data-lead-feedback-card]");
             if (!$root.length || !$card.length) return;
 
-            $card.toggleClass("is-error", isError).toggleClass("is-success", !isError);
-            $root.find("[data-lead-feedback-success-text], [data-lead-feedback-success-block]").toggle(!isError);
+            $root.toggleClass("is-error", isError).toggleClass("is-success", !isError);
+
+            $root.find("[data-lead-feedback-success-text]").toggle(!isError);
             const $errorText = $root.find("[data-lead-feedback-error-text]");
             $errorText.toggle(isError);
             if (isError && message) {
-                $errorText.text(message);
+                $root.find("[data-lead-feedback-error-message]").text(message);
             }
 
-            const $mark = $root.find("[data-lead-feedback-mark]");
-            if (!isError && $mark.length) {
+            $root.find("[data-lead-feedback-success-block]").prop("hidden", isError);
+            $root.find("[data-lead-feedback-error-block]").prop("hidden", !isError);
+
+            const $mark = isError
+                ? $root.find("[data-lead-feedback-error-block]")
+                : $root.find("[data-lead-feedback-success-block]");
+
+            if ($mark.length) {
                 $mark.removeClass("animate");
                 void $mark[0].offsetWidth;
                 $mark.addClass("animate");
             }
+
             showInlineFancybox("#lead-feedback");
         };
 

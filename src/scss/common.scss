@@ -92,11 +92,7 @@ body {
 		padding-top: calc(var(--header-height) + 48px) !important;
 	}
 
-	&.catalog-page {
-		@media (min-width: 901px) {
-			padding-top: calc(var(--header-height) + 32px) !important;
-		}
-	}
+
 
 	@media (max-width: 900px) {
 		padding: calc(var(--header-height) + 16px) 16px 60px !important;

@@ -662,13 +662,10 @@
 
 	&-feedback-card {
 		position: relative;
-		width: min(450px, 92vw);
-		min-height: 320px;
+		width: 100%;
 		padding: 24px 28px;
+		border: 1px solid transparent;
 		border-radius: 24px;
-		border: 1px solid #d8dce1;
-		background: #ffffff;
-		box-shadow: 0 22px 56px rgba(15, 20, 26, 0.24);
 		display: grid;
 		gap: 14px;
 		align-content: center;
@@ -676,13 +673,6 @@
 		text-align: center;
 	}
 
-	&-feedback-card.is-error {
-		border-color: #efcaca;
-	}
-
-	&-feedback-card.is-success {
-		border-color: #cfead8;
-	}
 
 	&-feedback-mark {
 		width: 116px;
@@ -711,6 +701,25 @@
 		stroke-width: 4;
 		stroke-dasharray: 56;
 		stroke-dashoffset: 56;
+	}
+
+	&-feedback-cross {
+		width: 106px;
+		height: 106px;
+	}
+
+	&-feedback-cross-circle {
+		stroke: #d64545;
+		stroke-width: 3;
+		stroke-dasharray: 190;
+		stroke-dashoffset: 190;
+	}
+
+	&-feedback-cross-path {
+		stroke: #d64545;
+		stroke-width: 4;
+		stroke-dasharray: 40;
+		stroke-dashoffset: 40;
 	}
 
 	&-feedback-text {

@@ -25,7 +25,7 @@
 		color: #5a6066;
 
 		&.wpcf7-not-valid-tip {
-			color: #f04438;
+			color: #f04438 !important;
 		}
 	}
 
@@ -449,9 +449,20 @@
 
 	&--home {
 		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+		grid-template-columns: repeat(2, 1fr) auto;
 		align-items: end;
 		gap: 12px;
+
+		.wpcf7-not-valid-tip {
+			position: absolute;
+			top: 100%;
+			left: 0;
+			width: 100%;
+		}
+
+		.consent {
+			margin-top: 1rem;
+		}
 
 		.field {
 			min-width: 0;
@@ -609,7 +620,6 @@
 .wpcf7-not-valid-tip {
 	margin-top: 0.25em;
 	text-align: left;
-	color: #f04438;
 	font-size: 0.875rem;
 }
 
@@ -619,13 +629,6 @@
 	display: none !important;
 }
 
-.wpcf7-not-valid-tip {
-	margin-top: 0.25em;
-}
-
-.wpcf7-not-valid-tip {
-	text-align: left;
-}
 
 .wpcf7-form {
 	&:has(.wpcf7-submit[disabled]) {
@@ -694,35 +697,31 @@
 // ---------------------------------------------------------------------------
 
 .lead-feedback-popup {
+	&.is-error {
+		border-color: #f04438;
+	}
+
+	&.is-success {
+		border-color: #00be56;
+	}
+
 	.lead-feedback-card {
 		position: relative;
-		width: min(450px, 92vw);
-		min-height: 320px;
+		width: 100%;
 		padding: 24px 28px;
-		border-radius: 24px;
-		border: 1px solid #d8dce1;
-		background: #ffffff;
-		box-shadow: 0 22px 56px rgba(15, 20, 26, 0.24);
 		display: grid;
 		gap: 14px;
 		align-content: center;
 		justify-items: center;
 		text-align: center;
-
-		&.is-error {
-			border-color: #efcaca;
-
-			.lead-feedback-mark {
-				display: none;
-			}
-		}
-
-		&.is-success {
-			border-color: #cfead8;
-		}
+		background: transparent;
 	}
 
-	.lead-feedback-card.is-success .lead-feedback-mark {
+	&.is-success [data-lead-feedback-success-block]:not([hidden]) {
+		display: inline-flex;
+	}
+
+	&.is-error [data-lead-feedback-error-block]:not([hidden]) {
 		display: inline-flex;
 	}
 
@@ -734,13 +733,16 @@
 		justify-content: center;
 	}
 
-	.lead-feedback-check {
+	.lead-feedback-check,
+	.lead-feedback-cross {
 		width: 106px;
 		height: 106px;
 	}
 
 	.lead-feedback-check-circle,
-	.lead-feedback-check-path {
+	.lead-feedback-check-path,
+	.lead-feedback-cross-circle,
+	.lead-feedback-cross-path {
 		fill: none;
 		stroke-linecap: round;
 		stroke-linejoin: round;
@@ -760,12 +762,28 @@
 		stroke-dashoffset: 56;
 	}
 
-	.lead-feedback-mark.animate .lead-feedback-check-circle {
-		animation: lead-check-circle 0.66s cubic-bezier(0.2, 0.86, 0.24, 1) forwards;
+	.lead-feedback-cross-circle {
+		stroke: #d64545;
+		stroke-width: 3;
+		stroke-dasharray: 190;
+		stroke-dashoffset: 190;
 	}
 
-	.lead-feedback-mark.animate .lead-feedback-check-path {
-		animation: lead-check-path 0.42s cubic-bezier(0.2, 0.86, 0.24, 1) 0.2s forwards;
+	.lead-feedback-cross-path {
+		stroke: #d64545;
+		stroke-width: 4;
+		stroke-dasharray: 40;
+		stroke-dashoffset: 40;
+	}
+
+	.lead-feedback-mark.animate .lead-feedback-check-circle,
+	.lead-feedback-mark.animate .lead-feedback-cross-circle {
+		animation: lead-check-circle 1.5s cubic-bezier(0.2, 0.86, 0.24, 1) forwards;
+	}
+
+	.lead-feedback-mark.animate .lead-feedback-check-path,
+	.lead-feedback-mark.animate .lead-feedback-cross-path {
+		animation: lead-check-path 2s cubic-bezier(0.2, 0.86, 0.24, 1) 0.2s forwards;
 	}
 
 	.lead-feedback-text {
