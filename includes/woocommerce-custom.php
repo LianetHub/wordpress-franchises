@@ -263,6 +263,39 @@ if (! function_exists('franchises_format_money_ru')) {
     }
 }
 
+if (! function_exists('franchises_product_price_amount')) {
+    /**
+     * Цена товара WooCommerce (regular price) в рублях для карточек и фильтров.
+     */
+    function franchises_product_price_amount(int $post_id): ?int
+    {
+        if (! function_exists('wc_get_product')) {
+            return null;
+        }
+
+        $product = wc_get_product($post_id);
+        if (! $product) {
+            return null;
+        }
+
+        $price = $product->get_regular_price();
+        if ($price === '' || $price === null) {
+            return null;
+        }
+
+        return (int) wc_format_decimal($price, 0, false);
+    }
+}
+
+if (! function_exists('franchises_format_product_price_ru')) {
+    function franchises_format_product_price_ru(int $post_id): string
+    {
+        $amount = franchises_product_price_amount($post_id);
+
+        return ($amount !== null && $amount > 0) ? franchises_format_money_ru($amount) : '';
+    }
+}
+
 if (! function_exists('franchises_franchise_card_from_post')) {
     /**
      * Сборка данных карточки из поста (ACF + обложка + постоянная ссылка).
@@ -276,19 +309,12 @@ if (! function_exists('franchises_franchise_card_from_post')) {
 
         $verified = ! empty($acf['verified']);
 
-        $pausal = isset($acf['pausal']) && $acf['pausal'] !== '' ? (int) $acf['pausal'] : null;
         $profit_min = isset($acf['monthly_profit_min']) && $acf['monthly_profit_min'] !== '' ? (int) $acf['monthly_profit_min'] : null;
         $profit_max = isset($acf['monthly_profit_max']) && $acf['monthly_profit_max'] !== '' ? (int) $acf['monthly_profit_max'] : null;
         $payback_min = isset($acf['payback_min']) && $acf['payback_min'] !== '' ? (int) $acf['payback_min'] : null;
         $payback_max = isset($acf['payback_max']) && $acf['payback_max'] !== '' ? (int) $acf['payback_max'] : null;
 
-        $invest = $pausal;
-        if ($invest === null && function_exists('wc_get_product')) {
-            $wc_p = wc_get_product($post_id);
-            if ($wc_p && $wc_p->get_regular_price() !== '') {
-                $invest = (int) wc_format_decimal($wc_p->get_regular_price(), 0, false);
-            }
-        }
+        $invest = franchises_product_price_amount($post_id);
         $profit_for_filter = $profit_min ?? $profit_max;
         $payback_for_filter = $payback_min ?? $payback_max;
 

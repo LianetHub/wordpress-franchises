@@ -78,11 +78,8 @@ $c = wp_parse_args($franchise_card, $defaults);
 $verified_bool = ! empty($c['verified']);
 $verified_attr = $verified_bool ? 'true' : 'false';
 
-$invest_int = $c['invest'] !== null && $c['invest'] !== '' ? (int) $c['invest'] : 0;
 $payback_int = $c['payback'] !== null && $c['payback'] !== '' ? (int) $c['payback'] : 0;
 $profit_int = $c['profit'] !== null && $c['profit'] !== '' ? (int) $c['profit'] : 0;
-
-$meta_value = $invest_int > 0 ? franchises_format_money_ru($invest_int) : '';
 
 $href = esc_url($c['href']);
 
@@ -98,6 +95,25 @@ if ($card_post_id <= 0 && (string) $c['franchise_id'] !== '') {
 }
 if ($card_post_id <= 0 && (string) $c['href'] !== '' && (string) $c['href'] !== '#') {
     $card_post_id = (int) url_to_postid((string) $c['href']);
+}
+
+// meta-value: только цена товара WooCommerce (regular price), не ACF pausal / investment_min.
+$invest_int = 0;
+$meta_value = '';
+if ($card_post_id > 0 && function_exists('franchises_product_price_amount')) {
+    $price_amount = franchises_product_price_amount($card_post_id);
+    if ($price_amount !== null && $price_amount > 0) {
+        $invest_int = $price_amount;
+        $meta_value = franchises_format_money_ru($invest_int);
+    }
+} elseif (isset($product) && class_exists('WC_Product') && is_a($product, 'WC_Product', true)) {
+    $price_raw = $product->get_regular_price();
+    if ($price_raw !== '' && is_numeric($price_raw)) {
+        $invest_int = (int) wc_format_decimal($price_raw, 0, false);
+        if ($invest_int > 0) {
+            $meta_value = franchises_format_money_ru($invest_int);
+        }
+    }
 }
 
 // popular-brand: заголовок товара (post_title), не ACF product_full_title (H1).

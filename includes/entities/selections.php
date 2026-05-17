@@ -304,21 +304,9 @@ function franchises_product_payback_within(int $product_id, int $months): bool
  */
 function franchises_product_investment_amount(int $product_id): ?int
 {
-    if (! function_exists('wc_get_product')) {
-        return null;
-    }
-
-    $product = wc_get_product($product_id);
-    if (! $product) {
-        return null;
-    }
-
-    $price = $product->get_regular_price();
-    if ($price === '' || $price === null) {
-        return null;
-    }
-
-    return (int) wc_format_decimal($price, 0, false);
+    return function_exists('franchises_product_price_amount')
+        ? franchises_product_price_amount($product_id)
+        : null;
 }
 
 function franchises_product_matches_selection_type(int $product_id, string $type, int $selection_id = 0): bool
