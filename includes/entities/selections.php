@@ -76,6 +76,36 @@ function franchises_get_current_selection_id(): int
 }
 
 /**
+ * @return list<array{label: string, href: string}>
+ */
+function franchises_selection_breadcrumbs(int $selection_id): array
+{
+    $trail = [
+        ['label' => 'Главная', 'href' => home_url('/')],
+    ];
+
+    $shop_url = '';
+    if (function_exists('wc_get_page_id')) {
+        $shop_id = wc_get_page_id('shop');
+        if ($shop_id > 0) {
+            $shop_url = (string) get_permalink($shop_id);
+        }
+    }
+
+    if ($shop_url !== '') {
+        $trail[] = ['label' => 'Каталог франшиз', 'href' => $shop_url];
+    }
+
+    $title = $selection_id > 0 ? get_the_title($selection_id) : '';
+    $trail[] = [
+        'label' => $title !== '' ? (string) $title : 'Подборка',
+        'href'  => '',
+    ];
+
+    return $trail;
+}
+
+/**
  * @return list<WP_Post>
  */
 function franchises_get_selection_posts(int $limit = 40): array
@@ -502,3 +532,26 @@ add_action('acf/init', static function (): void {
         ]]],
     ]);
 });
+
+add_action('template_redirect', static function (): void {
+    if (is_admin() || wp_doing_ajax() || wp_doing_cron()) {
+        return;
+    }
+    if (! is_post_type_archive(franchises_selection_post_type())) {
+        return;
+    }
+
+    $target = home_url('/');
+    if (function_exists('wc_get_page_id')) {
+        $shop_id = wc_get_page_id('shop');
+        if ($shop_id > 0) {
+            $permalink = get_permalink($shop_id);
+            if (is_string($permalink) && $permalink !== '') {
+                $target = $permalink;
+            }
+        }
+    }
+
+    wp_safe_redirect($target, 301);
+    exit;
+}, 5);

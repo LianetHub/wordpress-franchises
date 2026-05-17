@@ -57,6 +57,12 @@ $current_selection_id = function_exists('franchises_get_current_selection_id')
     ? franchises_get_current_selection_id()
     : 0;
 
+$is_selection_catalog = $current_selection_id > 0;
+$shop_link_active = ! $is_selection_catalog
+    && function_exists('is_shop')
+    && is_shop()
+    && ! is_product_category();
+
 $hero_base_title = 'Каталог франшиз';
 $hero_sub = 'Подберите франшизу по бюджету, отрасли и сроку окупаемости.';
 if ($current_selection_id > 0) {
@@ -125,9 +131,13 @@ $count_line = $found > 0
     ? sprintf('Показано франшиз: %d–%d из %d', $from, $to, $found)
     : 'Франшизы не найдены';
 
+$breadcrumb_items = [];
+if ($is_selection_catalog && function_exists('franchises_selection_breadcrumbs')) {
+    $breadcrumb_items = franchises_selection_breadcrumbs($current_selection_id);
+}
 ?>
 <section class="catalog-hero" aria-label="Каталог франшиз">
-    <?php franchises_render_breadcrumbs([], ['with_container' => false, 'inline' => true]); ?>
+    <?php franchises_render_breadcrumbs($breadcrumb_items, ['with_container' => false, 'inline' => true]); ?>
     <h1 class="page-title"><?php echo esc_html($hero_title); ?></h1>
     <p class="page-subtitle"><?php echo esc_html($hero_sub); ?></p>
 </section>
@@ -138,7 +148,7 @@ $count_line = $found > 0
             <div class="sidebar-title">Подборки</div>
             <ul class="sidebar-list" data-collections-list>
                 <li>
-                    <a href="<?php echo esc_url($shop_url); ?>" class="sidebar-link<?php echo is_shop() && ! is_product_category() ? ' active' : ''; ?>">Все франшизы</a>
+                    <a href="<?php echo esc_url($shop_url); ?>" class="sidebar-link<?php echo $shop_link_active ? ' active' : ''; ?>">Все франшизы</a>
                 </li>
                 <?php foreach ($collection_posts as $sel_post) :
                     if (! $sel_post instanceof WP_Post) {
@@ -167,7 +177,7 @@ $count_line = $found > 0
 
         <div class="catalog-tags-wrap" aria-label="Подборки для мобильной версии">
             <div class="segment-tabs catalog-tags" aria-label="Подборки" data-collections-tabs>
-                <a class="seg<?php echo is_shop() && ! is_product_category() ? ' active' : ''; ?>" href="<?php echo esc_url($shop_url); ?>">Все</a>
+                <a class="seg<?php echo $shop_link_active ? ' active' : ''; ?>" href="<?php echo esc_url($shop_url); ?>">Все</a>
                 <?php foreach ($collection_posts as $sel_post) :
                     if (! $sel_post instanceof WP_Post) {
                         continue;

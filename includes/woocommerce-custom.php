@@ -1272,14 +1272,41 @@ add_action('template_redirect', static function (): void {
     }
 }, 5);
 
+if (! function_exists('franchises_is_selection_catalog_view')) {
+    function franchises_is_selection_catalog_view(): bool
+    {
+        if (function_exists('franchises_get_current_selection_id') && franchises_get_current_selection_id() > 0) {
+            return true;
+        }
+
+        return is_singular('selection');
+    }
+}
+
 if (! function_exists('franchises_is_product_catalog_view')) {
     function franchises_is_product_catalog_view(): bool
     {
+        if (function_exists('franchises_is_selection_catalog_view') && franchises_is_selection_catalog_view()) {
+            return false;
+        }
+
         if (! function_exists('is_shop')) {
             return false;
         }
 
         return is_shop() || is_product_category();
+    }
+}
+
+if (! function_exists('franchises_uses_catalog_cards_grid')) {
+    /** Каталог и страницы подборок — сетка popular-grid, не ul.products WooCommerce. */
+    function franchises_uses_catalog_cards_grid(): bool
+    {
+        if (function_exists('franchises_is_selection_catalog_view') && franchises_is_selection_catalog_view()) {
+            return true;
+        }
+
+        return franchises_is_product_catalog_view();
     }
 }
 
@@ -1433,6 +1460,16 @@ if (! function_exists('franchises_catalog_has_active_filters')) {
 if (! function_exists('franchises_catalog_reset_filters_url')) {
     function franchises_catalog_reset_filters_url(): string
     {
+        if (function_exists('franchises_get_current_selection_id')) {
+            $selection_id = franchises_get_current_selection_id();
+            if ($selection_id > 0) {
+                $link = get_permalink($selection_id);
+                if (is_string($link) && $link !== '') {
+                    return $link;
+                }
+            }
+        }
+
         if (function_exists('is_product_category') && is_product_category()) {
             $term = get_queried_object();
             if ($term instanceof WP_Term) {
@@ -1521,7 +1558,7 @@ if (! function_exists('franchises_wc_catalog_orderby_choices')) {
 }
 
 add_filter('woocommerce_product_loop_start', static function (string $html): string {
-    if (! franchises_is_product_catalog_view()) {
+    if (! franchises_uses_catalog_cards_grid()) {
         return $html;
     }
 
@@ -1529,7 +1566,7 @@ add_filter('woocommerce_product_loop_start', static function (string $html): str
 }, 50);
 
 add_filter('woocommerce_product_loop_end', static function (string $html): string {
-    if (! franchises_is_product_catalog_view()) {
+    if (! franchises_uses_catalog_cards_grid()) {
         return $html;
     }
 
@@ -1538,6 +1575,9 @@ add_filter('woocommerce_product_loop_end', static function (string $html): strin
 
 add_action('woocommerce_product_query', static function ($q): void {
     if (is_admin() || ! $q->is_main_query()) {
+        return;
+    }
+    if (function_exists('franchises_is_selection_catalog_view') && franchises_is_selection_catalog_view()) {
         return;
     }
     if (! function_exists('is_shop') || (! is_shop() && ! is_product_taxonomy())) {

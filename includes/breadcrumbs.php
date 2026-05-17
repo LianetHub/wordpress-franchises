@@ -36,6 +36,16 @@ if (! function_exists('franchises_normalize_breadcrumb_items')) {
 if (! function_exists('franchises_breadcrumb_current_url')) {
     function franchises_breadcrumb_current_url(): string
     {
+        if (function_exists('franchises_get_current_selection_id')) {
+            $selection_id = franchises_get_current_selection_id();
+            if ($selection_id > 0) {
+                $permalink = get_permalink($selection_id);
+                if (is_string($permalink) && $permalink !== '') {
+                    return $permalink;
+                }
+            }
+        }
+
         if (is_singular()) {
             $permalink = get_permalink();
             if (is_string($permalink) && $permalink !== '') {
@@ -55,6 +65,13 @@ if (! function_exists('franchises_get_breadcrumb_items')) {
      */
     function franchises_get_breadcrumb_items(): array
     {
+        if (function_exists('franchises_get_current_selection_id')) {
+            $selection_id = franchises_get_current_selection_id();
+            if ($selection_id > 0 && function_exists('franchises_selection_breadcrumbs')) {
+                return franchises_selection_breadcrumbs($selection_id);
+            }
+        }
+
         if (function_exists('franchises_is_product_catalog_view') && franchises_is_product_catalog_view()) {
             return franchises_catalog_breadcrumbs();
         }

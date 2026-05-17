@@ -18,7 +18,13 @@
         <?php require_once(TEMPLATE_PATH . '_header-main.php'); ?>
         <main class="wrap<?php
                             echo is_front_page() ? ' wrap-home' : '';
-                            if (function_exists('is_shop') && (is_shop() || is_product_category())) {
+                            $franchises_catalog_layout = (function_exists('is_shop') && (is_shop() || is_product_category()))
+                                || is_singular('selection')
+                                || (
+                                    function_exists('franchises_get_current_selection_id')
+                                    && franchises_get_current_selection_id() > 0
+                                );
+                            if ($franchises_catalog_layout) {
                                 echo ' catalog-page';
                             }
                             ?>">

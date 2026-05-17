@@ -2,6 +2,37 @@
 
 defined('ABSPATH') || exit;
 
+if (! function_exists('franchises_home_collections_preview_limit')) {
+    function franchises_home_collections_preview_limit(): int
+    {
+        return max(1, (int) apply_filters('franchises_home_collections_preview_limit', 20));
+    }
+}
+
+if (! function_exists('franchises_home_collections_shop_key')) {
+    function franchises_home_collections_shop_key(): string
+    {
+        return 'all-franchises';
+    }
+}
+
+if (! function_exists('franchises_home_collections_shop_url')) {
+    function franchises_home_collections_shop_url(): string
+    {
+        if (function_exists('wc_get_page_id')) {
+            $shop_page_id = wc_get_page_id('shop');
+            if ($shop_page_id > 0) {
+                $permalink = get_permalink($shop_page_id);
+                if (is_string($permalink) && $permalink !== '') {
+                    return $permalink;
+                }
+            }
+        }
+
+        return home_url('/');
+    }
+}
+
 if (! function_exists('franchises_home_collections')) {
     /**
      * Подборки на главной из CPT selection (порядок — menu_order в админке).
@@ -43,15 +74,73 @@ if (! function_exists('franchises_home_collection_product_ids')) {
      *
      * @return list<int>
      */
-    function franchises_home_collection_product_ids(int $selection_id, int $limit = 10): array
+    function franchises_home_collection_product_ids(int $selection_id, ?int $limit = null): array
     {
         if ($selection_id <= 0 || ! function_exists('franchises_selection_product_ids')) {
             return [];
         }
 
+        $limit = $limit ?? franchises_home_collections_preview_limit();
         $ids = franchises_selection_product_ids($selection_id, max(50, $limit));
 
         return array_slice($ids, 0, max(1, $limit));
+    }
+}
+
+if (! function_exists('franchises_home_shop_product_ids')) {
+    /**
+     * Превью для вкладки «Все франшизы» на главной.
+     *
+     * @return list<int>
+     */
+    function franchises_home_shop_product_ids(?int $limit = null): array
+    {
+        $limit = $limit ?? franchises_home_collections_preview_limit();
+
+        $query = new WP_Query([
+            'post_type'           => 'product',
+            'post_status'         => 'publish',
+            'posts_per_page'      => max(1, $limit),
+            'orderby'             => 'menu_order',
+            'order'               => 'ASC',
+            'ignore_sticky_posts' => true,
+            'no_found_rows'       => true,
+        ]);
+
+        $ids = [];
+        if ($query->have_posts()) {
+            while ($query->have_posts()) {
+                $query->the_post();
+                $post_id = (int) get_the_ID();
+                if ($post_id > 0) {
+                    $ids[] = $post_id;
+                }
+            }
+        }
+        wp_reset_postdata();
+
+        return $ids;
+    }
+}
+
+if (! function_exists('franchises_render_home_collection_cards')) {
+    /**
+     * @param list<int> $product_ids
+     */
+    function franchises_render_home_collection_cards(array $product_ids): int
+    {
+        if (! function_exists('franchises_render_franchise_card_for_product')) {
+            return 0;
+        }
+
+        $shown = 0;
+        foreach ($product_ids as $product_id) {
+            if (franchises_render_franchise_card_for_product((int) $product_id, ['order' => $shown])) {
+                $shown++;
+            }
+        }
+
+        return $shown;
     }
 }
 
@@ -67,17 +156,12 @@ if (! function_exists('franchises_render_home_collections_section')) {
             return;
         }
 
+        $preview_limit = franchises_home_collections_preview_limit();
+        $shop_key = franchises_home_collections_shop_key();
+        $shop_url = franchises_home_collections_shop_url();
+
         $first_key = (string) ($collections[0]['key'] ?? '');
-        $first_url = (string) ($collections[0]['url'] ?? '');
-        if ($first_url === '' && function_exists('wc_get_page_id')) {
-            $shop_page_id = wc_get_page_id('shop');
-            if ($shop_page_id > 0) {
-                $first_url = (string) get_permalink($shop_page_id);
-            }
-        }
-        if ($first_url === '') {
-            $first_url = home_url('/');
-        }
+        $first_url = (string) ($collections[0]['url'] ?? $shop_url);
 ?>
         <div class="segment-tabs segment-tags" aria-label="<?php esc_attr_e('Подборки', 'franchises'); ?>" data-collections-chips>
             <?php foreach ($collections as $collection) :
@@ -97,6 +181,14 @@ if (! function_exists('franchises_render_home_collections_section')) {
                     <?php echo esc_html((string) ($collection['label'] ?? '')); ?>
                 </button>
             <?php endforeach; ?>
+            <button
+                type="button"
+                class="collection-tile"
+                data-collection="<?php echo esc_attr($shop_key); ?>"
+                data-collection-url="<?php echo esc_url($shop_url); ?>"
+                aria-pressed="false">
+                <?php esc_html_e('Все франшизы', 'franchises'); ?>
+            </button>
         </div>
 
         <?php foreach ($collections as $collection) :
@@ -106,29 +198,40 @@ if (! function_exists('franchises_render_home_collections_section')) {
                 continue;
             }
             $is_active = $key === $first_key;
-            $product_ids = franchises_home_collection_product_ids($selection_id, 10);
-            $shown = 0;
+            $product_ids = franchises_home_collection_product_ids($selection_id, $preview_limit);
+            $panel_url = (string) ($collection['url'] ?? $shop_url);
         ?>
             <div
                 class="popular-grid"
                 data-collections-grid
                 data-collection-panel="<?php echo esc_attr($key); ?>"
+                data-collection-more-url="<?php echo esc_url($panel_url); ?>"
                 <?php echo $is_active ? '' : ' hidden'; ?>>
                 <?php
-                if (function_exists('franchises_render_franchise_card_for_product')) {
-                    foreach ($product_ids as $product_id) {
-                        if (franchises_render_franchise_card_for_product((int) $product_id, ['order' => $shown])) {
-                            $shown++;
-                        }
-                    }
-                }
-
+                $shown = franchises_render_home_collection_cards($product_ids);
                 if ($shown === 0) {
                     echo '<p class="popular-sub" style="grid-column:1/-1;">' . esc_html__('В этой подборке пока нет франшиз.', 'franchises') . '</p>';
                 }
                 ?>
             </div>
         <?php endforeach; ?>
+
+        <?php
+        $shop_product_ids = franchises_home_shop_product_ids($preview_limit);
+        ?>
+        <div
+            class="popular-grid"
+            data-collections-grid
+            data-collection-panel="<?php echo esc_attr($shop_key); ?>"
+            data-collection-more-url="<?php echo esc_url($shop_url); ?>"
+            hidden>
+            <?php
+            $shop_shown = franchises_render_home_collection_cards($shop_product_ids);
+            if ($shop_shown === 0) {
+                echo '<p class="popular-sub" style="grid-column:1/-1;">' . esc_html__('В каталоге пока нет опубликованных франшиз.', 'franchises') . '</p>';
+            }
+            ?>
+        </div>
 
         <div class="segment-actions">
             <a class="btn btn-primary" href="<?php echo esc_url($first_url); ?>" data-collections-open>
