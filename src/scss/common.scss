@@ -21,6 +21,8 @@
 	--banner-ratio: #{$banner-ratio};
 
 	--header-height: 56px;
+	--wp-admin-bar-height: 0px;
+	--header-sticky-top: calc(var(--wp-admin-bar-height) + var(--header-height));
 	--header-gap: 0px;
 	--section-gap: 60px;
 
@@ -31,10 +33,20 @@
 	--shared-input-bg: #{$shared-input-bg};
 	--header-menu-surface: #{$header-menu-surface};
 	--header-float-offset: #{$header-float-offset};
+	--header-dropdown-gap: #{$header-dropdown-gap};
 
 	@media (max-width: 600px) {
 		--header-height: 56px;
 		--section-gap: 32px;
+	}
+}
+
+// Класс admin-bar WordPress добавляет на body (body_class), не на html.
+body.admin-bar {
+	--wp-admin-bar-height: 32px;
+
+	@media screen and (max-width: 782px) {
+		--wp-admin-bar-height: 46px;
 	}
 }
 

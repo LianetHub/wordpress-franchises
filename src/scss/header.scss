@@ -14,10 +14,10 @@
     box-shadow: none !important;
     isolation: isolate;
     pointer-events: none;
-    top: 0 !important;
+    top: var(--wp-admin-bar-height) !important;
 
     @media (min-width: 901px) {
-        top: var(--header-float-offset) !important;
+        top: calc(var(--wp-admin-bar-height) + var(--header-float-offset)) !important;
     }
 
     &.scrolled,
@@ -245,7 +245,7 @@
             .nav-dropdown-panel {
                 opacity: 1;
                 pointer-events: auto;
-                transform: translateX(-50%) !important;
+                transform: translateX(-50%) translateY(0) !important;
             }
         }
 
@@ -257,35 +257,27 @@
 
         &-panel {
             position: fixed !important;
-            top: calc(var(--header-height) - 1px) !important;
+            top: calc(var(--wp-admin-bar-height) + var(--header-height) + var(--header-dropdown-gap)) !important;
             left: 50% !important;
-            transform: translateX(-50%) !important;
+            transform: translateX(-50%) translateY(-6px) !important;
             width: min(1152px, calc(100vw - 48px)) !important;
             background: var(--header-menu-surface) !important;
-            border: 1px solid #e3e6e8 !important;
-            border-top: 0 !important;
-            border-radius: 0 0 24px 24px !important;
+            border: 1px solid #dfe4e8 !important;
+            border-radius: 20px !important;
             overflow: hidden;
-            box-shadow: none !important;
+            box-shadow:
+                0 4px 6px rgba(20, 24, 27, 0.04),
+                0 16px 40px rgba(15, 26, 23, 0.12) !important;
             z-index: 90 !important;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.18s ease, transform 0.18s ease;
+            transition:
+                opacity 0.22s ease,
+                transform 0.22s ease,
+                box-shadow 0.22s ease;
 
             @media (min-width: 901px) {
-                top: calc(var(--header-height) + var(--header-float-offset) - 1px) !important;
-            }
-
-            &::before {
-                content: "" !important;
-                position: absolute !important;
-                left: 0 !important;
-                right: 0 !important;
-                bottom: 100% !important;
-                height: calc(var(--header-height) / 2) !important;
-                background: var(--header-menu-surface) !important;
-                pointer-events: none !important;
-                display: block !important;
+                top: calc(var(--wp-admin-bar-height) + var(--header-height) + var(--header-float-offset) + var(--header-dropdown-gap)) !important;
             }
         }
     }
@@ -326,6 +318,7 @@
         color: #2f3236;
         width: 100%;
         min-width: 0;
+        border-radius: 0 !important;
         font-family: inherit;
 
         &::placeholder {
@@ -843,7 +836,7 @@
     .mobile-search-bar {
         display: block;
         position: sticky;
-        top: var(--header-height);
+        top: var(--header-sticky-top);
         z-index: 24;
         background: transparent;
     }
@@ -880,7 +873,7 @@
     .mobile-search-bar {
         display: block;
         position: sticky;
-        top: var(--header-height);
+        top: var(--header-sticky-top);
         z-index: 24;
         background: transparent;
     }
@@ -897,7 +890,7 @@
     .mobile-search-bar {
         display: block;
         position: sticky;
-        top: var(--header-height);
+        top: var(--header-sticky-top);
         z-index: 24;
         background: transparent;
     }

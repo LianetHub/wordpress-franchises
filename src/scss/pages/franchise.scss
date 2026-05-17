@@ -269,7 +269,7 @@
 		flex-direction: column;
 		gap: 8px;
 		position: sticky;
-		top: calc(var(--header-height) + 20px);
+		top: calc(var(--header-sticky-top) + 20px);
 		grid-area: side;
 		grid-column: 2 / 3;
 	}

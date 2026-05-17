@@ -1635,12 +1635,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const isDropdownOpen = (el) => !!el && (el.classList.contains('is-open') || el.classList.contains('open'));
 
+        const getDropdownGap = () => {
+            const raw = getComputedStyle(document.documentElement)
+                .getPropertyValue('--header-dropdown-gap')
+                .trim();
+            const gap = parseFloat(raw);
+            return Number.isFinite(gap) ? gap : 12;
+        };
+
         const syncPanelTop = () => {
             if (!(categoriesPanel instanceof HTMLElement)) return;
             const headerInner = header.querySelector('.header-inner');
             const anchor = headerInner instanceof HTMLElement ? headerInner : header;
             const headerBottom = Math.round(anchor.getBoundingClientRect().bottom);
-            const panelTop = Math.max(0, headerBottom - 1);
+            const panelTop = Math.max(0, headerBottom + getDropdownGap());
             categoriesPanel.style.setProperty('top', `${panelTop}px`, 'important');
             if (collectionsPanel instanceof HTMLElement) {
                 collectionsPanel.style.setProperty('top', `${panelTop}px`, 'important');
