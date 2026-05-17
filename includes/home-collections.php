@@ -78,30 +78,6 @@ if (! function_exists('franchises_home_collection_matches')) {
     }
 }
 
-if (! function_exists('franchises_selection_cf7_shortcode')) {
-    function franchises_selection_cf7_shortcode(): string
-    {
-        return (string) apply_filters(
-            'franchises_selection_cf7_shortcode',
-            '[contact-form-7 id="b41fe87" title="Контактная форма Задать вопрос"]'
-        );
-    }
-}
-
-if (! function_exists('franchises_render_selection_popup_cf7')) {
-    function franchises_render_selection_popup_cf7(): void
-    {
-        $shortcode = franchises_selection_cf7_shortcode();
-        if ($shortcode === '') {
-            echo '<p class="selection-popup-subtitle popup__subtitle">';
-            esc_html_e('Форма подбора будет доступна после настройки Contact Form 7.', 'franchises');
-            echo '</p>';
-            return;
-        }
-        echo do_shortcode($shortcode);
-    }
-}
-
 if (! function_exists('franchises_render_home_collections_section')) {
     function franchises_render_home_collections_section(): void
     {

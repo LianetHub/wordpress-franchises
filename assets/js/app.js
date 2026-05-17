@@ -731,8 +731,8 @@ document.addEventListener('DOMContentLoaded', () => {
         window.CustomSelect = CustomSelect;
         window.initCustomSelects = (root) => CustomSelect.initAll(root || document);
 
-        $(document).on('wpcf7domready', () => {
-            CustomSelect.initAll(document);
+        $(document).on("wpcf7domready", (event) => {
+            CustomSelect.initAll(event.target || document);
         });
 
         $(document).on("wpcf7mailsent", function () {

@@ -54,7 +54,7 @@
         <div class="footer-bottom">
             <div class="footer-note">
                 Портал использует данные браузера (cookies и местоположение) для корректной работы разделов и сбора статистики.
-                Оставаясь на сайте, вы соглашаетесь с <a href="privacy-policy.html">политикой конфиденциальности</a>.
+                Оставаясь на сайте, вы соглашаетесь с <a href="<?php echo esc_url(franchises_privacy_policy_url()); ?>">политикой конфиденциальности</a>.
             </div>
             <div class="footer-legal">© <?php echo date('Y'); ?> <?php echo esc_html(get_field('company_name', 'option')); ?></div>
         </div>

@@ -92,6 +92,7 @@
 	width: 100%;
 	border-radius: 1rem;
 	overflow: hidden;
+	flex-direction: column;
 
 	@media (min-width: $md3) {
 		max-width: rem(950);

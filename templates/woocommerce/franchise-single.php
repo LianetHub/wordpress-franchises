@@ -67,8 +67,7 @@ $key_payback = franchises_format_payback_ru(
 $key_pausal = franchises_format_pausal_line_ru($post_id);
 $key_royalty = franchises_format_royalty_display($post_id);
 
-$privacy_url = get_privacy_policy_url();
-$privacy_href = $privacy_url ? $privacy_url : '#';
+$privacy_href = franchises_privacy_policy_url();
 
 $date_fmt = 'j F Y';
 $post_obj = get_post($post_id);
@@ -172,6 +171,7 @@ $card = franchises_franchise_card_from_post($post_id);
                                             src="<?php echo esc_url($gurl); ?>"
                                             alt="<?php echo esc_attr($gallery_alt); ?>"
                                             loading="<?php echo $gi === 0 ? 'eager' : 'lazy'; ?>"
+                                            class="cover-image"
                                             decoding="async">
                                     </a>
                                 </div>
@@ -243,36 +243,14 @@ $card = franchises_franchise_card_from_post($post_id);
             <section class="card cta-card" aria-label="Форма заявки">
                 <h2 class="cta-title">Узнать больше о франшизе</h2>
                 <p class="cta-subtitle">Оставьте контакты, и наш менеджер свяжется с вами, пришлёт презентацию и ответит на вопросы.</p>
-                <form class="form-grid" method="post" action="">
-                    <div class="field">
-                        <label for="fr-phone-<?php echo esc_attr((string) $pid); ?>">Телефон</label>
-                        <input id="fr-phone-<?php echo esc_attr((string) $pid); ?>" class="input" type="tel" name="fr_phone" placeholder="+7 (___) ___-__-__" autocomplete="tel">
-                    </div>
-                    <div class="field">
-                        <label for="fr-email-<?php echo esc_attr((string) $pid); ?>">Email</label>
-                        <input id="fr-email-<?php echo esc_attr((string) $pid); ?>" class="input" type="email" name="fr_email" placeholder="name@mail.ru" autocomplete="email">
-                    </div>
-                    <div class="field">
-                        <label for="fr-city-<?php echo esc_attr((string) $pid); ?>">Город</label>
-                        <input id="fr-city-<?php echo esc_attr((string) $pid); ?>" class="input" type="text" name="fr_city" placeholder="Например, Казань" autocomplete="address-level2">
-                    </div>
-                    <div class="field">
-                        <label for="fr-comment-<?php echo esc_attr((string) $pid); ?>">Комментарий</label>
-                        <input id="fr-comment-<?php echo esc_attr((string) $pid); ?>" class="input" type="text" name="fr_comment" placeholder="Напишите, что интересно узнать">
-                    </div>
-                    <div class="form-actions">
-                        <label class="consent">
-                            <input type="checkbox" name="fr_consent" value="1" required>
-                            <span>Согласен с обработкой персональных данных и условиями <a href="<?php echo esc_url($privacy_href); ?>">политики конфиденциальности</a>.</span>
-                        </label>
-                        <button class="btn btn-primary" type="submit">Отправить заявку</button>
-                    </div>
-                </form>
+                <div class="wpcf7-wrap">
+                    <?php franchises_render_franchise_lead_cf7(); ?>
+                </div>
             </section>
 
             <?php if ($content_html !== '') : ?>
                 <section class="card content-section" aria-label="Описание франшизы">
-                    <div class="entry-content franchise-product-content">
+                    <div class="entry-content franchise-product-content typography-block">
                         <?php echo $content_html; ?>
                     </div>
                 </section>
@@ -295,27 +273,9 @@ $card = franchises_franchise_card_from_post($post_id);
             <section class="card ask-box" aria-label="Задать вопрос о франшизе">
                 <h2 class="ask-title">Задать вопрос о франшизе</h2>
                 <p class="ask-subtitle">Вопросы проходят модерацию. После ответа администратора они публикуются в этом разделе.</p>
-                <form class="ask-form-grid" method="post" action="">
-                    <div class="ask-form-row">
-                        <label class="field ask-field" for="ask-name-<?php echo esc_attr((string) $pid); ?>">
-                            <span>Ваше имя</span>
-                            <input id="ask-name-<?php echo esc_attr((string) $pid); ?>" class="input" type="text" name="ask_name" placeholder="Иван" autocomplete="name">
-                        </label>
-                        <label class="field ask-field" for="ask-phone-<?php echo esc_attr((string) $pid); ?>">
-                            <span>Телефон</span>
-                            <input id="ask-phone-<?php echo esc_attr((string) $pid); ?>" class="input" type="tel" name="ask_phone" placeholder="+7 (___) ___-__-__" autocomplete="tel">
-                        </label>
-                    </div>
-                    <label class="field ask-field ask-field-full" for="ask-question-<?php echo esc_attr((string) $pid); ?>">
-                        <span>Ваш вопрос</span>
-                        <textarea id="ask-question-<?php echo esc_attr((string) $pid); ?>" class="input" name="ask_question" placeholder="Например, какие требования к локации в небольших городах?"></textarea>
-                    </label>
-                    <label class="consent">
-                        <input type="checkbox" name="ask_consent" value="1" required>
-                        <span>Согласен с обработкой персональных данных и условиями <a href="<?php echo esc_url($privacy_href); ?>">политики конфиденциальности</a>.</span>
-                    </label>
-                    <button class="btn btn-primary ask-submit" type="submit">Отправить вопрос</button>
-                </form>
+                <div class="ask-form-grid wpcf7-wrap">
+                    <?php franchises_render_franchise_question_cf7(); ?>
+                </div>
             </section>
         </div>
 

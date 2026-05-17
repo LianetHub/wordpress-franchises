@@ -17,12 +17,8 @@ get_header(); ?>
     </div>
 </section>
 <?php if (!empty(get_the_content())): ?>
-    <article class="article">
-        <div class="container">
-            <div class="article__content typography-block">
-                <?php the_content(); ?>
-            </div>
-        </div>
+    <article class="article typography-block">
+        <?php the_content(); ?>
     </article>
 <?php endif; ?>
 

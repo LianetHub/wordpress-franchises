@@ -6,7 +6,7 @@
 get_header(); ?>
 
 
-<div class="container">
+<div class="typography-block">
     <?php
     if (have_posts()) :
         while (have_posts()) :

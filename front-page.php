@@ -247,21 +247,9 @@ if (class_exists('WooCommerce', false) && function_exists('wc_get_page_id')) {
 <section class="final-section" id="contacts" aria-label="Форма заявки">
     <h2 class="segment-title">Остались вопросы?</h2>
     <p class="segment-sub">Оставьте контакты — мы свяжемся и подскажем.</p>
-    <form class="form-card final-form">
-        <div class="field">
-            <label for="lead_name">Имя</label>
-            <input class="input" id="lead_name" type="text" name="lead_name" placeholder="Ваше имя">
-        </div>
-        <div class="field">
-            <label for="lead_phone">Телефон</label>
-            <input class="input" id="lead_phone" type="tel" name="lead_phone" placeholder="+7 (___) ___‑__‑__">
-        </div>
-        <button class="btn btn-primary" type="submit">Получить консультацию</button>
-        <label class="consent">
-            <input type="checkbox" name="consent" required>
-            <span>Я соглашаюсь на обработку персональных данных и принимаю <a href="privacy-policy.html">политику конфиденциальности</a>.</span>
-        </label>
-    </form>
+    <div class="form-card final-form wpcf7-wrap">
+        <?php franchises_render_home_consult_cf7(); ?>
+    </div>
 </section>
 
 
