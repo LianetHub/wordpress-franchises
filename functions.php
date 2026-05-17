@@ -382,14 +382,14 @@ function franchises_theme_remove_like()
 
 add_action('wp_footer', function () {
     if (!isset($_COOKIE['cookie_notice'])) :
-        $privacy_url = get_privacy_policy_url();
-        $agreement_url = get_permalink(327);
+        $privacy_url = function_exists('franchises_privacy_policy_url')
+            ? franchises_privacy_policy_url()
+            : home_url('/politika-konfidenczialnosti/');
 ?>
         <div id="cookie-notice" class="cookie cookie--hidden">
             <div class="cookie__text">
-                Продолжая использовать этот сайт, вы даете согласие
-                на&nbsp;обработку файлов cookie в&nbsp;соответствии с&nbsp;<a href="<?php echo esc_url($privacy_url); ?>" target="_blank">Политикой в отношении персональных данных</a>
-                и&nbsp;<a href="<?php echo esc_url($agreement_url); ?>" target="_blank">Соглашением об использовании сайта</a>.
+                Продолжая использовать этот сайт, вы даёте согласие
+                на&nbsp;обработку файлов cookie в&nbsp;соответствии с&nbsp;<a href="<?php echo esc_url($privacy_url); ?>">политикой конфиденциальности</a>.
             </div>
             <button type="button" class="cookie__accept btn btn-primary btn-sm">Хорошо</button>
         </div>
