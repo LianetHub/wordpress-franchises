@@ -15,6 +15,7 @@ $includes = [
     'includes/breadcrumbs.php',
     'includes/woocommerce-custom.php',
     'includes/header-menu.php',
+    'includes/fibosearch-custom.php',
     'includes/home-collections.php',
     'includes/cf7-forms.php',
 ];

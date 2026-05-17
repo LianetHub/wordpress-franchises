@@ -114,14 +114,7 @@ $has_collections = $collections !== [];
             ?>
         </nav>
         <div class="header-actions">
-            <form class="header-search" role="search" method="get" action="<?php echo esc_url($shop_url); ?>" aria-label="<?php esc_attr_e('Поиск франшизы', 'franchises'); ?>">
-                <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
-                    <circle cx="11" cy="11" r="7"></circle>
-                    <path d="M20 20l-3.5-3.5"></path>
-                </svg>
-                <input type="search" name="q" placeholder="<?php esc_attr_e('Поиск по франшизам', 'franchises'); ?>" aria-label="<?php esc_attr_e('Введите запрос', 'franchises'); ?>" value="<?php echo esc_attr(isset($_GET['q']) ? sanitize_text_field(wp_unslash($_GET['q'])) : ''); ?>">
-                <button class="search-btn" type="submit"><?php esc_html_e('Найти', 'franchises'); ?></button>
-            </form>
+            <?php franchises_render_header_search('desktop'); ?>
         </div>
     </div>
 </header>
@@ -137,14 +130,7 @@ $has_collections = $collections !== [];
             <button class="mobile-menu-close" type="button" aria-label="<?php esc_attr_e('Закрыть меню', 'franchises'); ?>" data-mobile-close></button>
         </div>
         <div class="mobile-menu-body">
-            <form class="header-search" role="search" method="get" action="<?php echo esc_url($shop_url); ?>" aria-label="<?php esc_attr_e('Поиск франшизы', 'franchises'); ?>">
-                <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
-                    <circle cx="11" cy="11" r="7"></circle>
-                    <path d="M20 20l-3.5-3.5"></path>
-                </svg>
-                <input type="search" name="q" placeholder="<?php esc_attr_e('Поиск по франшизам', 'franchises'); ?>" aria-label="<?php esc_attr_e('Введите запрос', 'franchises'); ?>" value="<?php echo esc_attr(isset($_GET['q']) ? sanitize_text_field(wp_unslash($_GET['q'])) : ''); ?>">
-                <button class="search-btn" type="submit"><?php esc_html_e('Найти', 'franchises'); ?></button>
-            </form>
+            <?php franchises_render_header_search('mobile-menu'); ?>
 
             <nav class="mobile-menu-list" aria-label="<?php esc_attr_e('Навигация', 'franchises'); ?>">
                 <a class="mobile-menu-link" href="<?php echo esc_url($shop_url); ?>" <?php echo $shop_active ? ' aria-current="page"' : ''; ?>><?php esc_html_e('Все франшизы', 'franchises'); ?></a>
@@ -199,12 +185,5 @@ $has_collections = $collections !== [];
 </div>
 
 <div class="mobile-search-bar" aria-label="<?php esc_attr_e('Поиск по франшизам', 'franchises'); ?>">
-    <form class="header-search" role="search" method="get" action="<?php echo esc_url($shop_url); ?>" aria-label="<?php esc_attr_e('Поиск франшизы', 'franchises'); ?>">
-        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="11" cy="11" r="7"></circle>
-            <path d="M20 20l-3.5-3.5"></path>
-        </svg>
-        <input type="search" name="q" placeholder="<?php esc_attr_e('Поиск по франшизам', 'franchises'); ?>" aria-label="<?php esc_attr_e('Введите запрос', 'franchises'); ?>" value="<?php echo esc_attr(isset($_GET['q']) ? sanitize_text_field(wp_unslash($_GET['q'])) : ''); ?>">
-        <button class="search-btn" type="submit"><?php esc_html_e('Найти', 'franchises'); ?></button>
-    </form>
+    <?php franchises_render_header_search('mobile-bar'); ?>
 </div>

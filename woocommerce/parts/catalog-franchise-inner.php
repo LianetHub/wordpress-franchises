@@ -83,7 +83,7 @@ if ($current_selection_id > 0) {
     }
 }
 
-$cur_search_q = isset($_GET['q']) ? sanitize_text_field(wp_unslash((string) $_GET['q'])) : '';
+$cur_search_q = function_exists('franchises_get_catalog_search_query') ? franchises_get_catalog_search_query() : '';
 $hero_title = function_exists('franchises_catalog_build_hero_title')
     ? franchises_catalog_build_hero_title(
         $hero_base_title,

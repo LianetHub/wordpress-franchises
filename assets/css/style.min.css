@@ -2,7 +2,7 @@
 
 @font-face {
     font-family: Manrope;
-    src: url(../fonts/Manrope-VariableFont_wght.woff2?v=1779026651828) format("woff2 supports variations"), url(../fonts/Manrope-VariableFont_wght.woff2?v=1779026651828) format("woff2-variations"), url(../fonts/Manrope-VariableFont_wght.woff?v=1779026651828) format("woff");
+    src: url(../fonts/Manrope-VariableFont_wght.woff2?v=1779032607532) format("woff2 supports variations"), url(../fonts/Manrope-VariableFont_wght.woff2?v=1779032607532) format("woff2-variations"), url(../fonts/Manrope-VariableFont_wght.woff?v=1779032607532) format("woff");
     font-weight: 100 900;
     font-stretch: 75% 125%;
     font-style: normal;
@@ -2615,7 +2615,6 @@ body {
     -ms-flex-align: center;
     align-items: center;
     gap: 8px;
-    padding: 4px 6px 4px 12px;
     border-radius: 999px;
     border: 1px solid #e3e6e8;
     background: #fff;
@@ -2744,6 +2743,158 @@ body {
 
 .search-btn:hover {
     background: var(--btn-accent-dark)
+}
+
+.header-search-wrap {
+    -webkit-box-flex: 0;
+    -ms-flex: 0 1 320px;
+    flex: 0 1 320px;
+    min-width: 220px;
+    max-width: 100%
+}
+
+.dgwt-wcas-search-wrapp.header-search--fibosearch {
+    width: 100%;
+    max-width: none
+}
+
+.dgwt-wcas-search-wrapp.header-search--fibosearch .dgwt-wcas-search-form {
+    margin: 0
+}
+
+.dgwt-wcas-search-wrapp.header-search--fibosearch .dgwt-wcas-sf-wrapp {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px 4px 12px;
+    border-radius: 999px;
+    border: 1px solid #e3e6e8;
+    background: #fff;
+    -webkit-box-shadow: 0 6px 16px rgba(15, 26, 23, .05);
+    box-shadow: 0 6px 16px rgba(15, 26, 23, .05);
+    width: 100%;
+    max-width: none
+}
+
+.dgwt-wcas-search-wrapp.header-search--fibosearch .dgwt-wcas-preloader {
+    margin-left: auto
+}
+
+.dgwt-wcas-search-wrapp.header-search--fibosearch .dgwt-wcas-search-input {
+    border: none !important;
+    outline: 0 !important;
+    background: 0 0 !important;
+    -webkit-box-shadow: none !important;
+    box-shadow: none !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    color: #2f3236 !important;
+    width: 100%;
+    min-width: 0;
+    font-family: inherit;
+    padding: 0 !important;
+    height: auto !important;
+    min-height: 0 !important
+}
+
+.dgwt-wcas-search-wrapp.header-search--fibosearch .dgwt-wcas-search-input::-webkit-input-placeholder {
+    color: #8a9096
+}
+
+.dgwt-wcas-search-wrapp.header-search--fibosearch .dgwt-wcas-search-input::-moz-placeholder {
+    color: #8a9096
+}
+
+.dgwt-wcas-search-wrapp.header-search--fibosearch .dgwt-wcas-search-input:-ms-input-placeholder {
+    color: #8a9096
+}
+
+.dgwt-wcas-search-wrapp.header-search--fibosearch .dgwt-wcas-search-input::-ms-input-placeholder {
+    color: #8a9096
+}
+
+.dgwt-wcas-search-wrapp.header-search--fibosearch .dgwt-wcas-search-input::placeholder {
+    color: #8a9096
+}
+
+.dgwt-wcas-search-wrapp.header-search--fibosearch .dgwt-wcas-search-submit {
+    position: static !important;
+    -webkit-box-flex: 0;
+    -ms-flex: 0 0 auto;
+    flex: 0 0 auto;
+    border: none !important;
+    background: var(--btn-accent) !important;
+    color: #fff !important;
+    border-radius: 999px !important;
+    padding: 8px 14px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    min-width: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    cursor: pointer;
+    white-space: nowrap;
+    -webkit-box-shadow: none !important;
+    box-shadow: none !important
+}
+
+.dgwt-wcas-search-wrapp.header-search--fibosearch .dgwt-wcas-search-submit::before {
+    display: none !important
+}
+
+.dgwt-wcas-search-wrapp.header-search--fibosearch .dgwt-wcas-search-submit:hover {
+    background: var(--btn-accent-dark) !important
+}
+
+.dgwt-wcas-search-wrapp.header-search--fibosearch .dgwt-wcas-ico-magnifier, .dgwt-wcas-search-wrapp.header-search--fibosearch .dgwt-wcas-ico-magnifier-handler {
+    display: none
+}
+
+.dgwt-wcas-search-wrapp.header-search--fibosearch .search-icon {
+    -webkit-box-flex: 0;
+    -ms-flex: 0 0 auto;
+    flex: 0 0 auto
+}
+
+.dgwt-wcas-search-wrapp.header-search--fibosearch .dgwt-wcas-sf-wrapp:focus-within, .dgwt-wcas-search-wrapp.header-search--fibosearch:focus-within .dgwt-wcas-sf-wrapp {
+    border-color: var(--btn-accent);
+    -webkit-box-shadow: 0 0 0 3px rgba(26, 118, 211, .14);
+    box-shadow: 0 0 0 3px rgba(26, 118, 211, .14)
+}
+
+.site-header.search-expanded .header-search-wrap {
+    -webkit-box-flex: 1;
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%
+}
+
+.dgwt-wcas-suggestions-wrapp {
+    z-index: 120 !important
+}
+
+.header-search--mobile-menu, .mobile-menu-body .header-search-wrap {
+    -webkit-box-flex: 0;
+    -ms-flex: 0 0 auto;
+    flex: 0 0 auto;
+    min-width: 0;
+    width: 100%
+}
+
+.header-search--mobile-menu .dgwt-wcas-search-wrapp.header-search--fibosearch .dgwt-wcas-sf-wrapp, .mobile-menu-body .header-search-wrap .dgwt-wcas-search-wrapp.header-search--fibosearch .dgwt-wcas-sf-wrapp {
+    border-radius: 14px;
+    -webkit-box-shadow: none;
+    box-shadow: none
+}
+
+.mobile-search-bar .header-search-wrap {
+    width: 100%
 }
 
 .mobile-menu {

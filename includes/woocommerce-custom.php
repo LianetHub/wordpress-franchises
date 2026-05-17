@@ -1005,8 +1005,9 @@ if (! function_exists('franchises_catalog_filter_query_args')) {
         if (isset($_GET['payback_max']) && (int) $_GET['payback_max'] > 0) {
             $args['payback_max'] = (int) $_GET['payback_max'];
         }
-        if (! empty($_GET['q'])) {
-            $args['q'] = sanitize_text_field(wp_unslash((string) $_GET['q']));
+        $search_q = function_exists('franchises_get_catalog_search_query') ? franchises_get_catalog_search_query() : '';
+        if ($search_q !== '') {
+            $args['q'] = $search_q;
         }
         if (isset($_GET['orderby']) && $_GET['orderby'] !== '') {
             $default = function_exists('get_option')
@@ -1421,7 +1422,7 @@ if (! function_exists('franchises_catalog_build_hero_title')) {
 if (! function_exists('franchises_catalog_has_active_filters')) {
     function franchises_catalog_has_active_filters(): bool
     {
-        if (! empty($_GET['q'])) {
+        if (function_exists('franchises_get_catalog_search_query') && franchises_get_catalog_search_query() !== '') {
             return true;
         }
         if (! empty($_GET['verified'])) {
@@ -1584,8 +1585,11 @@ add_action('woocommerce_product_query', static function ($q): void {
         return;
     }
 
-    if (! empty($_GET['q'])) {
-        $q->set('s', sanitize_text_field(wp_unslash($_GET['q'])));
+    $search_q = function_exists('franchises_get_catalog_search_query')
+        ? franchises_get_catalog_search_query()
+        : (isset($_GET['q']) ? sanitize_text_field(wp_unslash((string) $_GET['q'])) : '');
+    if ($search_q !== '') {
+        $q->set('s', $search_q);
     }
 
     $extra_tax = [];

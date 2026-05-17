@@ -1726,9 +1726,119 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const setupFiboSearchHeader = () => {
+        if (typeof franchisesFiboSearch === 'undefined') {
+            return;
+        }
+
+        const shopUrl = franchisesFiboSearch.shopUrl || '';
+        const submitLabel = franchisesFiboSearch.i18n?.submit || 'Найти';
+        const placeholder = franchisesFiboSearch.i18n?.placeholder || 'Поиск по франшизам';
+
+        const syncSearchForm = (form) => {
+            if (!(form instanceof HTMLFormElement)) {
+                return;
+            }
+
+            if (shopUrl) {
+                form.setAttribute('action', shopUrl);
+            }
+
+            const input = form.querySelector('.dgwt-wcas-search-input, input[type="search"]');
+            if (input) {
+                input.setAttribute('name', 'q');
+                if (!input.getAttribute('placeholder')) {
+                    input.setAttribute('placeholder', placeholder);
+                }
+            }
+
+            const submit = form.querySelector('.dgwt-wcas-search-submit, button[type="submit"]');
+            if (submit && submitLabel) {
+                submit.setAttribute('aria-label', submitLabel);
+                if (!submit.textContent.trim()) {
+                    submit.textContent = submitLabel;
+                }
+            }
+        };
+
+        const syncAllHeaderSearchForms = () => {
+            document
+                .querySelectorAll('[data-header-search] .dgwt-wcas-search-form, .header-search--fibosearch .dgwt-wcas-search-form')
+                .forEach(syncSearchForm);
+        };
+
+        const actions = header.querySelector('.header-actions');
+        const desktopMq = window.matchMedia('(min-width: 901px)');
+
+        const setSearchExpanded = (expanded) => {
+            if (!desktopMq.matches) {
+                header.classList.remove('search-expanded');
+                return;
+            }
+            header.classList.toggle('search-expanded', expanded);
+        };
+
+        const isHeaderSearchField = (node) =>
+            node instanceof Element &&
+            !!node.closest('.header-search-wrap, .header-search--fibosearch') &&
+            node.matches('.dgwt-wcas-search-input, input[type="search"]');
+
+        if (actions) {
+            actions.addEventListener(
+                'focusin',
+                (event) => {
+                    if (isHeaderSearchField(event.target)) {
+                        setSearchExpanded(true);
+                    }
+                },
+                true
+            );
+
+            actions.addEventListener(
+                'focusout',
+                () => {
+                    window.setTimeout(() => {
+                        const focused = actions.querySelector('.dgwt-wcas-search-input:focus, input[type="search"]:focus');
+                        if (!focused) {
+                            setSearchExpanded(false);
+                        }
+                    }, 0);
+                },
+                true
+            );
+        }
+
+        document.addEventListener('fibosearch/open', () => setSearchExpanded(true));
+        document.addEventListener('fibosearch/close', () => {
+            window.setTimeout(() => {
+                const focused = actions?.querySelector('.dgwt-wcas-search-input:focus, input[type="search"]:focus');
+                if (!focused) {
+                    setSearchExpanded(false);
+                }
+            }, 0);
+        });
+
+        desktopMq.addEventListener('change', () => {
+            if (!desktopMq.matches) {
+                setSearchExpanded(false);
+            }
+        });
+
+        syncAllHeaderSearchForms();
+        $(document).on('fibosearch/open fibosearch/show-suggestions fibosearch/show-pre-suggestions', syncAllHeaderSearchForms);
+
+        if (typeof MutationObserver !== 'undefined') {
+            const observer = new MutationObserver(syncAllHeaderSearchForms);
+            document.querySelectorAll('[data-header-search]').forEach((root) => {
+                observer.observe(root, { childList: true, subtree: true });
+            });
+        }
+    };
+
     const initHeaderMenu = () => {
         setupCategoriesDropdown();
         setupHeaderDropdowns();
+        setupFiboSearchHeader();
     };
 
     if (document.readyState === 'loading') {
