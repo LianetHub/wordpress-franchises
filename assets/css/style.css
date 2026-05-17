@@ -737,7 +737,7 @@
 }
 
 .typography-block {
-  font-size: 1.125rem;
+  font-size: 1rem;
   line-height: 1.55;
 }
 
@@ -752,14 +752,14 @@
 .typography-block h1 {
   margin-top: 0;
   margin-bottom: 2.4rem;
-  font-size: 3rem;
+  font-size: 2.25rem;
   font-weight: 500;
   line-height: 1.25;
 }
 
 .typography-block h2 {
   margin: 2.5rem 0 1.25rem;
-  font-size: 2.25rem;
+  font-size: 1.25rem;
   line-height: 116.667%;
 }
 
@@ -768,7 +768,7 @@
 }
 
 .typography-block h3 {
-  font-size: 1.75rem;
+  font-size: 1.125rem;
   margin: 2rem 0 1rem;
   line-height: 128.571%;
 }
@@ -778,7 +778,7 @@
 }
 
 .typography-block h4 {
-  font-size: 1.5rem;
+  font-size: 1.125rem;
   line-height: 1.45;
   margin: 2rem 0 1rem;
 }
@@ -4347,7 +4347,6 @@ body {
       -ms-flex-align: start;
           align-items: start;
   min-width: 0;
-  overflow-x: clip;
   width: 100%;
   max-width: 100%;
 }
@@ -4477,26 +4476,6 @@ body {
   border-color: #1a76d3;
   color: #1a76d3;
   background: #f3f7fd;
-}
-
-.content-section h2 {
-  margin: 8px 0 6px;
-  font-size: 22px;
-  scroll-margin-top: 90px;
-}
-
-.content-section h2 + p {
-  margin-top: 0;
-}
-
-.content-section p + h2 {
-  margin-top: 18px;
-}
-
-.content-section p {
-  margin: 0 0 10px;
-  line-height: 1.6;
-  color: #2f3337;
 }
 
 .toc-desktop .toc-title {
@@ -8364,7 +8343,6 @@ body {
   .page-head.fx-reveal,
   .info-row.fx-reveal,
   .cta-card.fx-reveal,
-  .content-section.fx-reveal,
   .faq-section.fx-reveal,
   .ask-box.fx-reveal,
   .toc-desktop.fx-reveal,
@@ -8471,35 +8449,6 @@ body {
     color: var(--text);
     background: transparent;
     border: none;
-  }
-
-  .content-section > div > .franchise-mobile-lists {
-    gap: 10px;
-    margin-top: 12px;
-    padding-top: 0;
-    border-top: none;
-  }
-
-  .franchise-mobile-lists h2 {
-    font-size: 20px;
-  }
-
-  .franchise-mobile-list-card h3 {
-    font-size: 16px;
-    margin-bottom: 8px;
-  }
-
-  .franchise-mobile-bullets,
-  .franchise-mobile-steps {
-    margin-bottom: 8px;
-    padding-left: 20px;
-  }
-
-  .franchise-mobile-bullets li,
-  .franchise-mobile-steps li {
-    font-size: inherit;
-    line-height: 1.5;
-    margin-bottom: 6px;
   }
 
   .franchise-mobile-lists-grid {
