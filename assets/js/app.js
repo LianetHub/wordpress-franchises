@@ -1235,17 +1235,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const filterCard = main.querySelector('.filter-card');
     const filterToggle = main.querySelector('.filter-toggle');
-    if (filterToggle && filterCard) {
+    const filterAdvanced = main.querySelector('.filter-advanced');
+    const filterToggleLabel = filterToggle?.querySelector('.filter-toggle__text');
+
+    const setFilterToggleLabel = (collapsed) => {
+        if (!filterToggle || !filterToggleLabel) return;
         const labelShow = filterToggle.getAttribute('data-label-show') || 'Показать дополнительные фильтры';
         const labelHide = filterToggle.getAttribute('data-label-hide') || 'Скрыть дополнительные фильтры';
-        const syncFilterToggleLabel = (collapsed) => {
-            filterToggle.textContent = collapsed ? labelShow : labelHide;
-        };
-        syncFilterToggleLabel(filterCard.classList.contains('advanced-collapsed'));
+        filterToggleLabel.textContent = collapsed ? labelShow : labelHide;
+        filterToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    };
+
+    if (filterToggle && filterCard && filterAdvanced && window.jQuery) {
+        const $advanced = window.jQuery(filterAdvanced);
+        const isCollapsed = () => filterCard.classList.contains('advanced-collapsed');
+
+        setFilterToggleLabel(isCollapsed());
+
         filterToggle.addEventListener('click', () => {
-            const collapsed = filterCard.classList.toggle('advanced-collapsed');
-            filterToggle.setAttribute('aria-expanded', String(!collapsed));
-            syncFilterToggleLabel(collapsed);
+            if (isCollapsed()) {
+                filterCard.classList.remove('advanced-collapsed');
+                $advanced.stop(true, true).slideDown(280, () => {
+                    setFilterToggleLabel(false);
+                });
+            } else {
+                $advanced.stop(true, true).slideUp(280, () => {
+                    filterCard.classList.add('advanced-collapsed');
+                    setFilterToggleLabel(true);
+                });
+            }
         });
     }
 
@@ -1314,6 +1332,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterForm = main.querySelector('#franchises-catalog-filters');
     const sphereSelect = main.querySelector('select[name="sphere"]');
     const categorySelect = main.querySelector('select[name="category"]');
+
     const refreshNativeSelect = (selectEl) => {
         if (!selectEl) return;
         const custom = $(selectEl).data('customSelect');
@@ -1321,6 +1340,7 @@ document.addEventListener('DOMContentLoaded', () => {
             custom.refreshFromNative();
         }
     };
+
     const syncCategoryOptions = () => {
         if (!sphereSelect || !categorySelect) return;
         const sphere = String(sphereSelect.value || '').trim();
@@ -1330,14 +1350,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             const ds = String(opt.getAttribute('data-sphere') || '').trim();
-            if (!sphere) {
-                opt.hidden = false;
-            } else {
-                opt.hidden = ds !== sphere;
-            }
+            opt.hidden = Boolean(sphere) && ds !== sphere;
         });
         refreshNativeSelect(categorySelect);
     };
+
     const syncSphereFromCategory = () => {
         if (!sphereSelect || !categorySelect) return;
         const categoryOpt = categorySelect.selectedOptions?.[0];
@@ -1349,6 +1366,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sphereSelect.value = sphereName;
         refreshNativeSelect(sphereSelect);
     };
+
     const updateCatalogFormAction = () => {
         if (!filterForm) return;
         const shopUrl = String(filterForm.getAttribute('data-shop-url') || '').trim();
@@ -1364,24 +1382,26 @@ document.addEventListener('DOMContentLoaded', () => {
             filterForm.action = shopUrl;
         }
     };
-    if (sphereSelect) {
-        sphereSelect.addEventListener('change', () => {
-            const sphere = String(sphereSelect.value || '').trim();
-            const categoryOpt = categorySelect?.selectedOptions?.[0];
-            if (categoryOpt?.value) {
-                const ds = String(categoryOpt.getAttribute('data-sphere') || '').trim();
-                if (sphere && ds !== sphere) {
-                    categorySelect.value = '';
-                    refreshNativeSelect(categorySelect);
-                }
+
+    const onSphereChange = () => {
+        const sphere = String(sphereSelect?.value || '').trim();
+        const categoryOpt = categorySelect?.selectedOptions?.[0];
+        if (categoryOpt?.value) {
+            const ds = String(categoryOpt.getAttribute('data-sphere') || '').trim();
+            if (sphere && ds !== sphere) {
+                categorySelect.value = '';
             }
-            syncCategoryOptions();
-            updateCatalogFormAction();
-        });
+        }
         syncCategoryOptions();
+        updateCatalogFormAction();
+    };
+
+    if (sphereSelect) {
+        $(sphereSelect).on('change', onSphereChange);
+        onSphereChange();
     }
     if (categorySelect) {
-        categorySelect.addEventListener('change', () => {
+        $(categorySelect).on('change', () => {
             syncSphereFromCategory();
             syncCategoryOptions();
             updateCatalogFormAction();

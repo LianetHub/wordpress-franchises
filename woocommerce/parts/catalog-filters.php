@@ -15,6 +15,9 @@
  * @var string              $cur_orderby
  * @var array<string,string> $orderby_options
  * @var string              $count_line
+ * @var string              $reset_url
+ * @var bool                $show_reset
+ * @var bool                $advanced_open
  */
 
 defined('ABSPATH') || exit;
@@ -31,10 +34,18 @@ $cur_profit_min = isset($cur_profit_min) ? (int) $cur_profit_min : 0;
 $cur_orderby = isset($cur_orderby) ? (string) $cur_orderby : 'menu_order';
 $orderby_options = isset($orderby_options) && is_array($orderby_options) ? $orderby_options : [];
 $count_line = isset($count_line) ? (string) $count_line : '';
+$reset_url = isset($reset_url) ? (string) $reset_url : $shop_url;
+$show_reset = ! empty($show_reset);
+$advanced_open = ! empty($advanced_open);
+
+$filter_card_classes = 'filter-card';
+if (! $advanced_open) {
+    $filter_card_classes .= ' advanced-collapsed';
+}
 
 ?>
 <form method="get" action="<?php echo esc_url($form_action); ?>" aria-label="Фильтр каталога" id="franchises-catalog-filters" data-shop-url="<?php echo esc_url($shop_url); ?>">
-    <div class="filter-card advanced-collapsed">
+    <div class="<?php echo esc_attr($filter_card_classes); ?>">
         <div class="filter-grid">
             <select class="filter-select filter-select-native" name="sphere" data-filter="sphere" aria-label="Сфера бизнеса">
                 <option value=""><?php esc_html_e('Все сферы', 'woocommerce'); ?></option>
@@ -92,7 +103,7 @@ $count_line = isset($count_line) ? (string) $count_line : '';
             <span>Только проверенные франшизы</span>
         </label>
 
-        <div class="filter-advanced">
+        <div class="filter-advanced" <?php echo $advanced_open ? '' : ' style="display:none"'; ?>>
             <div class="range-filters" aria-label="Фильтры по вложениям и прибыли">
                 <div class="range-card">
                     <div class="range-head">
@@ -153,7 +164,19 @@ $count_line = isset($count_line) ? (string) $count_line : '';
                 </div>
             </div>
         </div>
-        <button class="filter-toggle" type="button" aria-expanded="false" data-label-show="Показать дополнительные фильтры" data-label-hide="Скрыть дополнительные фильтры">Показать дополнительные фильтры</button>
+        <div class="filter-card__footer">
+            <button
+                class="filter-toggle"
+                type="button"
+                aria-expanded="<?php echo $advanced_open ? 'true' : 'false'; ?>"
+                data-label-show="Показать дополнительные фильтры"
+                data-label-hide="Скрыть дополнительные фильтры">
+                <span class="filter-toggle__text"><?php echo $advanced_open ? 'Скрыть дополнительные фильтры' : 'Показать дополнительные фильтры'; ?></span>
+            </button>
+            <?php if ($show_reset) : ?>
+                <a class="filter-reset" href="<?php echo esc_url($reset_url); ?>">Сбросить фильтры</a>
+            <?php endif; ?>
+        </div>
     </div>
 
     <div class="catalog-count mobile-count" id="catalog-count-mobile"><?php echo esc_html($count_line); ?></div>

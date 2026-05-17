@@ -323,8 +323,29 @@
 	margin-top: 2px;
 }
 
-.filter-card.advanced-collapsed .filter-advanced {
-	display: none;
+.filter-card__footer {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-top: 4px;
+}
+
+.filter-reset {
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--btn-accent, #1a76d3);
+	text-decoration: none;
+	white-space: nowrap;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+
+.filter-toggle__text {
+	pointer-events: none;
 }
 
 .sort-select.filter-select-native:focus,

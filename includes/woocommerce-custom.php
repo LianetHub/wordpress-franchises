@@ -1262,6 +1262,13 @@ if (! function_exists('franchises_ru_months_genitive')) {
     }
 }
 
+if (! function_exists('franchises_catalog_has_advanced_filters')) {
+    function franchises_catalog_has_advanced_filters(int $invest_max = 0, int $profit_min = 0): bool
+    {
+        return $invest_max > 0 || $profit_min > 0;
+    }
+}
+
 if (! function_exists('franchises_catalog_has_extra_title_filters')) {
     function franchises_catalog_has_extra_title_filters(
         bool $verified = false,
@@ -1383,6 +1390,9 @@ if (! function_exists('franchises_catalog_reset_filters_url')) {
         if (function_exists('is_product_category') && is_product_category()) {
             $term = get_queried_object();
             if ($term instanceof WP_Term) {
+                if (function_exists('franchises_product_cat_flat_url')) {
+                    return franchises_product_cat_flat_url($term);
+                }
                 $link = get_term_link($term);
                 if (! is_wp_error($link)) {
                     return (string) $link;

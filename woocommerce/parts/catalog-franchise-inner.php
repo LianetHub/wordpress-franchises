@@ -203,6 +203,15 @@ $count_line = $found > 0
                 'cur_orderby'     => $cur_orderby,
                 'orderby_options' => $orderby_options,
                 'count_line'      => $count_line,
+                'reset_url'       => function_exists('franchises_catalog_reset_filters_url')
+                    ? franchises_catalog_reset_filters_url()
+                    : $shop_url,
+                'show_reset'      => function_exists('franchises_catalog_has_active_filters')
+                    ? franchises_catalog_has_active_filters()
+                    : false,
+                'advanced_open'   => function_exists('franchises_catalog_has_advanced_filters')
+                    ? franchises_catalog_has_advanced_filters($cur_invest_max, $cur_profit_min)
+                    : ($cur_invest_max > 0 || $cur_profit_min > 0),
             ],
             '',
             get_template_directory() . '/woocommerce/'
