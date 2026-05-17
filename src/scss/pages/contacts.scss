@@ -48,55 +48,37 @@
 
     // .contacts__item
     &__item {
-        position: relative;
-        padding-left: 2rem;
-
-        @media (min-width:$md5) {
-            padding-left: 1.75rem;
-        }
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
 
         @media (min-width:$md2) {
-            padding-left: rem(38);
-
+            gap: rem(14);
         }
 
-        &::before {
-            position: absolute;
-            top: 0;
-            left: 0;
-            color: $accent;
-            width: 1.25rem;
-            height: 1.25rem;
-
-            @media (min-width:$md2) {
-                width: 1.5rem;
-                height: 1.5rem;
+        &--wide {
+            @media (min-width:$md4) {
+                grid-column: 1 / -1;
             }
         }
+    }
 
-        &.icon-location::before {
-            @include icon-svg("location", 1.25rem);
+    &__icon {
+        flex-shrink: 0;
+        width: 1.25rem;
+        height: 1.25rem;
+        display: block;
+        object-fit: contain;
 
-            @media (min-width:$md2) {
-                @include icon-svg("location", 1.5rem);
-            }
+        @media (min-width:$md2) {
+            width: 1.5rem;
+            height: 1.5rem;
         }
+    }
 
-        &.icon-envelope::before {
-            @include icon-svg("envelope", 1.25rem);
-
-            @media (min-width:$md2) {
-                @include icon-svg("envelope", 1.5rem);
-            }
-        }
-
-        &.icon-phone::before {
-            @include icon-svg("phone", 1.25rem);
-
-            @media (min-width:$md2) {
-                @include icon-svg("phone", 1.5rem);
-            }
-        }
+    &__item-body {
+        flex: 1;
+        min-width: 0;
     }
 
     // .contacts__item-caption
@@ -132,6 +114,34 @@
         @media (min-width:$md2) {
             font-size: 1.25rem;
 
+        }
+    }
+
+    // .contacts__item-text
+    &__item-text {
+        color: #4A5565;
+        font-weight: 500;
+        line-height: 140%;
+        letter-spacing: -0.00938rem;
+        font-size: 0.875rem;
+        margin: 0;
+
+        @media (min-width:$md3) {
+            font-size: 1rem;
+        }
+
+        @media (min-width:$md2) {
+            font-size: 1.25rem;
+        }
+    }
+
+    &__item-legal {
+        p {
+            margin: 0;
+
+            &+p {
+                margin-top: 0.35rem;
+            }
         }
     }
 

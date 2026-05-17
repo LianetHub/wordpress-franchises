@@ -70,6 +70,19 @@ if (! function_exists('franchises_get_theme_option')) {
     }
 }
 
+if (! function_exists('franchises_format_theme_digits')) {
+    function franchises_format_theme_digits($value): string
+    {
+        if ($value === null || $value === false || $value === '') {
+            return '';
+        }
+
+        $digits = preg_replace('/\D+/', '', (string) $value);
+
+        return $digits;
+    }
+}
+
 if (! function_exists('franchises_get_map_placemark_url')) {
     function franchises_get_map_placemark_url(): string
     {
