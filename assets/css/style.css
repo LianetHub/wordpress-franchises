@@ -2,7 +2,7 @@
 
 @font-face {
   font-family: "Manrope";
-  src: url("../fonts/Manrope-VariableFont_wght.woff2?v=1779201582057") format("woff2 supports variations"), url("../fonts/Manrope-VariableFont_wght.woff2?v=1779201582057") format("woff2-variations"), url("../fonts/Manrope-VariableFont_wght.woff?v=1779201582057") format("woff");
+  src: url("../fonts/Manrope-VariableFont_wght.woff2?v=1779201973635") format("woff2 supports variations"), url("../fonts/Manrope-VariableFont_wght.woff2?v=1779201973635") format("woff2-variations"), url("../fonts/Manrope-VariableFont_wght.woff?v=1779201973635") format("woff");
   font-weight: 100 900;
   font-stretch: 75% 125%;
   font-style: normal;
@@ -1474,7 +1474,7 @@ body {
   border-radius: 12px;
   border: 1px solid #d7dade;
   background: #f5f6f7;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   color: #2f3236;
   font-family: inherit;
@@ -2011,7 +2011,7 @@ body {
 .form--franchise-question .ask-field .form__control {
   min-height: 46px;
   border-radius: 12px;
-  font-size: 14px;
+  font-size: 16px;
   padding: 11px 12px;
   border: 1px solid var(--shared-border, #d7dade);
   background: var(--shared-input-bg, #f5f6f7);
@@ -2063,7 +2063,7 @@ body {
   border: 1px solid #d4dbe4;
   background: #ffffff;
   padding: 12px 14px;
-  font-size: 14px;
+  font-size: 16px;
   color: #1d232a;
 }
 
@@ -2882,7 +2882,7 @@ body {
   background: transparent !important;
   -webkit-box-shadow: none !important;
           box-shadow: none !important;
-  font-size: 13px !important;
+  font-size: 16px !important;
   font-weight: 400 !important;
   color: #2f3236 !important;
   width: 100%;
@@ -3469,21 +3469,52 @@ body {
   font-size: 16px;
 }
 
+.hero__slider {
+  --slider-gap: 12px;
+  min-width: 0;
+  width: 100%;
+}
+
+.hero__slider:not(.swiper-initialized) {
+  overflow: hidden;
+}
+
 .hero__slider:not(.swiper-initialized) .swiper-wrapper {
   display: -ms-grid;
   display: grid;
   grid-auto-flow: column;
-  --slider-gap: 12px;
-  grid-auto-columns: calc((100% - var(--slider-gap) * 2) / 3);
+  grid-auto-columns: calc((100% - var(--slider-gap) - var(--slider-gap)) / 3);
   gap: var(--slider-gap);
+  width: 100%;
+  height: auto;
   overflow-x: auto;
+  overflow-y: hidden;
   -ms-scroll-snap-type: x mandatory;
       scroll-snap-type: x mandatory;
   scroll-padding-left: 0;
+  scrollbar-width: none;
+  -webkit-transform: none;
+      -ms-transform: none;
+          transform: none;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
 }
 
 .hero__slider:not(.swiper-initialized) .swiper-wrapper::-webkit-scrollbar {
   display: none;
+}
+
+.hero__slider:not(.swiper-initialized) .hero__slide,
+.hero__slider:not(.swiper-initialized) .swiper-slide {
+  width: 100%;
+  height: auto;
+  -ms-flex-negative: 0;
+      flex-shrink: 0;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  -webkit-transform: none;
+      -ms-transform: none;
+          transform: none;
 }
 
 .hero__slide {
@@ -3503,6 +3534,7 @@ body {
   background-position: center;
   color: #ffffff;
   border: none;
+  text-decoration: none;
 }
 
 .hero__slide::after {
@@ -3522,6 +3554,17 @@ body {
   font-size: 14px;
   letter-spacing: 0.02em;
   text-transform: uppercase;
+}
+
+.hero__slider-pagination {
+  position: static;
+  width: 100%;
+  margin-top: 1rem;
+  min-height: 0.5rem;
+}
+
+.hero__slider-pagination:not(:has(.swiper-pagination-bullet)) {
+  visibility: hidden;
 }
 
 .slider {

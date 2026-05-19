@@ -42,7 +42,7 @@
 	border-radius: 12px;
 	border: 1px solid #d7dade;
 	background: #f5f6f7;
-	font-size: 14px;
+	font-size: 16px;
 	font-weight: 500;
 	color: #2f3236;
 	font-family: inherit;
@@ -517,7 +517,7 @@
 			.form__control {
 				min-height: 46px;
 				border-radius: 12px;
-				font-size: 14px;
+				font-size: 16px;
 				padding: 11px 12px;
 				border: 1px solid var(--shared-border, #d7dade);
 				background: var(--shared-input-bg, #f5f6f7);
@@ -565,7 +565,7 @@
 				border: 1px solid #d4dbe4;
 				background: #ffffff;
 				padding: 12px 14px;
-				font-size: 14px;
+				font-size: 16px;
 				color: #1d232a;
 
 				&::placeholder {
