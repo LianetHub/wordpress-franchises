@@ -575,10 +575,22 @@
 
 .bottom {
 	&-sliders {
-		display: grid;
+		display: flex;
+		flex-direction: column;
 		gap: 18px;
 		margin-top: 18px;
 		min-width: 0;
+		width: 100%;
+
+		.slider-wrap {
+			min-width: 0;
+		}
+
+		@media (max-width: 600px) {
+			.slider-section {
+				padding: 14px 12px;
+			}
+		}
 	}
 
 }

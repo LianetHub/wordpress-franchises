@@ -49,6 +49,7 @@
 
 	&--inline &__item {
 		gap: 8px;
+		max-width: 100%;
 	}
 
 	// .breadcrumbs__link
@@ -69,9 +70,6 @@
 
 	// .breadcrumbs__current
 	&__current {
-		word-break: break-all;
-		overflow: hidden;
-		text-overflow: ellipsis;
 		color: $accent;
 	}
 }

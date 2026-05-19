@@ -118,32 +118,68 @@
 }
 
 .slider {
-    display: grid;
-    grid-auto-flow: column;
     --slider-gap: 12px;
-    grid-auto-columns: calc((100% - (var(--slider-gap) * 2)) / 3);
-    gap: var(--slider-gap);
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-padding-left: 0;
-    scrollbar-width: none;
     min-width: 0;
     width: 100%;
     max-width: 100%;
-    padding-bottom: 8px;
 
-    &::-webkit-scrollbar {
-        display: none;
+    &.swiper {
+        overflow: hidden;
+
+        .swiper-wrapper {
+            align-items: stretch;
+        }
+
+        .swiper-slide {
+            height: auto;
+            box-sizing: border-box;
+            width: calc((100% - (var(--slider-gap) * 2)) / 3);
+
+            .popular-card {
+                width: 100%;
+                height: 100%;
+            }
+        }
+
+        &:not(.swiper-initialized) {
+            overflow: hidden;
+
+            .swiper-wrapper {
+                display: flex;
+                gap: var(--slider-gap);
+                overflow-x: auto;
+                scrollbar-width: none;
+
+                &::-webkit-scrollbar {
+                    display: none;
+                }
+            }
+
+            .swiper-slide {
+                flex: 0 0 calc((100% - (var(--slider-gap) * 2)) / 3);
+            }
+        }
+
+        @media (max-width: 1100px) {
+            .swiper-slide {
+                width: calc((100% - var(--slider-gap)) / 2);
+            }
+
+            &:not(.swiper-initialized) .swiper-slide {
+                flex-basis: calc((100% - var(--slider-gap)) / 2);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .swiper-slide {
+                width: 100%;
+            }
+
+            &:not(.swiper-initialized) .swiper-slide {
+                flex-basis: 100%;
+            }
+        }
     }
-
-    @media (max-width: 1100px) {
-        grid-auto-columns: calc((100% - var(--slider-gap)) / 2);
-    }
-
-    @media (max-width: 900px) {
-        grid-auto-columns: 100%;
-    }
-
 
     &-section {
         padding: 20px;
