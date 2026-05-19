@@ -96,69 +96,6 @@
 		-webkit-font-smoothing: antialiased;
 	}
 
-	&-modal {
-		position: fixed;
-		inset: 0;
-		z-index: 85;
-		display: none;
-	}
-
-	&-modal.active {
-		display: block;
-	}
-
-	&-backdrop {
-		position: absolute;
-		inset: 0;
-		background: rgba(15, 26, 23, 0.5);
-	}
-
-	&-sheet {
-		position: absolute;
-		left: 50%;
-		top: 50%;
-		transform: translate(-50%, -50%);
-		width: min(640px, calc(100% - 24px));
-		max-height: calc(100% - 32px);
-		background: #ffffff;
-		border-radius: 18px;
-		padding: 16px;
-		box-shadow: 0 18px 40px rgba(15, 26, 23, 0.2);
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
-	}
-
-	&-sheet-head {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-	}
-
-	&-sheet-title {
-		font-weight: 800;
-		font-size: 18px;
-		color: #1f2428;
-	}
-
-	&-sheet-close {
-		width: 36px;
-		height: 36px;
-		border-radius: 12px;
-		border: 1px solid #e0e3e6;
-		background: #ffffff;
-		font-size: 22px;
-		line-height: 1;
-		cursor: pointer;
-	}
-
-	&-sheet-body {
-		overflow: auto;
-		padding-right: 4px;
-		max-height: calc(100vh - 140px);
-	}
-
 	&-title {
 		font-weight: 700;
 		font-size: 22px;
@@ -261,7 +198,26 @@
 
 }
 
-.filter-modal .filter-card {
+.catalog-filter-popup {
+	width: min(640px, calc(100vw - 24px));
+	max-height: calc(100vh - 32px);
+	padding: 16px 16px 24px;
+	gap: 12px;
+
+	&__title {
+		margin: 0;
+		padding-right: 40px;
+	}
+
+	&__body {
+
+		flex: 1 1 auto;
+
+
+	}
+}
+
+.catalog-filter-popup .filter-card {
 	border: none;
 	box-shadow: none;
 	padding: 0;
@@ -270,24 +226,24 @@
 	gap: 12px;
 }
 
-.filter-modal .filter-grid {
+.catalog-filter-popup .filter-grid {
 	display: contents;
 }
 
-.filter-modal .filter-select {
+.catalog-filter-popup .filter-select {
 	order: 1;
 }
 
-.filter-modal .filter-check {
+.catalog-filter-popup .filter-check {
 	order: 2;
 }
 
-.filter-modal .filter-advanced {
+.catalog-filter-popup .filter-advanced {
 	order: 3;
 	display: grid;
 }
 
-.filter-modal .filter-btn {
+.catalog-filter-popup .filter-btn {
 	order: 4;
 	width: 100%;
 	margin-top: 12px;
@@ -296,11 +252,11 @@
 	z-index: 4;
 }
 
-.filter-modal .filter-toggle {
+.catalog-filter-popup .filter-toggle {
 	display: none;
 }
 
-.filter-modal .filter-card.advanced-collapsed .filter-advanced {
+.catalog-filter-popup .filter-card.advanced-collapsed .filter-advanced {
 	display: grid;
 }
 
@@ -784,30 +740,13 @@
 			grid-column: span 2;
 		}
 
-		&-sheet {
-			left: 12px;
-			right: 12px;
-			top: calc(var(--header-sticky-top) + 12px);
-			bottom: 12px;
-			transform: none;
-			width: auto;
-			max-height: calc(100vh - var(--header-sticky-top) - 24px);
-			border-radius: 24px;
-		}
-
-		&-sheet-body {
-			max-height: none;
-			padding-right: 0;
-			padding-bottom: 96px;
-		}
-
 	}
 
-	.filter-modal .filter-card {
+	.catalog-filter-popup .filter-card {
 		display: grid;
 	}
 
-	.filter-modal .filter-select-native {
+	.catalog-filter-popup .filter-select-native {
 		width: 100%;
 		min-height: 62px;
 		border-radius: 18px;
@@ -826,7 +765,7 @@
 		background-size: 16px 12px;
 	}
 
-	.filter-modal .filter-btn {
+	.catalog-filter-popup .filter-btn {
 		position: sticky;
 		bottom: 0;
 		height: 64px;

@@ -195,7 +195,7 @@ if ($is_selection_catalog && function_exists('franchises_selection_breadcrumbs')
         </div>
 
         <div class="mobile-filter-action">
-            <button class="btn btn-primary mobile-filter-btn" type="button" data-filter-open>Фильтры</button>
+            <button class="btn btn-primary mobile-filter-btn" type="button" data-catalog-filter-open href="#catalog-filter-popup">Фильтры</button>
         </div>
 
 
@@ -257,13 +257,7 @@ get_template_part('templates/components/help-section', null, [
 ]);
 ?>
 
-<div class="filter-modal" id="filter-modal" aria-hidden="true">
-    <div class="filter-backdrop" data-filter-close></div>
-    <div class="filter-sheet" role="dialog" aria-modal="true" aria-label="Фильтры">
-        <div class="filter-sheet-head">
-            <div class="filter-sheet-title">Фильтры</div>
-            <button class="filter-sheet-close" type="button" data-filter-close aria-label="Закрыть">×</button>
-        </div>
-        <div class="filter-sheet-body"></div>
-    </div>
+<div class="popup catalog-filter-popup" id="catalog-filter-popup" hidden>
+    <h2 class="popup__title title-md catalog-filter-popup__title">Фильтры</h2>
+    <div class="catalog-filter-popup__body" data-catalog-filter-body></div>
 </div>

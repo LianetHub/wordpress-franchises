@@ -18,6 +18,7 @@ select.select-native-source {
 	font-weight: 500;
 	font-size: 1rem;
 	line-height: 1.2;
+	z-index: 6;
 
 	&.is-disabled {
 		opacity: 0.45;
@@ -25,6 +26,8 @@ select.select-native-source {
 	}
 
 	&.visible {
+		z-index: 7;
+
 		.dropdown__body {
 			opacity: 1;
 			visibility: visible;
@@ -258,6 +261,6 @@ select.select-native-source {
 }
 
 .filter-grid .dropdown,
-.filter-modal .dropdown {
+.catalog-filter-popup .dropdown {
 	width: 100%;
 }

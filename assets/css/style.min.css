@@ -2,7 +2,7 @@
 
 @font-face {
     font-family: Manrope;
-    src: url(../fonts/Manrope-VariableFont_wght.woff2?v=1779201973635) format("woff2 supports variations"), url(../fonts/Manrope-VariableFont_wght.woff2?v=1779201973635) format("woff2-variations"), url(../fonts/Manrope-VariableFont_wght.woff?v=1779201973635) format("woff");
+    src: url(../fonts/Manrope-VariableFont_wght.woff2?v=1779202276268) format("woff2 supports variations"), url(../fonts/Manrope-VariableFont_wght.woff2?v=1779202276268) format("woff2-variations"), url(../fonts/Manrope-VariableFont_wght.woff?v=1779202276268) format("woff");
     font-weight: 100 900;
     font-stretch: 75% 125%;
     font-style: normal;
@@ -122,6 +122,26 @@
     color: inherit;
     background: 0 0;
     padding: 0
+}
+
+.has-catalog-filter-popup .fancybox__slide {
+    padding: 12px;
+    -webkit-box-align: start;
+    -ms-flex-align: start;
+    align-items: flex-start
+}
+
+.has-catalog-filter-popup .fancybox__content {
+    width: 100%;
+    max-width: min(640px, 100vw - 24px);
+    max-height: calc(100vh - 24px)
+}
+
+.has-catalog-filter-popup .catalog-filter-popup {
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column
 }
 
 .fancybox__content :focus:not(.carousel__button.is-close) {
@@ -1137,12 +1157,17 @@ body {
     width: 100%;
     font-weight: 500;
     font-size: 1rem;
-    line-height: 1.2
+    line-height: 1.2;
+    z-index: 6
 }
 
 .dropdown.is-disabled {
     opacity: .45;
     pointer-events: none
+}
+
+.dropdown.visible {
+    z-index: 7
 }
 
 .dropdown.visible .dropdown__body {
@@ -1402,7 +1427,7 @@ body {
     min-width: 100%
 }
 
-.filter-grid .dropdown, .filter-modal .dropdown {
+.catalog-filter-popup .dropdown, .filter-grid .dropdown {
     width: 100%
 }
 
@@ -7143,83 +7168,6 @@ body {
     -webkit-font-smoothing: antialiased
 }
 
-.filter-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 85;
-    display: none
-}
-
-.filter-modal.active {
-    display: block
-}
-
-.filter-backdrop {
-    position: absolute;
-    inset: 0;
-    background: rgba(15, 26, 23, .5)
-}
-
-.filter-sheet {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    -webkit-transform: translate(-50%, -50%);
-    -ms-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
-    width: min(640px, 100% - 24px);
-    max-height: calc(100% - 32px);
-    background: #fff;
-    border-radius: 18px;
-    padding: 16px;
-    -webkit-box-shadow: 0 18px 40px rgba(15, 26, 23, .2);
-    box-shadow: 0 18px 40px rgba(15, 26, 23, .2);
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
-    -ms-flex-direction: column;
-    flex-direction: column;
-    gap: 12px
-}
-
-.filter-sheet-head {
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-    -webkit-box-pack: justify;
-    -ms-flex-pack: justify;
-    justify-content: space-between;
-    gap: 12px
-}
-
-.filter-sheet-title {
-    font-weight: 800;
-    font-size: 18px;
-    color: #1f2428
-}
-
-.filter-sheet-close {
-    width: 36px;
-    height: 36px;
-    border-radius: 12px;
-    border: 1px solid #e0e3e6;
-    background: #fff;
-    font-size: 22px;
-    line-height: 1;
-    cursor: pointer
-}
-
-.filter-sheet-body {
-    overflow: auto;
-    padding-right: 4px;
-    max-height: calc(100vh - 140px)
-}
-
 .filter-title {
     font-weight: 700;
     font-size: 22px;
@@ -7346,7 +7294,25 @@ body {
     color: #2f3236
 }
 
-.filter-modal .filter-card {
+.catalog-filter-popup {
+    width: min(640px, 100vw - 24px);
+    max-height: calc(100vh - 32px);
+    padding: 16px 16px 24px;
+    gap: 12px
+}
+
+.catalog-filter-popup__title {
+    margin: 0;
+    padding-right: 40px
+}
+
+.catalog-filter-popup__body {
+    -webkit-box-flex: 1;
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto
+}
+
+.catalog-filter-popup .filter-card {
     border: none;
     -webkit-box-shadow: none;
     box-shadow: none;
@@ -7361,23 +7327,23 @@ body {
     gap: 12px
 }
 
-.filter-modal .filter-grid {
+.catalog-filter-popup .filter-grid {
     display: contents
 }
 
-.filter-modal .filter-select {
+.catalog-filter-popup .filter-select {
     -webkit-box-ordinal-group: 2;
     -ms-flex-order: 1;
     order: 1
 }
 
-.filter-modal .filter-check {
+.catalog-filter-popup .filter-check {
     -webkit-box-ordinal-group: 3;
     -ms-flex-order: 2;
     order: 2
 }
 
-.filter-modal .filter-advanced {
+.catalog-filter-popup .filter-advanced {
     -webkit-box-ordinal-group: 4;
     -ms-flex-order: 3;
     order: 3;
@@ -7385,7 +7351,7 @@ body {
     display: grid
 }
 
-.filter-modal .filter-btn {
+.catalog-filter-popup .filter-btn {
     -webkit-box-ordinal-group: 5;
     -ms-flex-order: 4;
     order: 4;
@@ -7396,11 +7362,11 @@ body {
     z-index: 4
 }
 
-.filter-modal .filter-toggle {
+.catalog-filter-popup .filter-toggle {
     display: none
 }
 
-.filter-modal .filter-card.advanced-collapsed .filter-advanced {
+.catalog-filter-popup .filter-card.advanced-collapsed .filter-advanced {
     display: -ms-grid;
     display: grid
 }
@@ -8634,31 +8600,12 @@ body {
         grid-column: span 2
     }
 
-    .filter-sheet {
-        left: 12px;
-        right: 12px;
-        top: calc(var(--header-sticky-top) + 12px);
-        bottom: 12px;
-        -webkit-transform: none;
-        -ms-transform: none;
-        transform: none;
-        width: auto;
-        max-height: calc(100vh - var(--header-sticky-top) - 24px);
-        border-radius: 24px
-    }
-
-    .filter-sheet-body {
-        max-height: none;
-        padding-right: 0;
-        padding-bottom: 96px
-    }
-
-    .filter-modal .filter-card {
+    .catalog-filter-popup .filter-card {
         display: -ms-grid;
         display: grid
     }
 
-    .filter-modal .filter-select-native {
+    .catalog-filter-popup .filter-select-native {
         width: 100%;
         min-height: 62px;
         border-radius: 18px;
@@ -8677,7 +8624,7 @@ body {
         background-size: 16px 12px
     }
 
-    .filter-modal .filter-btn {
+    .catalog-filter-popup .filter-btn {
         position: sticky;
         bottom: 0;
         height: 64px;

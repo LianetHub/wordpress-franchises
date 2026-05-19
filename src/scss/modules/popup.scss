@@ -62,6 +62,23 @@
 	padding: 0;
 }
 
+.has-catalog-filter-popup {
+	.fancybox__slide {
+		padding: 12px;
+		align-items: flex-start;
+	}
+
+	.fancybox__content {
+		width: 100%;
+		max-width: min(640px, calc(100vw - 24px));
+		max-height: calc(100vh - 24px);
+	}
+
+	.catalog-filter-popup {
+		flex-direction: column;
+	}
+}
+
 .fancybox__content :focus:not(.carousel__button.is-close) {
 	outline: none;
 }

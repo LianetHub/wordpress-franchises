@@ -1414,23 +1414,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const modal = document.getElementById('filter-modal');
-    const sheetBody = modal ? modal.querySelector('.filter-sheet-body') : null;
-    const openBtn = main.querySelector('[data-filter-open]');
-    if (modal && sheetBody && filterCard && openBtn && filterForm) {
-        const setModal = (open) => {
-            modal.classList.toggle('active', open);
-            modal.setAttribute('aria-hidden', String(!open));
-            document.body.classList.toggle('modal-open', open);
-            if (open) {
-                sheetBody.appendChild(filterCard);
-            } else {
+    const filterPopup = document.getElementById('catalog-filter-popup');
+    const filterPopupBody = filterPopup?.querySelector('[data-catalog-filter-body]');
+    const filterOpenBtn = main.querySelector('[data-catalog-filter-open]');
+
+    if (filterPopupBody && filterCard && filterForm && filterOpenBtn && typeof Fancybox !== 'undefined') {
+        const restoreFilterCard = () => {
+            if (filterCard.parentElement !== filterForm) {
                 filterForm.insertBefore(filterCard, filterForm.firstElementChild);
             }
         };
-        openBtn.addEventListener('click', () => setModal(true));
-        modal.querySelectorAll('[data-filter-close]').forEach((el) => {
-            el.addEventListener('click', () => setModal(false));
+
+        const moveFilterCardToPopup = () => {
+            filterPopupBody.appendChild(filterCard);
+        };
+
+        Fancybox.bind('[data-catalog-filter-open]', {
+            dragToClose: false,
+            mainClass: 'has-catalog-filter-popup',
+            on: {
+                ready: moveFilterCardToPopup,
+                destroy: restoreFilterCard,
+            },
         });
     }
 });
