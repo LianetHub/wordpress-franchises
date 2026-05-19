@@ -1132,6 +1132,10 @@ body.header-solid::before {
   margin-top: var(--section-gap);
 }
 
+* {
+  scroll-margin-top: calc(var(--header-sticky-top) + var(--header-gap) + 1rem);
+}
+
 body {
   font-family: "Manrope", sans-serif;
   font-size: 1rem;

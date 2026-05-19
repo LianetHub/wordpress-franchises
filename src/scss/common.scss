@@ -126,9 +126,9 @@ body {
 // 	scrollbar-gutter: stable;
 // }
 
-// * {
-// 	scroll-margin-top: 10rem;
-// }
+* {
+	scroll-margin-top: calc(var(--header-sticky-top) + var(--header-gap) + 1rem);
+}
 
 body {
 	font-family: $fontfamily, sans-serif;
