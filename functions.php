@@ -20,6 +20,7 @@ $includes = [
     'includes/header-menu.php',
     'includes/fibosearch-custom.php',
     'includes/home-collections.php',
+    'includes/home-popular.php',
     'includes/cf7-forms.php',
 ];
 

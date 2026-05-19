@@ -1965,13 +1965,6 @@ body {
   gap: 12px;
 }
 
-.form--home .wpcf7-not-valid-tip {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-}
-
 .form--home .consent {
   margin-top: 1rem;
 }
@@ -2135,10 +2128,6 @@ body {
 
 .wpcf7-wrap .wpcf7 {
   width: 100%;
-}
-
-.final-section .final-form {
-  padding: 20px;
 }
 
 .ask-form-grid {
@@ -8109,6 +8098,17 @@ body {
     font-size: 1.25rem;
   }
 
+  .form--home .wpcf7-not-valid-tip {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+  }
+
+  .final-section .final-form {
+    padding: 20px;
+  }
+
   .contacts__list {
     margin-top: 1.5rem;
     -ms-grid-columns: 1.5fr 1fr;
@@ -9573,7 +9573,6 @@ body {
   .final-form {
     -ms-grid-columns: 1fr;
     grid-template-columns: 1fr;
-    padding: 14px;
   }
 
   .logos-section {

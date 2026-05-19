@@ -795,37 +795,37 @@ if (! function_exists('franchises_product_similar_query')) {
 }
 
 if (! function_exists('franchises_product_popular_query')) {
-    /** По категории «Популярные франшизы» (product_cat), иначе последние товары. */
+    /** Подборка «Популярные», просматриваемые категории или legacy-категория WooCommerce. */
     function franchises_product_popular_query(int $exclude_id, int $limit = 12): WP_Query
     {
-        $popular_cat_term = get_term_by('name', 'Популярные франшизы', 'product_cat');
-        if (! $popular_cat_term || is_wp_error($popular_cat_term)) {
-            $popular_cat_term = get_term_by('slug', 'popularnye-franshizy', 'product_cat');
-        }
-        $args = [
-            'post_type'           => 'product',
-            'post_status'         => 'publish',
-            'posts_per_page'      => $limit,
-            'post__not_in'        => [$exclude_id],
-            'ignore_sticky_posts' => true,
-            'no_found_rows'       => true,
-            'orderby'             => [
-                'menu_order' => 'ASC',
-                'date'       => 'DESC',
-            ],
-        ];
-        if ($popular_cat_term && ! is_wp_error($popular_cat_term)) {
-            $args['tax_query'] = [
-                [
-                    'taxonomy'         => 'product_cat',
-                    'field'            => 'term_id',
-                    'terms'            => [(int) $popular_cat_term->term_id],
-                    'include_children' => true,
-                ],
-            ];
+        $ids = function_exists('franchises_popular_franchise_product_ids')
+            ? franchises_popular_franchise_product_ids($limit + 1)
+            : [];
+
+        $ids = array_values(array_filter(
+            array_map('intval', $ids),
+            static fn(int $id): bool => $id > 0 && $id !== $exclude_id
+        ));
+        $ids = array_slice($ids, 0, max(1, $limit));
+
+        if ($ids === []) {
+            return new WP_Query([
+                'post_type'      => 'product',
+                'post__in'       => [0],
+                'posts_per_page' => 1,
+                'no_found_rows'  => true,
+            ]);
         }
 
-        return new WP_Query($args);
+        return new WP_Query([
+            'post_type'           => 'product',
+            'post_status'         => 'publish',
+            'post__in'            => $ids,
+            'orderby'             => 'post__in',
+            'posts_per_page'      => count($ids),
+            'ignore_sticky_posts' => true,
+            'no_found_rows'       => true,
+        ]);
     }
 }
 

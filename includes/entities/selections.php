@@ -18,6 +18,7 @@ function franchises_selection_post_type(): string
 function franchises_selection_filter_choices(): array
 {
     return [
+        'popular'    => 'Популярные — франшизы из самых просматриваемых категорий каталога',
         'no_pausal'  => 'Франшизы без взноса - паушальный взнос 0 или не указан',
         'payback_12' => 'Окупаемость до 12 мес. - хотя бы одно поле окупаемости ≤ 12',
         'no_royalty' => 'Без роялти - роялти не указано или «нет»',
@@ -137,6 +138,7 @@ function franchises_selection_filter_type_from_slug(string $slug): string
     }
 
     $patterns = [
+        'popular'    => ['populyarn', 'popular', 'trend'],
         'no_pausal'  => ['bez-vznos', 'bez-pausal', 'no-pausal', 'bez-paus'],
         'payback_12' => ['12-mes', 'okupaemost-12', 'payback-12'],
         'no_royalty' => ['bez-royalti', 'no-royalty', 'bez-roialti'],
@@ -181,6 +183,18 @@ function franchises_selection_filter_type(int $selection_id): string
 function franchises_selection_needs_post_filter(string $type): bool
 {
     return in_array($type, ['manual', 'no_royalty', 'no_pausal', 'payback_12', 'low_invest'], true);
+}
+
+/**
+ * @return list<int>
+ */
+function franchises_selection_popular_product_ids(int $max = 500): array
+{
+    if (! function_exists('franchises_products_from_viewed_categories')) {
+        return [];
+    }
+
+    return franchises_products_from_viewed_categories($max);
 }
 
 /**
@@ -365,6 +379,23 @@ function franchises_selection_products_query_args(int $selection_id, array $over
     if ($type === 'manual') {
         $args['post__in'] = $manual_ids !== [] ? $manual_ids : [0];
         $args['orderby'] = 'post__in';
+    } elseif ($type === 'popular' && function_exists('franchises_get_top_viewed_product_cat_ids')) {
+        $term_ids = franchises_get_top_viewed_product_cat_ids(
+            max(1, (int) apply_filters('franchises_popular_categories_limit', 5))
+        );
+        if ($term_ids !== []) {
+            $args['tax_query'] = [
+                [
+                    'taxonomy'         => 'product_cat',
+                    'field'            => 'term_id',
+                    'terms'            => $term_ids,
+                    'include_children' => true,
+                ],
+            ];
+        }
+        $args['meta_key'] = 'franchises_theme_post_views';
+        $args['orderby'] = 'meta_value_num';
+        $args['order'] = 'DESC';
     } else {
         $args['orderby'] = 'date';
         $args['order'] = 'DESC';
@@ -382,6 +413,10 @@ function franchises_selection_product_ids(int $selection_id, int $max = 500): ar
 
     if ($type === 'manual') {
         return franchises_selection_manual_product_ids($selection_id);
+    }
+
+    if ($type === 'popular') {
+        return array_slice(franchises_selection_popular_product_ids($max), 0, max(1, $max));
     }
 
     $query = new WP_Query(array_merge(
@@ -494,7 +529,7 @@ add_action('acf/init', static function (): void {
                 'choices'       => franchises_selection_filter_choices(),
                 'default_value' => 'manual',
                 'return_format' => 'value',
-                'instructions'  => '«Под ключ», «Топ франшиз» и другие кастомные подборки — тип «Вручную» и список франшиз ниже. Миниатюра записи — картинка в hero.',
+                'instructions'  => '«Популярные» — автоматически из самых просматриваемых категорий. «Под ключ», «Топ франшиз» и другие кастомные подборки — тип «Вручную» и список франшиз ниже. Миниатюра записи — картинка в hero.',
             ],
             [
                 'key'               => 'field_selection_franchises',

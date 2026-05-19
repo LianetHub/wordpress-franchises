@@ -453,11 +453,14 @@
 		align-items: end;
 		gap: 12px;
 
-		.wpcf7-not-valid-tip {
-			position: absolute;
-			top: 100%;
-			left: 0;
-			width: 100%;
+		@media (min-width:$md4) {
+			.wpcf7-not-valid-tip {
+				position: absolute;
+				top: 100%;
+				left: 0;
+				width: 100%;
+			}
+
 		}
 
 		.consent {
@@ -598,7 +601,9 @@
 }
 
 .final-section .final-form {
-	padding: 20px;
+	@media (min-width:$md4) {
+		padding: 20px;
+	}
 }
 
 .ask-form-grid {
