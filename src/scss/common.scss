@@ -127,7 +127,7 @@ body {
 // }
 
 * {
-	scroll-margin-top: calc(var(--header-sticky-top) + var(--header-gap) + 1rem);
+	scroll-margin-top: calc(var(--header-sticky-top) + var(--wp-admin-bar-height) + 1rem);
 }
 
 body {

@@ -1457,6 +1457,124 @@ document.addEventListener('DOMContentLoaded', () => {
         $('body').toggleClass('modal-open', isOpen);
     };
 
+    const setupMobileSearchBarAutoHide = () => {
+        const mobileSearchBar = document.querySelector('.mobile-search-bar');
+        if (!mobileSearchBar) return;
+
+        const mobileMq = window.matchMedia('(max-width: 600px)');
+        const scrollTopThreshold = 16;
+        const directionDeltaMin = 4;
+        const wheelDeltaMin = 8;
+
+        const getScrollY = () =>
+            window.pageYOffset ||
+            document.documentElement.scrollTop ||
+            document.body.scrollTop ||
+            0;
+
+        let lastScrollY = getScrollY();
+        let scrollTicking = false;
+        let touchLastY = null;
+
+        const isActive = () => mobileMq.matches && !$menu.hasClass('open');
+
+        const setMobileSearchHidden = (hidden) => {
+            mobileSearchBar.classList.toggle('is-hidden', hidden);
+            mobileSearchBar.setAttribute('aria-hidden', hidden ? 'true' : 'false');
+        };
+
+        const applyDirection = (scrollingDown) => {
+            if (!isActive()) return;
+
+            if (getScrollY() <= scrollTopThreshold) {
+                setMobileSearchHidden(false);
+                return;
+            }
+
+            setMobileSearchHidden(scrollingDown);
+        };
+
+        const syncFromScrollPosition = () => {
+            if (!isActive()) return;
+
+            const y = getScrollY();
+
+            if (y <= scrollTopThreshold) {
+                setMobileSearchHidden(false);
+                lastScrollY = y;
+                return;
+            }
+
+            const delta = y - lastScrollY;
+            lastScrollY = y;
+
+            if (Math.abs(delta) < directionDeltaMin) return;
+
+            applyDirection(delta > 0);
+        };
+
+        const scheduleScrollSync = () => {
+            if (scrollTicking) return;
+            scrollTicking = true;
+            requestAnimationFrame(() => {
+                syncFromScrollPosition();
+                scrollTicking = false;
+            });
+        };
+
+        const onWheel = (event) => {
+            if (!isActive()) return;
+
+            const { deltaY } = event;
+            if (Math.abs(deltaY) < wheelDeltaMin) return;
+
+            applyDirection(deltaY > 0);
+            lastScrollY = getScrollY();
+        };
+
+        const onTouchStart = (event) => {
+            if (!isActive()) return;
+            touchLastY = event.touches[0]?.clientY ?? null;
+        };
+
+        const onTouchMove = (event) => {
+            if (!isActive() || touchLastY === null) return;
+
+            const y = event.touches[0]?.clientY;
+            if (y == null) return;
+
+            const delta = touchLastY - y;
+            touchLastY = y;
+
+            if (Math.abs(delta) < directionDeltaMin) return;
+
+            applyDirection(delta > 0);
+        };
+
+        const onTouchEnd = () => {
+            touchLastY = null;
+            lastScrollY = getScrollY();
+        };
+
+        window.addEventListener('wheel', onWheel, { passive: true });
+        window.addEventListener('scroll', scheduleScrollSync, { passive: true });
+        document.addEventListener('scroll', scheduleScrollSync, { passive: true });
+        document.addEventListener('touchstart', onTouchStart, { passive: true });
+        document.addEventListener('touchmove', onTouchMove, { passive: true });
+        document.addEventListener('touchend', onTouchEnd, { passive: true });
+        document.addEventListener('touchcancel', onTouchEnd, { passive: true });
+
+        mobileMq.addEventListener('change', () => {
+            if (!mobileMq.matches) {
+                setMobileSearchHidden(false);
+            }
+            lastScrollY = getScrollY();
+            touchLastY = null;
+        });
+    };
+
+    setupMobileSearchBarAutoHide();
+
     $(document)
         .on('click', '.menu-toggle', function (event) {
             event.preventDefault();

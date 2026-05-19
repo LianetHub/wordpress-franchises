@@ -183,7 +183,7 @@ $has_collections = $collections !== [];
             </nav>
 
             <div class="mobile-menu-cta">
-                <a class="btn btn-primary" href="<?php echo esc_url($contacts_url); ?>"><?php esc_html_e('Получить подбор', 'franchises'); ?></a>
+                <a class="btn btn-primary" data-fancybox href="#selection-popup"><?php esc_html_e('Получить подбор', 'franchises'); ?></a>
             </div>
         </div>
     </div>
