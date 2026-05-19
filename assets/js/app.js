@@ -1737,7 +1737,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 .getPropertyValue('--header-dropdown-gap')
                 .trim();
             const gap = parseFloat(raw);
-            return Number.isFinite(gap) ? gap : 12;
+            return Number.isFinite(gap) ? gap : 2;
+        };
+
+        const getHeaderFloatOffset = () => {
+            if (!window.matchMedia('(min-width: 901px)').matches) return 0;
+            const raw = getComputedStyle(document.documentElement)
+                .getPropertyValue('--header-float-offset')
+                .trim();
+            const offset = parseFloat(raw);
+            return Number.isFinite(offset) ? offset : 0;
         };
 
         const syncPanelTop = () => {
@@ -1745,7 +1754,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const headerInner = header.querySelector('.header-inner');
             const anchor = headerInner instanceof HTMLElement ? headerInner : header;
             const headerBottom = Math.round(anchor.getBoundingClientRect().bottom);
-            const panelTop = Math.max(0, headerBottom + getDropdownGap());
+            const panelTop = Math.max(0, headerBottom + getDropdownGap() - getHeaderFloatOffset());
             categoriesPanel.style.setProperty('top', `${panelTop}px`, 'important');
             if (collectionsPanel instanceof HTMLElement) {
                 collectionsPanel.style.setProperty('top', `${panelTop}px`, 'important');
