@@ -2,35 +2,7 @@
 
 <?php require_once(TEMPLATE_PATH . '_hero.php'); ?>
 
-<section class="category-bar" aria-label="Категории франшиз" id="catalog">
-    <div class="catalog-title">Каталог франшиз</div>
-    <div class="category-grid-wrap collapsed" id="category-grid-wrap">
-        <div class="category-grid" data-spheres-grid>
-            <?php
-            $home_spheres = function_exists('franchises_header_get_product_cat_spheres')
-                ? franchises_header_get_product_cat_spheres()
-                : [];
-            foreach ($home_spheres as $sphere) :
-                $sphere_name = (string) ($sphere['name'] ?? '');
-                $sphere_url = (string) ($sphere['landing_url'] ?? $sphere['url'] ?? '');
-                if ($sphere_name === '' || $sphere_url === '') {
-                    continue;
-                }
-            ?>
-                <a class="chip" href="<?php echo esc_url($sphere_url); ?>">
-                    <span class="icon" aria-hidden="true"><?php echo franchises_header_sphere_icon_svg($sphere_name); ?></span>
-                    <span class="chip-text"><?php echo esc_html($sphere_name); ?></span>
-                </a>
-            <?php endforeach; ?>
-        </div>
-    </div>
-    <div class="cta-group">
-        <button class="btn btn-outline secondary-btn category-toggle" type="button" aria-expanded="false" aria-controls="category-grid-wrap">Показать все отрасли</button>
-        <a class="btn btn-primary catalog-btn" href="<?php echo esc_url(get_permalink(wc_get_page_id('shop'))); ?>">
-            Все франшизы
-        </a>
-    </div>
-</section>
+<?php require_once(TEMPLATE_PATH . '_category-bar.php'); ?>
 
 <?php require_once(TEMPLATE_PATH . '_stats-block.php'); ?>
 

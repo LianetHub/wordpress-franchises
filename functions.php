@@ -10,10 +10,12 @@
 
 $includes = [
     'includes/admin-custom.php',
+    'includes/theme-options.php',
     'includes/acf-custom.php',
     'includes/custom-posts.php',
     'includes/breadcrumbs.php',
     'includes/woocommerce-custom.php',
+    'includes/product-cat.php',
     'includes/catalog-filter.php',
     'includes/header-menu.php',
     'includes/fibosearch-custom.php',

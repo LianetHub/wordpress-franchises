@@ -51,3 +51,36 @@ function my_acf_admin_head()
 }
 
 add_action('acf/input/admin_head', 'my_acf_admin_head');
+
+add_action('acf/init', static function (): void {
+	if (! function_exists('acf_add_local_field_group') || ! taxonomy_exists('product_cat')) {
+		return;
+	}
+
+	$icon_field = function_exists('franchises_product_cat_icon_field_name')
+		? franchises_product_cat_icon_field_name()
+		: 'category_icon';
+
+	acf_add_local_field_group([
+		'key'    => 'group_franchises_product_cat',
+		'title'  => 'Категория франшиз',
+		'fields' => [
+			[
+				'key'           => 'field_product_cat_category_icon',
+				'label'         => 'Иконка категории',
+				'name'          => $icon_field,
+				'type'          => 'image',
+				'return_format' => 'array',
+				'preview_size'  => 'thumbnail',
+				'library'       => 'all',
+				'mime_types'    => 'png,svg,jpg,jpeg,webp',
+				'instructions'  => 'Необязательно: если пусто, используется миниатюра категории WooCommerce (поле «Миниатюра» ниже) или стандартная SVG-иконка по названию. Рекомендуемый размер 28×28 px.',
+			],
+		],
+		'location' => [[[
+			'param'    => 'taxonomy',
+			'operator' => '==',
+			'value'    => 'product_cat',
+		]]],
+	]);
+});

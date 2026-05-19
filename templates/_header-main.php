@@ -4,7 +4,7 @@ defined('ABSPATH') || exit;
 
 $shop_url        = franchises_header_shop_url();
 $contacts_url    = franchises_header_contacts_url();
-$spheres         = franchises_header_get_product_cat_spheres();
+$spheres         = franchises_product_cat_get_spheres();
 $collections     = franchises_header_get_collections();
 $shop_active     = franchises_header_is_shop_active();
 $logo_text       = (string) get_field('logo_text', 'option');
@@ -145,7 +145,12 @@ $has_collections = $collections !== [];
                             <div class="mobile-category-grid" data-mobile-categories-grid>
                                 <?php foreach ($spheres as $sphere) : ?>
                                     <a class="chip" href="<?php echo esc_url($sphere['landing_url']); ?>">
-                                        <span class="icon" aria-hidden="true"><?php echo franchises_header_sphere_icon_svg($sphere['name']); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped 
+                                        <span class="icon" aria-hidden="true"><?php
+                                                                                echo franchises_product_cat_icon_html(
+                                                                                    (int) ($sphere['term_id'] ?? 0),
+                                                                                    (string) ($sphere['name'] ?? '')
+                                                                                );
+                                                                                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
                                                                                 ?></span>
                                         <span class="chip-text"><?php echo esc_html($sphere['name']); ?></span>
                                     </a>
