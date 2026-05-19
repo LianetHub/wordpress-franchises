@@ -62,7 +62,7 @@
 	padding: 0;
 }
 
-.has-catalog-filter-popup {
+.fancybox__container:has(.catalog-filter-popup) {
 	.fancybox__slide {
 		padding: 12px;
 		align-items: flex-start;
@@ -76,6 +76,8 @@
 
 	.catalog-filter-popup {
 		flex-direction: column;
+		max-width: 92vw;
+		margin: auto;
 	}
 }
 

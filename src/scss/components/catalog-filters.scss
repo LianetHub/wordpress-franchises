@@ -198,66 +198,29 @@
 
 }
 
-.catalog-filter-popup {
-	width: min(640px, calc(100vw - 24px));
-	max-height: calc(100vh - 32px);
-	padding: 16px 16px 24px;
-	gap: 12px;
+.catalog-filter-popup__title {
+	margin: 0;
+	padding-right: 40px;
+}
 
-	&__title {
-		margin: 0;
-		padding-right: 40px;
-	}
-
-	&__body {
-
-		flex: 1 1 auto;
-
-
+@media (max-width: 900px) {
+	.catalog-filter-popup {
+		display: none;
 	}
 }
 
-.catalog-filter-popup .filter-card {
-	border: none;
-	box-shadow: none;
-	padding: 0;
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-}
+@media (min-width: 901px) {
+	#catalog-filter-popup.catalog-filter-popup {
+		display: contents;
 
-.catalog-filter-popup .filter-grid {
-	display: contents;
-}
+		&[hidden] {
+			display: contents;
+		}
+	}
 
-.catalog-filter-popup .filter-select {
-	order: 1;
-}
-
-.catalog-filter-popup .filter-check {
-	order: 2;
-}
-
-.catalog-filter-popup .filter-advanced {
-	order: 3;
-	display: grid;
-}
-
-.catalog-filter-popup .filter-btn {
-	order: 4;
-	width: 100%;
-	margin-top: 12px;
-	position: sticky;
-	bottom: 0;
-	z-index: 4;
-}
-
-.catalog-filter-popup .filter-toggle {
-	display: none;
-}
-
-.catalog-filter-popup .filter-card.advanced-collapsed .filter-advanced {
-	display: grid;
+	.catalog-filter-popup__title {
+		display: none;
+	}
 }
 
 .filter-card.advanced-collapsed .filter-grid {
@@ -728,10 +691,6 @@
 	}
 
 	.filter {
-		&-card {
-			display: none;
-		}
-
 		&-grid {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
@@ -742,7 +701,57 @@
 
 	}
 
+	.catalog-filter-popup {
+		width: min(640px, calc(100vw - 24px));
+		max-height: calc(100vh - 32px);
+		padding: 16px 16px 24px;
+		gap: 12px;
+		flex-direction: column;
+		background: #ffffff;
+		border-radius: 20px;
+		box-shadow: 0 14px 28px rgba(15, 26, 23, 0.06);
+	}
+
 	.catalog-filter-popup .filter-card {
+		border: none;
+		box-shadow: none;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	.catalog-filter-popup .filter-grid {
+		display: contents;
+	}
+
+	.catalog-filter-popup .filter-select {
+		order: 1;
+	}
+
+	.catalog-filter-popup .filter-check {
+		order: 2;
+	}
+
+	.catalog-filter-popup .filter-advanced {
+		order: 3;
+		display: grid;
+	}
+
+	.catalog-filter-popup .filter-btn {
+		order: 4;
+		width: 100%;
+		margin-top: 12px;
+		position: sticky;
+		bottom: 0;
+		z-index: 4;
+	}
+
+	.catalog-filter-popup .filter-toggle {
+		display: none;
+	}
+
+	.catalog-filter-popup .filter-card.advanced-collapsed .filter-advanced {
 		display: grid;
 	}
 

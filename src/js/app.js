@@ -1228,9 +1228,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const main = document.querySelector('main.wrap.catalog-page');
     if (!main) return;
 
-    const filterCard = main.querySelector('.filter-card');
-    const filterToggle = main.querySelector('.filter-toggle');
-    const filterAdvanced = main.querySelector('.filter-advanced');
+    const filterForm = document.getElementById('franchises-catalog-filters');
+    const filterRoot = filterForm || main;
+
+    const filterCard = filterRoot.querySelector('.filter-card');
+    const filterToggle = filterRoot.querySelector('.filter-toggle');
+    const filterAdvanced = filterRoot.querySelector('.filter-advanced');
     const filterToggleLabel = filterToggle?.querySelector('.filter-toggle__text');
 
     const setFilterToggleLabel = (collapsed) => {
@@ -1262,12 +1265,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const investRange = main.querySelector('#invest-range');
-    const investHidden = main.querySelector('#invest_max_input');
-    const investLabel = main.querySelector('#invest-value');
-    const profitRange = main.querySelector('#profit-range');
-    const profitHidden = main.querySelector('#profit_min_input');
-    const profitLabel = main.querySelector('#profit-value');
+    const investRange = filterRoot.querySelector('#invest-range');
+    const profitRange = filterRoot.querySelector('#profit-range');
 
     const formatMoney = (n) =>
         new Intl.NumberFormat('ru-RU').format(Math.round(Number(n) || 0)) + ' ₽';
@@ -1279,8 +1278,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const value = Number(rangeEl.value) || 0;
         const hiddenSel = rangeEl.getAttribute("data-range-hidden");
         const labelSel = rangeEl.getAttribute("data-range-label");
-        const hidden = hiddenSel ? main.querySelector(hiddenSel) : null;
-        const label = labelSel ? main.querySelector(labelSel) : null;
+        const hidden = hiddenSel ? document.querySelector(hiddenSel) : null;
+        const label = labelSel ? document.querySelector(labelSel) : null;
         if (!hidden || !label) return;
 
         const emptyLabel = rangeEl.getAttribute("data-range-empty-label") || "";
@@ -1304,7 +1303,7 @@ document.addEventListener('DOMContentLoaded', () => {
         syncCatalogRange(rangeEl);
     });
 
-    main.querySelectorAll(".preset-btn[data-invest]").forEach((btn) => {
+    filterRoot.querySelectorAll(".preset-btn[data-invest]").forEach((btn) => {
         btn.addEventListener("click", () => {
             const v = btn.getAttribute("data-invest");
             if (investRange && v) {
@@ -1314,7 +1313,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    main.querySelectorAll(".preset-btn[data-profit]").forEach((btn) => {
+    filterRoot.querySelectorAll(".preset-btn[data-profit]").forEach((btn) => {
         btn.addEventListener("click", () => {
             const v = btn.getAttribute("data-profit");
             if (profitRange && v) {
@@ -1324,9 +1323,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    const filterForm = main.querySelector('#franchises-catalog-filters');
-    const sphereSelect = main.querySelector('select[name="sphere"]');
-    const categorySelect = main.querySelector('select[name="category"]');
+    const sphereSelect = filterForm?.querySelector('select[name="sphere"]');
+    const categorySelect = filterForm?.querySelector('select[name="category"]');
 
     const refreshNativeSelect = (selectEl) => {
         if (!selectEl) return;
@@ -1414,30 +1412,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const filterPopup = document.getElementById('catalog-filter-popup');
-    const filterPopupBody = filterPopup?.querySelector('[data-catalog-filter-body]');
-    const filterOpenBtn = main.querySelector('[data-catalog-filter-open]');
-
-    if (filterPopupBody && filterCard && filterForm && filterOpenBtn && typeof Fancybox !== 'undefined') {
-        const restoreFilterCard = () => {
-            if (filterCard.parentElement !== filterForm) {
-                filterForm.insertBefore(filterCard, filterForm.firstElementChild);
-            }
-        };
-
-        const moveFilterCardToPopup = () => {
-            filterPopupBody.appendChild(filterCard);
-        };
-
-        Fancybox.bind('[data-catalog-filter-open]', {
-            dragToClose: false,
-            mainClass: 'has-catalog-filter-popup',
-            on: {
-                ready: moveFilterCardToPopup,
-                destroy: restoreFilterCard,
-            },
-        });
-    }
 });
 
 /* ===== header menu (разметка в PHP) ===== */
