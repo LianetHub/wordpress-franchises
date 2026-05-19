@@ -1683,60 +1683,10 @@ add_action('woocommerce_product_query', static function ($q): void {
         $meta_parts[] = $v;
     }
 
-    if (! empty($_GET['verified'])) {
-        $meta_parts[] = [
-            'key'     => 'verified',
-            'value'   => '1',
-            'compare' => '=',
-        ];
-    }
-
-    $invest_max = isset($_GET['invest_max']) ? (int) $_GET['invest_max'] : 0;
-    if ($invest_max > 0) {
-        $meta_parts[] = [
-            'key'     => 'pausal',
-            'value'   => $invest_max,
-            'compare' => '<=',
-            'type'    => 'NUMERIC',
-        ];
-    }
-
-    $profit_min = isset($_GET['profit_min']) ? (int) $_GET['profit_min'] : 0;
-    if ($profit_min > 0) {
-        $meta_parts[] = [
-            'relation' => 'OR',
-            [
-                'key'     => 'monthly_profit_min',
-                'value'   => $profit_min,
-                'compare' => '>=',
-                'type'    => 'NUMERIC',
-            ],
-            [
-                'key'     => 'monthly_profit_max',
-                'value'   => $profit_min,
-                'compare' => '>=',
-                'type'    => 'NUMERIC',
-            ],
-        ];
-    }
-
-    $payback_max = isset($_GET['payback_max']) ? (int) $_GET['payback_max'] : 0;
-    if ($payback_max > 0) {
-        $meta_parts[] = [
-            'relation' => 'OR',
-            [
-                'key'     => 'payback_max',
-                'value'   => $payback_max,
-                'compare' => '<=',
-                'type'    => 'NUMERIC',
-            ],
-            [
-                'key'     => 'payback_min',
-                'value'   => $payback_max,
-                'compare' => '<=',
-                'type'    => 'NUMERIC',
-            ],
-        ];
+    if (function_exists('franchises_catalog_build_meta_query_parts')) {
+        foreach (franchises_catalog_build_meta_query_parts() as $piece) {
+            $meta_parts[] = $piece;
+        }
     }
 
     if ($meta_parts !== []) {
