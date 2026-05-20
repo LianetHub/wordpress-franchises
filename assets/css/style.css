@@ -2,7 +2,7 @@
 
 @font-face {
   font-family: "Manrope";
-  src: url("../fonts/Manrope-VariableFont_wght.woff2?v=1779294645230") format("woff2 supports variations"), url("../fonts/Manrope-VariableFont_wght.woff2?v=1779294645230") format("woff2-variations"), url("../fonts/Manrope-VariableFont_wght.woff?v=1779294645230") format("woff");
+  src: url("../fonts/Manrope-VariableFont_wght.woff2?v=1779295161379") format("woff2 supports variations"), url("../fonts/Manrope-VariableFont_wght.woff2?v=1779295161379") format("woff2-variations"), url("../fonts/Manrope-VariableFont_wght.woff?v=1779295161379") format("woff");
   font-weight: 100 900;
   font-stretch: 75% 125%;
   font-style: normal;
@@ -4710,17 +4710,13 @@ body {
 
 .toc-desktop .toc-list li {
   margin: 0;
+  max-width: 100%;
 }
 
 .toc-desktop .toc-list a {
-  display: -webkit-inline-box;
-  display: -ms-inline-flexbox;
-  display: inline-flex;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  min-height: 27px;
-  padding: 0 14px;
+  display: inline-block;
+  max-width: 100%;
+  padding: 4px 14px;
   border: 1px solid #d0d5db;
   border-radius: 999px;
   background: #ffffff;
@@ -4729,6 +4725,17 @@ body {
   font-weight: 500;
   line-height: 1.25;
   text-decoration: none;
+  overflow: hidden;
+}
+
+.toc-desktop .toc-list__text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 18px;
+  max-height: 36px;
 }
 
 .toc-desktop .toc-list a:hover {
@@ -5851,6 +5858,7 @@ body {
   border: 1px solid transparent !important;
   background: transparent !important;
   text-align: left !important;
+  text-decoration: none !important;
   font-weight: 600 !important;
   font-size: 14px !important;
   color: #2f3236 !important;

@@ -155,16 +155,60 @@ if (! function_exists('franchises_product_has_no_pausal')) {
 }
 
 // -------------------------------------------------------------------------
+// Границы для отображения (без подстановки WC-цены и max ← min)
+// -------------------------------------------------------------------------
+
+if (! function_exists('franchises_product_investment_bounds_for_display')) {
+    /**
+     * @return array{0: ?int, 1: ?int}
+     */
+    function franchises_product_investment_bounds_for_display(int $post_id): array
+    {
+        $min = franchises_product_acf_money($post_id, ['investment_min']);
+        $max = franchises_product_acf_money($post_id, ['investment_max']);
+
+        if ($min === null && $max === null) {
+            $legacy = franchises_product_acf_money($post_id, ['investment']);
+            if ($legacy !== null) {
+                return [$legacy, null];
+            }
+        }
+
+        return [$min, $max];
+    }
+}
+
+if (! function_exists('franchises_product_pausal_bounds_for_display')) {
+    /**
+     * @return array{0: ?int, 1: ?int}
+     */
+    function franchises_product_pausal_bounds_for_display(int $post_id): array
+    {
+        $min = franchises_product_acf_money($post_id, ['pausal_min']);
+        $max = franchises_product_acf_money($post_id, ['pausal_max']);
+
+        if ($min === null && $max === null) {
+            $legacy = franchises_product_acf_money($post_id, ['pausal']);
+            if ($legacy !== null) {
+                return [$legacy, null];
+            }
+        }
+
+        return [$min, $max];
+    }
+}
+
+// -------------------------------------------------------------------------
 // Форматирование
 // -------------------------------------------------------------------------
 
 if (! function_exists('franchises_format_money_range_line_ru')) {
     /**
-     * «от 420 000 ₽» / «420 000 – 850 000 ₽».
+     * Только min → «от …»; только max → «до …»; диапазон → «… – …».
      *
      * @param int|null $min
      * @param int|null $max
-     * @param bool     $card_mode без «от» у одиночного значения (подпись карточки уже «Инвестиции от»)
+     * @param bool     $card_mode без «от» при одном min (подпись карточки: «Инвестиции от»)
      */
     function franchises_format_money_range_line_ru(?int $min, ?int $max, bool $card_mode = false): string
     {
@@ -172,20 +216,21 @@ if (! function_exists('franchises_format_money_range_line_ru')) {
             return '';
         }
 
-        if ($min !== null && $max !== null && $min !== $max) {
-            return franchises_format_money_ru($min) . ' – ' . franchises_format_money_ru($max);
+        if ($min !== null && $max !== null) {
+            if ($min !== $max) {
+                return franchises_format_money_ru($min) . ' – ' . franchises_format_money_ru($max);
+            }
+
+            $max = null;
         }
 
-        $v = $min ?? $max;
-        if ($v === null) {
-            return '';
+        if ($min !== null) {
+            $formatted = franchises_format_money_ru($min);
+
+            return $card_mode ? $formatted : 'от ' . $formatted;
         }
 
-        if ($card_mode) {
-            return franchises_format_money_ru($v);
-        }
-
-        return 'от ' . franchises_format_money_ru($v);
+        return 'до ' . franchises_format_money_ru($max);
     }
 }
 
@@ -193,34 +238,27 @@ if (! function_exists('franchises_format_investment_line_ru')) {
     function franchises_format_investment_line_ru(WC_Product $product): string
     {
         $post_id = $product->get_id();
+        [$min, $max] = franchises_product_investment_bounds_for_display($post_id);
 
-        return franchises_format_money_range_line_ru(
-            franchises_product_investment_min($post_id),
-            franchises_product_investment_max($post_id),
-            false
-        );
+        return franchises_format_money_range_line_ru($min, $max, false);
     }
 }
 
 if (! function_exists('franchises_format_investment_card_value_ru')) {
     function franchises_format_investment_card_value_ru(int $post_id): string
     {
-        return franchises_format_money_range_line_ru(
-            franchises_product_investment_min($post_id),
-            franchises_product_investment_max($post_id),
-            true
-        );
+        [$min, $max] = franchises_product_investment_bounds_for_display($post_id);
+
+        return franchises_format_money_range_line_ru($min, $max, true);
     }
 }
 
 if (! function_exists('franchises_format_pausal_line_ru')) {
     function franchises_format_pausal_line_ru(int $post_id): string
     {
-        return franchises_format_money_range_line_ru(
-            franchises_product_pausal_min($post_id),
-            franchises_product_pausal_max($post_id),
-            false
-        );
+        [$min, $max] = franchises_product_pausal_bounds_for_display($post_id);
+
+        return franchises_format_money_range_line_ru($min, $max, false);
     }
 }
 

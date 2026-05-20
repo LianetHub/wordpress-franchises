@@ -120,6 +120,9 @@ $orderby_options = function_exists('franchises_wc_catalog_orderby_choices')
 
 global $wp_query;
 $found = (int) $wp_query->found_posts;
+if ($is_selection_catalog && $current_selection_id > 0 && function_exists('franchises_selection_product_ids')) {
+    $found = count(franchises_selection_product_ids($current_selection_id, 500));
+}
 $paged = max(1, (int) get_query_var('paged'));
 $per_page = (int) $wp_query->get('posts_per_page');
 if ($per_page <= 0) {

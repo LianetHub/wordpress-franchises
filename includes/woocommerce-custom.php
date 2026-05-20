@@ -566,20 +566,17 @@ if (! function_exists('franchises_format_payback_ru')) {
 }
 
 if (! function_exists('franchises_format_profit_line_ru')) {
-    /** «от 420 000 ₽» или «420 000 – 850 000 ₽» */
+    /** «от …» / «до …» / «… – …» — та же логика, что у инвестиций и паушального взноса. */
     function franchises_format_profit_line_ru($min, $max): string
     {
         $pmin = $min !== null && $min !== '' ? (int) $min : null;
         $pmax = $max !== null && $max !== '' ? (int) $max : null;
-        if ($pmin === null && $pmax === null) {
+
+        if (! function_exists('franchises_format_money_range_line_ru')) {
             return '';
         }
-        if ($pmin !== null && $pmax !== null && $pmin !== $pmax) {
-            return franchises_format_money_ru($pmin) . ' – ' . franchises_format_money_ru($pmax);
-        }
-        $v = $pmin ?? $pmax;
 
-        return 'от ' . franchises_format_money_ru($v);
+        return franchises_format_money_range_line_ru($pmin, $pmax, false);
     }
 }
 

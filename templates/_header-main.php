@@ -46,13 +46,15 @@ $has_collections = $collections !== [];
                     <div class="nav-dropdown-panel" data-categories-panel>
                         <div class="categories-menu" role="dialog" aria-label="<?php esc_attr_e('Категории', 'franchises'); ?>">
                             <div class="categories-left" data-categories-list>
-                                <?php foreach ($spheres as $index => $sphere) : ?>
-                                    <button
+                                <?php foreach ($spheres as $index => $sphere) :
+                                    $sphere_href = $sphere['url'] !== '' ? $sphere['url'] : $sphere['landing_url'];
+                                ?>
+                                    <a
                                         class="categories-item<?php echo $index === 0 ? ' active' : ''; ?>"
-                                        type="button"
+                                        href="<?php echo esc_url($sphere_href); ?>"
                                         data-index="<?php echo (int) $index; ?>">
                                         <span><?php echo esc_html($sphere['name']); ?></span>
-                                    </button>
+                                    </a>
                                 <?php endforeach; ?>
                             </div>
                             <div class="categories-right" data-categories-panels>

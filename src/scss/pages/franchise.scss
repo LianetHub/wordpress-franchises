@@ -150,13 +150,13 @@
 
 .toc-desktop .toc-list li {
 	margin: 0;
+	max-width: 100%;
 }
 
 .toc-desktop .toc-list a {
-	display: inline-flex;
-	align-items: center;
-	min-height: 27px;
-	padding: 0 14px;
+	display: inline-block;
+	max-width: 100%;
+	padding: 4px 14px;
 	border: 1px solid #d0d5db;
 	border-radius: 999px;
 	background: #ffffff;
@@ -165,6 +165,17 @@
 	font-weight: 500;
 	line-height: 1.25;
 	text-decoration: none;
+	overflow: hidden;
+}
+
+.toc-desktop .toc-list__text {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	line-height: 18px;
+	max-height: calc(18px * 2);
 }
 
 .toc-desktop .toc-list a:hover {

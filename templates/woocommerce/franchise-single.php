@@ -312,7 +312,7 @@ $card = franchises_franchise_card_from_post($post_id);
                     <div class="toc-title">Содержание</div>
                     <ol class="toc-list">
                         <?php foreach ($toc_items as $toc) : ?>
-                            <li><a href="#<?php echo esc_attr($toc['id']); ?>"><?php echo esc_html($toc['title']); ?></a></li>
+                            <li><a href="#<?php echo esc_attr($toc['id']); ?>"><span class="toc-list__text"><?php echo esc_html($toc['title']); ?></span></a></li>
                         <?php endforeach; ?>
                     </ol>
                 </div>
@@ -321,7 +321,7 @@ $card = franchises_franchise_card_from_post($post_id);
                     <h2 class="toc-title">Содержание</h2>
                     <ol class="toc-list">
                         <?php foreach ($toc_items as $toc) : ?>
-                            <li><a href="#<?php echo esc_attr($toc['id']); ?>"><?php echo esc_html($toc['title']); ?></a></li>
+                            <li><a href="#<?php echo esc_attr($toc['id']); ?>"><span class="toc-list__text"><?php echo esc_html($toc['title']); ?></span></a></li>
                         <?php endforeach; ?>
                     </ol>
                 </section>

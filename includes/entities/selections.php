@@ -375,18 +375,50 @@ function franchises_selection_products_query_args(int $selection_id, array $over
 }
 
 /**
+ * @param list<int> $ids
+ * @return list<int>
+ */
+function franchises_selection_valid_product_ids(array $ids): array
+{
+    $out = [];
+    foreach ($ids as $raw_id) {
+        $id = (int) $raw_id;
+        if ($id <= 0) {
+            continue;
+        }
+        $post = get_post($id);
+        if ($post instanceof WP_Post && $post->post_type === 'product' && $post->post_status === 'publish') {
+            $out[] = $id;
+        }
+    }
+
+    return array_values(array_unique($out));
+}
+
+/**
  * @return list<int>
  */
 function franchises_selection_product_ids(int $selection_id, int $max = 500): array
 {
+    $max = max(1, $max);
+
+    $manual_ids = franchises_selection_valid_product_ids(
+        franchises_selection_manual_product_ids($selection_id)
+    );
+    if ($manual_ids !== []) {
+        return array_slice($manual_ids, 0, $max);
+    }
+
     $type = franchises_selection_filter_type($selection_id);
 
     if ($type === 'manual') {
-        return franchises_selection_manual_product_ids($selection_id);
+        return [];
     }
 
     if ($type === 'popular') {
-        return array_slice(franchises_selection_popular_product_ids($max), 0, max(1, $max));
+        return franchises_selection_valid_product_ids(
+            array_slice(franchises_selection_popular_product_ids($max), 0, $max)
+        );
     }
 
     $query = new WP_Query(array_merge(
@@ -415,7 +447,7 @@ function franchises_selection_product_ids(int $selection_id, int $max = 500): ar
     }
     wp_reset_postdata();
 
-    return $ids;
+    return franchises_selection_valid_product_ids($ids);
 }
 
 /**
