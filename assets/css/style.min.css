@@ -1156,7 +1156,7 @@ body {
     position: relative;
     width: 100%;
     font-weight: 500;
-    font-size: 1rem;
+    font-size: .875rem;
     line-height: 1.2;
     z-index: 6
 }

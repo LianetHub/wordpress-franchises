@@ -229,26 +229,6 @@ function franchises_selection_manual_product_ids(int $selection_id): array
     return array_values(array_unique($ids));
 }
 
-function franchises_product_pausal_amount(int $product_id): ?int
-{
-    if (! function_exists('get_field')) {
-        return null;
-    }
-    $pausal = get_field('pausal', $product_id);
-    if ($pausal === null || $pausal === '') {
-        return null;
-    }
-
-    return (int) $pausal;
-}
-
-function franchises_product_has_no_pausal(int $product_id): bool
-{
-    $pausal = franchises_product_pausal_amount($product_id);
-
-    return $pausal === null || $pausal <= 0;
-}
-
 function franchises_product_has_no_royalty(int $product_id): bool
 {
     if (! function_exists('get_field')) {
@@ -311,16 +291,6 @@ function franchises_product_payback_within(int $product_id, int $months): bool
     }
 
     return false;
-}
-
-/**
- * Размер инвестиции — цена товара WooCommerce (regular price).
- */
-function franchises_product_investment_amount(int $product_id): ?int
-{
-    return function_exists('franchises_product_price_amount')
-        ? franchises_product_price_amount($product_id)
-        : null;
 }
 
 function franchises_product_matches_selection_type(int $product_id, string $type, int $selection_id = 0): bool

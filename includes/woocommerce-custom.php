@@ -265,25 +265,13 @@ if (! function_exists('franchises_format_money_ru')) {
 
 if (! function_exists('franchises_product_price_amount')) {
     /**
-     * Цена товара WooCommerce (regular price) в рублях для карточек и фильтров.
+     * Нижняя граница инвестиций (ACF investment_min → legacy → regular price).
      */
     function franchises_product_price_amount(int $post_id): ?int
     {
-        if (! function_exists('wc_get_product')) {
-            return null;
-        }
-
-        $product = wc_get_product($post_id);
-        if (! $product) {
-            return null;
-        }
-
-        $price = $product->get_regular_price();
-        if ($price === '' || $price === null) {
-            return null;
-        }
-
-        return (int) wc_format_decimal($price, 0, false);
+        return function_exists('franchises_product_investment_min')
+            ? franchises_product_investment_min($post_id)
+            : null;
     }
 }
 
@@ -314,7 +302,12 @@ if (! function_exists('franchises_franchise_card_from_post')) {
         $payback_min = isset($acf['payback_min']) && $acf['payback_min'] !== '' ? (int) $acf['payback_min'] : null;
         $payback_max = isset($acf['payback_max']) && $acf['payback_max'] !== '' ? (int) $acf['payback_max'] : null;
 
-        $invest = franchises_product_price_amount($post_id);
+        $invest_min = franchises_product_investment_min($post_id);
+        $invest_max = franchises_product_investment_max($post_id);
+        $pausal_min = franchises_product_pausal_min($post_id);
+        $pausal_max = franchises_product_pausal_max($post_id);
+
+        $invest = $invest_min;
         $profit_for_filter = $profit_min ?? $profit_max;
         $payback_for_filter = $payback_min ?? $payback_max;
 
@@ -373,6 +366,9 @@ if (! function_exists('franchises_franchise_card_from_post')) {
             'sphere'           => $sphere,
             'category'         => $category,
             'invest'           => $invest,
+            'invest_min'       => $invest_min,
+            'invest_max'       => $invest_max,
+            'invest_display'   => franchises_format_investment_card_value_ru($post_id),
             'payback'          => $payback_for_filter,
             'profit'           => $profit_for_filter,
             'verified'         => $verified,
@@ -391,7 +387,10 @@ if (! function_exists('franchises_franchise_card_from_post')) {
             'acf_monthly_profit_max' => $acf['monthly_profit_max'] ?? null,
             'acf_payback_min'  => $acf['payback_min'] ?? null,
             'acf_payback_max'  => $acf['payback_max'] ?? null,
-            'acf_pausal'       => $acf['pausal'] ?? null,
+            'acf_pausal_min'   => $pausal_min,
+            'acf_pausal_max'   => $pausal_max,
+            'acf_investment_min' => $invest_min,
+            'acf_investment_max' => $invest_max,
             'acf_royalty'      => $acf['royalty'] ?? null,
         ];
     }
@@ -581,43 +580,6 @@ if (! function_exists('franchises_format_profit_line_ru')) {
         $v = $pmin ?? $pmax;
 
         return 'от ' . franchises_format_money_ru($v);
-    }
-}
-
-if (! function_exists('franchises_format_investment_line_ru')) {
-    /**
-     * Инвестиции для сайдбара: ACF investment_min (руб.) или цена товара WooCommerce.
-     */
-    function franchises_format_investment_line_ru(WC_Product $product): string
-    {
-        $post_id = $product->get_id();
-        if (function_exists('get_field')) {
-            $inv = get_field('investment_min', $post_id);
-            if ($inv !== null && $inv !== '') {
-                return 'от ' . franchises_format_money_ru((int) $inv);
-            }
-        }
-        $price = $product->get_regular_price();
-        if ($price !== '' && is_numeric($price)) {
-            return 'от ' . franchises_format_money_ru((int) wc_format_decimal($price, 0, false));
-        }
-
-        return '';
-    }
-}
-
-if (! function_exists('franchises_format_pausal_line_ru')) {
-    function franchises_format_pausal_line_ru(int $post_id): string
-    {
-        if (! function_exists('get_field')) {
-            return '';
-        }
-        $p = get_field('pausal', $post_id);
-        if ($p === null || $p === '') {
-            return '';
-        }
-
-        return 'от ' . franchises_format_money_ru((int) $p);
     }
 }
 

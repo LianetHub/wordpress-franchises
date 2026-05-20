@@ -1,0 +1,330 @@
+<?php
+
+/**
+ * Инвестиции и паушальный взнос: ACF min/max, синхронизация investment_min → цена WooCommerce.
+ */
+
+defined('ABSPATH') || exit;
+
+// -------------------------------------------------------------------------
+// Чтение ACF (с legacy-полями investment / pausal)
+// -------------------------------------------------------------------------
+
+if (! function_exists('franchises_acf_money_int')) {
+    /**
+     * @param mixed $raw
+     */
+    function franchises_acf_money_int($raw): ?int
+    {
+        if ($raw === null || $raw === '' || $raw === false) {
+            return null;
+        }
+        if (! is_numeric($raw)) {
+            return null;
+        }
+
+        return (int) round((float) $raw);
+    }
+}
+
+if (! function_exists('franchises_product_acf_money')) {
+    /**
+     * Первое непустое числовое ACF-поле из списка имён.
+     *
+     * @param list<string> $field_names
+     */
+    function franchises_product_acf_money(int $post_id, array $field_names): ?int
+    {
+        if (! function_exists('get_field')) {
+            return null;
+        }
+
+        foreach ($field_names as $name) {
+            $raw = get_field($name, $post_id);
+            $value = franchises_acf_money_int($raw);
+            if ($value !== null) {
+                return $value;
+            }
+        }
+
+        return null;
+    }
+}
+
+if (! function_exists('franchises_product_investment_min')) {
+    function franchises_product_investment_min(int $post_id): ?int
+    {
+        $min = franchises_product_acf_money($post_id, ['investment_min', 'investment']);
+        if ($min !== null) {
+            return $min;
+        }
+
+        return franchises_product_wc_regular_price_amount($post_id);
+    }
+}
+
+if (! function_exists('franchises_product_investment_max')) {
+    function franchises_product_investment_max(int $post_id): ?int
+    {
+        $max = franchises_product_acf_money($post_id, ['investment_max']);
+        if ($max !== null) {
+            return $max;
+        }
+
+        $legacy = franchises_product_acf_money($post_id, ['investment']);
+        if ($legacy !== null) {
+            return $legacy;
+        }
+
+        return franchises_product_investment_min($post_id);
+    }
+}
+
+if (! function_exists('franchises_product_pausal_min')) {
+    function franchises_product_pausal_min(int $post_id): ?int
+    {
+        return franchises_product_acf_money($post_id, ['pausal_min', 'pausal']);
+    }
+}
+
+if (! function_exists('franchises_product_pausal_max')) {
+    function franchises_product_pausal_max(int $post_id): ?int
+    {
+        $max = franchises_product_acf_money($post_id, ['pausal_max']);
+        if ($max !== null) {
+            return $max;
+        }
+
+        return franchises_product_pausal_min($post_id);
+    }
+}
+
+if (! function_exists('franchises_product_wc_regular_price_amount')) {
+    function franchises_product_wc_regular_price_amount(int $post_id): ?int
+    {
+        if (! function_exists('wc_get_product')) {
+            return null;
+        }
+
+        $product = wc_get_product($post_id);
+        if (! $product) {
+            return null;
+        }
+
+        $price = $product->get_regular_price();
+        if ($price === '' || $price === null) {
+            return null;
+        }
+
+        return (int) wc_format_decimal($price, 0, false);
+    }
+}
+
+/** Нижняя граница инвестиций (фильтры, data-invest, подборки). */
+if (! function_exists('franchises_product_investment_amount')) {
+    function franchises_product_investment_amount(int $post_id): ?int
+    {
+        return franchises_product_investment_min($post_id);
+    }
+}
+
+if (! function_exists('franchises_product_pausal_amount')) {
+    /** Нижняя граница паушального взноса (legacy-хелпер). */
+    function franchises_product_pausal_amount(int $product_id): ?int
+    {
+        return franchises_product_pausal_min($product_id);
+    }
+}
+
+if (! function_exists('franchises_product_has_no_pausal')) {
+    function franchises_product_has_no_pausal(int $product_id): bool
+    {
+        $min = franchises_product_pausal_min($product_id);
+        $max = franchises_product_pausal_max($product_id);
+
+        if ($min === null && $max === null) {
+            return true;
+        }
+
+        $effective_min = $min ?? $max;
+        $effective_max = $max ?? $min;
+
+        return ($effective_min === null || $effective_min <= 0)
+            && ($effective_max === null || $effective_max <= 0);
+    }
+}
+
+// -------------------------------------------------------------------------
+// Форматирование
+// -------------------------------------------------------------------------
+
+if (! function_exists('franchises_format_money_range_line_ru')) {
+    /**
+     * «от 420 000 ₽» / «420 000 – 850 000 ₽».
+     *
+     * @param int|null $min
+     * @param int|null $max
+     * @param bool     $card_mode без «от» у одиночного значения (подпись карточки уже «Инвестиции от»)
+     */
+    function franchises_format_money_range_line_ru(?int $min, ?int $max, bool $card_mode = false): string
+    {
+        if ($min === null && $max === null) {
+            return '';
+        }
+
+        if ($min !== null && $max !== null && $min !== $max) {
+            return franchises_format_money_ru($min) . ' – ' . franchises_format_money_ru($max);
+        }
+
+        $v = $min ?? $max;
+        if ($v === null) {
+            return '';
+        }
+
+        if ($card_mode) {
+            return franchises_format_money_ru($v);
+        }
+
+        return 'от ' . franchises_format_money_ru($v);
+    }
+}
+
+if (! function_exists('franchises_format_investment_line_ru')) {
+    function franchises_format_investment_line_ru(WC_Product $product): string
+    {
+        $post_id = $product->get_id();
+
+        return franchises_format_money_range_line_ru(
+            franchises_product_investment_min($post_id),
+            franchises_product_investment_max($post_id),
+            false
+        );
+    }
+}
+
+if (! function_exists('franchises_format_investment_card_value_ru')) {
+    function franchises_format_investment_card_value_ru(int $post_id): string
+    {
+        return franchises_format_money_range_line_ru(
+            franchises_product_investment_min($post_id),
+            franchises_product_investment_max($post_id),
+            true
+        );
+    }
+}
+
+if (! function_exists('franchises_format_pausal_line_ru')) {
+    function franchises_format_pausal_line_ru(int $post_id): string
+    {
+        return franchises_format_money_range_line_ru(
+            franchises_product_pausal_min($post_id),
+            franchises_product_pausal_max($post_id),
+            false
+        );
+    }
+}
+
+// -------------------------------------------------------------------------
+// Синхронизация investment_min → _regular_price
+// -------------------------------------------------------------------------
+
+if (! function_exists('franchises_sync_product_price_from_investment')) {
+    function franchises_sync_product_price_from_investment(int $post_id): void
+    {
+        if ($post_id <= 0 || get_post_type($post_id) !== 'product') {
+            return;
+        }
+
+        if (! function_exists('wc_get_product')) {
+            return;
+        }
+
+        $min = franchises_product_acf_money($post_id, ['investment_min', 'investment']);
+        if ($min === null || $min <= 0) {
+            return;
+        }
+
+        $product = wc_get_product($post_id);
+        if (! $product) {
+            return;
+        }
+
+        $price_str = (string) $min;
+        $current = $product->get_regular_price();
+        if ($current === $price_str) {
+            return;
+        }
+
+        $product->set_regular_price($price_str);
+        $product->set_price($price_str);
+        $product->save();
+    }
+}
+
+if (! function_exists('franchises_maybe_sync_product_price_from_investment')) {
+    function franchises_maybe_sync_product_price_from_investment(int $post_id): void
+    {
+        static $running = false;
+
+        if ($running) {
+            return;
+        }
+
+        $running = true;
+        franchises_sync_product_price_from_investment($post_id);
+        $running = false;
+    }
+}
+
+add_action('acf/save_post', static function ($post_id): void {
+    if (! is_numeric($post_id)) {
+        return;
+    }
+    franchises_maybe_sync_product_price_from_investment((int) $post_id);
+}, 20);
+
+add_action('save_post_product', static function (int $post_id): void {
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+    franchises_maybe_sync_product_price_from_investment($post_id);
+}, 25);
+
+// -------------------------------------------------------------------------
+// Админка: скрыть ручной ввод цены WooCommerce
+// -------------------------------------------------------------------------
+
+add_action('admin_head', static function (): void {
+    if (! function_exists('get_current_screen')) {
+        return;
+    }
+
+    $screen = get_current_screen();
+    if (! $screen || $screen->post_type !== 'product') {
+        return;
+    }
+
+    if (! in_array($screen->base, ['post', 'post-new'], true)) {
+        return;
+    }
+
+    echo '<style>
+        #general_product_data .pricing.show_if_simple,
+        #general_product_data p._regular_price_field,
+        #general_product_data p._sale_price_field,
+        .woocommerce_variation .variable_pricing { display: none !important; }
+    </style>';
+}, 20);
+
+add_action('woocommerce_product_options_general_product_data', static function (): void {
+    echo '<p class="form-field franchises-investment-hint" style="padding:12px 12px 0;margin:0;">';
+    echo '<span class="description">';
+    echo esc_html('Цена в WooCommerce подставляется автоматически из ACF «investment_min» при сохранении. Редактируйте инвестиции в полях investment_min / investment_max.');
+    echo '</span></p>';
+}, 4);
+
+add_filter('manage_product_posts_columns', static function (array $columns): array {
+    unset($columns['price']);
+
+    return $columns;
+}, 20);

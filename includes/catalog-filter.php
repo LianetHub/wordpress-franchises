@@ -59,10 +59,19 @@ if (! function_exists('franchises_catalog_build_meta_query_parts')) {
 
         if ($f['invest_max'] > 0) {
             $meta_parts[] = [
-                'key'     => '_regular_price',
-                'value'   => (string) $f['invest_max'],
-                'compare' => '<=',
-                'type'    => 'DECIMAL',
+                'relation' => 'OR',
+                [
+                    'key'     => 'investment_min',
+                    'value'   => $f['invest_max'],
+                    'compare' => '<=',
+                    'type'    => 'NUMERIC',
+                ],
+                [
+                    'key'     => '_regular_price',
+                    'value'   => (string) $f['invest_max'],
+                    'compare' => '<=',
+                    'type'    => 'DECIMAL',
+                ],
             ];
         }
 

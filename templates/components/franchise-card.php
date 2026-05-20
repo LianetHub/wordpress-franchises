@@ -10,7 +10,7 @@
  *
  * Поля ACF (имена): year_founded, franchise_since, own_stores,
  * franch_stores, tm_number, monthly_profit_min, monthly_profit_max, payback_min,
- * payback_max, verified, pausal, royalty.
+ * payback_max, verified, pausal_min, pausal_max, investment_min, investment_max, royalty.
  *
  * Сборка массива из поста: franchises_franchise_card_from_post() в includes/woocommerce-custom.php.
  *
@@ -69,7 +69,11 @@ $defaults = [
     'acf_monthly_profit_max' => null,
     'acf_payback_min'  => null,
     'acf_payback_max'  => null,
-    'acf_pausal'       => null,
+    'acf_pausal_min'   => null,
+    'acf_pausal_max'   => null,
+    'acf_investment_min' => null,
+    'acf_investment_max' => null,
+    'invest_display'   => '',
     'acf_royalty'      => null,
 ];
 
@@ -97,22 +101,30 @@ if ($card_post_id <= 0 && (string) $c['href'] !== '' && (string) $c['href'] !== 
     $card_post_id = (int) url_to_postid((string) $c['href']);
 }
 
-// meta-value: только цена товара WooCommerce (regular price), не ACF pausal / investment_min.
+// meta-value: investment_min / investment_max (ACF), не паушальный взнос.
 $invest_int = 0;
-$meta_value = '';
-if ($card_post_id > 0 && function_exists('franchises_product_price_amount')) {
-    $price_amount = franchises_product_price_amount($card_post_id);
-    if ($price_amount !== null && $price_amount > 0) {
-        $invest_int = $price_amount;
-        $meta_value = franchises_format_money_ru($invest_int);
+$invest_max_int = 0;
+$meta_value = (string) ($c['invest_display'] ?? '');
+if ($card_post_id > 0) {
+    if ($meta_value === '' && function_exists('franchises_format_investment_card_value_ru')) {
+        $meta_value = franchises_format_investment_card_value_ru($card_post_id);
     }
-} elseif (isset($product) && class_exists('WC_Product') && is_a($product, 'WC_Product', true)) {
-    $price_raw = $product->get_regular_price();
-    if ($price_raw !== '' && is_numeric($price_raw)) {
-        $invest_int = (int) wc_format_decimal($price_raw, 0, false);
-        if ($invest_int > 0) {
-            $meta_value = franchises_format_money_ru($invest_int);
+    if (function_exists('franchises_product_investment_min')) {
+        $min_amount = franchises_product_investment_min($card_post_id);
+        if ($min_amount !== null && $min_amount > 0) {
+            $invest_int = $min_amount;
         }
+    }
+    if (function_exists('franchises_product_investment_max')) {
+        $max_amount = franchises_product_investment_max($card_post_id);
+        if ($max_amount !== null && $max_amount > 0) {
+            $invest_max_int = $max_amount;
+        }
+    }
+} elseif ($c['invest'] !== null && $c['invest'] !== '') {
+    $invest_int = (int) $c['invest'];
+    if ($meta_value === '' && $invest_int > 0 && function_exists('franchises_format_money_ru')) {
+        $meta_value = franchises_format_money_ru($invest_int);
     }
 }
 
@@ -148,6 +160,7 @@ $attr = static function (string $k, $v): string {
     data-sphere="<?php echo esc_attr((string) $c['sphere']); ?>"
     data-category="<?php echo esc_attr((string) $c['category']); ?>"
     data-invest="<?php echo esc_attr((string) $invest_int); ?>"
+    data-invest-max="<?php echo esc_attr((string) $invest_max_int); ?>"
     data-payback="<?php echo esc_attr((string) $payback_int); ?>"
     data-profit="<?php echo esc_attr((string) $profit_int); ?>"
     data-verified="<?php echo esc_attr($verified_attr); ?>"
@@ -167,7 +180,10 @@ $attr = static function (string $k, $v): string {
     echo $attr('data-monthly-profit-max', $c['acf_monthly_profit_max']);
     echo $attr('data-payback-min', $c['acf_payback_min']);
     echo $attr('data-payback-max', $c['acf_payback_max']);
-    echo $attr('data-pausal', $c['acf_pausal']);
+    echo $attr('data-pausal-min', $c['acf_pausal_min']);
+    echo $attr('data-pausal-max', $c['acf_pausal_max']);
+    echo $attr('data-investment-min', $c['acf_investment_min']);
+    echo $attr('data-investment-max', $c['acf_investment_max']);
     echo $attr('data-royalty', $c['acf_royalty']);
     ?>>
     <div class="popular-media">
