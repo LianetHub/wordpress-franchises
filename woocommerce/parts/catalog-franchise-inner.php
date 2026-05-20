@@ -123,7 +123,9 @@ $found = (int) $wp_query->found_posts;
 $paged = max(1, (int) get_query_var('paged'));
 $per_page = (int) $wp_query->get('posts_per_page');
 if ($per_page <= 0) {
-    $per_page = (int) get_option('posts_per_page', 12);
+    $per_page = function_exists('franchises_catalog_products_per_page')
+        ? franchises_catalog_products_per_page()
+        : (int) get_option('posts_per_page', 12);
 }
 $from = $found > 0 ? (($paged - 1) * $per_page + 1) : 0;
 $to = min($found, $paged * $per_page);

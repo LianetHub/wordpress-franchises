@@ -2,7 +2,7 @@
 
 @font-face {
     font-family: Manrope;
-    src: url(../fonts/Manrope-VariableFont_wght.woff2?v=1779212670990) format("woff2 supports variations"), url(../fonts/Manrope-VariableFont_wght.woff2?v=1779212670990) format("woff2-variations"), url(../fonts/Manrope-VariableFont_wght.woff?v=1779212670990) format("woff");
+    src: url(../fonts/Manrope-VariableFont_wght.woff2?v=1779294645230) format("woff2 supports variations"), url(../fonts/Manrope-VariableFont_wght.woff2?v=1779294645230) format("woff2-variations"), url(../fonts/Manrope-VariableFont_wght.woff?v=1779294645230) format("woff");
     font-weight: 100 900;
     font-stretch: 75% 125%;
     font-style: normal;
@@ -4182,10 +4182,12 @@ body {
 .catalog-cards {
     -ms-grid-columns: (minmax(0, 1fr))[3];
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px 16px;
     max-height: none !important;
     overflow: visible !important;
     padding-right: 0 !important;
-    grid-auto-flow: row !important
+    grid-auto-flow: row !important;
+    margin-bottom: 24px
 }
 
 .catalog-hero .page-title {
@@ -6186,7 +6188,8 @@ body {
 
 .popular-grid.catalog-cards {
     -ms-grid-columns: (minmax(0, 1fr))[3];
-    grid-template-columns: repeat(3, minmax(0, 1fr))
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px 16px
 }
 
 .popular-card {
@@ -8370,7 +8373,8 @@ body {
 
     .catalog-cards {
         -ms-grid-columns: (minmax(0, 1fr))[2];
-        grid-template-columns: repeat(2, minmax(0, 1fr))
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px
     }
 
     .mobile-filter-action {
@@ -9159,7 +9163,8 @@ body {
 
     .catalog-cards {
         -ms-grid-columns: (minmax(0, 1fr))[2];
-        grid-template-columns: repeat(2, minmax(0, 1fr))
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px
     }
 
     .catalog-sidebar {

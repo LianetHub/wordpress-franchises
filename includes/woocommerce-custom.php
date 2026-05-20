@@ -1293,6 +1293,20 @@ if (! function_exists('franchises_uses_catalog_cards_grid')) {
     }
 }
 
+if (! function_exists('franchises_catalog_products_per_page')) {
+    /**
+     * Карточек на странице каталога: кратно 3 (desktop) и 2 (≤900px), чтобы сетка без «хвоста».
+     */
+    function franchises_catalog_products_per_page(): int
+    {
+        return 12;
+    }
+}
+
+add_filter('loop_shop_per_page', static function (): int {
+    return franchises_catalog_products_per_page();
+});
+
 if (! function_exists('franchises_lcfirst_utf8')) {
     function franchises_lcfirst_utf8(string $text): string
     {
