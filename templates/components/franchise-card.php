@@ -74,6 +74,7 @@ $defaults = [
     'acf_investment_min' => null,
     'acf_investment_max' => null,
     'invest_display'   => '',
+    'invest_label'     => 'Инвестиции',
     'acf_royalty'      => null,
 ];
 
@@ -104,9 +105,14 @@ if ($card_post_id <= 0 && (string) $c['href'] !== '' && (string) $c['href'] !== 
 // meta-value: investment_min / investment_max (ACF), не паушальный взнос.
 $invest_int = 0;
 $invest_max_int = 0;
+$meta_label = (string) ($c['invest_label'] ?? 'Инвестиции');
 $meta_value = (string) ($c['invest_display'] ?? '');
 if ($card_post_id > 0) {
-    if ($meta_value === '' && function_exists('franchises_format_investment_card_value_ru')) {
+    if ($meta_value === '' && function_exists('franchises_format_investment_card_parts_ru')) {
+        $invest_parts = franchises_format_investment_card_parts_ru($card_post_id);
+        $meta_label = $invest_parts['label'];
+        $meta_value = $invest_parts['value'];
+    } elseif ($meta_value === '' && function_exists('franchises_format_investment_card_value_ru')) {
         $meta_value = franchises_format_investment_card_value_ru($card_post_id);
     }
     if (function_exists('franchises_product_investment_min')) {
@@ -124,8 +130,14 @@ if ($card_post_id > 0) {
 } elseif ($c['invest'] !== null && $c['invest'] !== '') {
     $invest_int = (int) $c['invest'];
     if ($meta_value === '' && $invest_int > 0 && function_exists('franchises_format_money_ru')) {
+        $meta_label = 'Инвестиции от';
         $meta_value = franchises_format_money_ru($invest_int);
     }
+}
+
+if ($meta_value === '' && function_exists('franchises_price_on_request_text')) {
+    $meta_label = 'Инвестиции';
+    $meta_value = franchises_price_on_request_text();
 }
 
 // popular-brand: заголовок товара (post_title), не ACF product_full_title (H1).
@@ -197,9 +209,7 @@ $attr = static function (string $k, $v): string {
     <div class="popular-brand"><?php echo $name; ?></div>
     <div class="popular-desc"><?php echo $desc; ?></div>
     <div class="popular-meta">
-        <span class="meta-label">Инвестиции от</span>
-        <?php if ($meta_value !== '') : ?>
-            <span class="meta-value"><?php echo esc_html($meta_value); ?></span>
-        <?php endif; ?>
+        <span class="meta-label"><?php echo esc_html($meta_label); ?></span>
+        <span class="meta-value"><?php echo esc_html($meta_value); ?></span>
     </div>
 </a>

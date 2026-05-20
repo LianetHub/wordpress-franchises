@@ -50,7 +50,7 @@ if (class_exists('WooCommerce', false) && function_exists('franchises_render_hom
         <div class="logo-modal-body">
             <div class="logo-modal-brand">BRAND</div>
             <div class="logo-modal-title">Название франшизы</div>
-            <div class="logo-modal-meta">Инвестиции от 0 ₽</div>
+            <div class="logo-modal-meta">Инвестиции: уточняйте у менеджера</div>
             <a class="btn btn-primary logo-modal-cta" href="franchise.html">Подробнее</a>
         </div>
     </div>

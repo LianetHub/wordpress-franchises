@@ -1268,8 +1268,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const investRange = filterRoot.querySelector('#invest-range');
     const profitRange = filterRoot.querySelector('#profit-range');
 
-    const formatMoney = (n) =>
-        new Intl.NumberFormat('ru-RU').format(Math.round(Number(n) || 0)) + ' ₽';
+    const MONEY_NNBSP = '\u202F';
+    const formatMoney = (n) => {
+        const grouped = new Intl.NumberFormat('ru-RU').format(Math.round(Number(n) || 0));
+
+        return grouped.replace(/[\u00A0\u202F\s]/g, MONEY_NNBSP) + MONEY_NNBSP + '₽';
+    };
 
     const syncCatalogRange = (rangeEl) => {
         if (!rangeEl) return;

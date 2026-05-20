@@ -276,9 +276,7 @@ $card = franchises_franchise_card_from_post($post_id);
         <aside class="side-panel">
             <div class="card">
                 <ul class="key-list">
-                    <?php if ($key_invest !== '') : ?>
-                        <li class="key-item"><span>Инвестиции</span><strong><?php echo esc_html($key_invest); ?></strong></li>
-                    <?php endif; ?>
+                    <li class="key-item"><span>Инвестиции</span><strong><?php echo esc_html($key_invest); ?></strong></li>
                     <?php if ($key_profit !== '') : ?>
                         <li class="key-item"><span>Месячная прибыль</span><strong><?php echo esc_html($key_profit); ?></strong></li>
                     <?php endif; ?>

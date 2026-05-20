@@ -129,12 +129,12 @@ if (! $advanced_open) {
                                 data-range-empty-value="0"
                                 data-range-empty-at="max">
                             <div class="preset-row">
-                                <button class="preset-btn" type="button" data-invest="50000">до 50 000 ₽</button>
-                                <button class="preset-btn" type="button" data-invest="100000">до 100 000 ₽</button>
-                                <button class="preset-btn" type="button" data-invest="300000">до 300 000 ₽</button>
-                                <button class="preset-btn" type="button" data-invest="500000">до 500 000 ₽</button>
-                                <button class="preset-btn" type="button" data-invest="1000000">до 1 000 000 ₽</button>
-                                <button class="preset-btn" type="button" data-invest="3000000">до 3 000 000 ₽</button>
+                                <?php
+                                $invest_presets = [50000, 100000, 300000, 500000, 1000000, 3000000];
+                                foreach ($invest_presets as $invest_preset) :
+                                ?>
+                                    <button class="preset-btn" type="button" data-invest="<?php echo esc_attr((string) $invest_preset); ?>"><?php echo esc_html__('до ', 'franchises') . esc_html(franchises_format_money_ru($invest_preset)); ?></button>
+                                <?php endforeach; ?>
                             </div>
                         </div>
                         <div class="range-card">
@@ -158,11 +158,12 @@ if (! $advanced_open) {
                                 data-range-empty-value="0"
                                 data-range-empty-at="min">
                             <div class="preset-row">
-                                <button class="preset-btn" type="button" data-profit="100000">от 100 000 ₽</button>
-                                <button class="preset-btn" type="button" data-profit="200000">от 200 000 ₽</button>
-                                <button class="preset-btn" type="button" data-profit="300000">от 300 000 ₽</button>
-                                <button class="preset-btn" type="button" data-profit="500000">от 500 000 ₽</button>
-                                <button class="preset-btn" type="button" data-profit="1000000">от 1 000 000 ₽</button>
+                                <?php
+                                $profit_presets = [100000, 200000, 300000, 500000, 1000000];
+                                foreach ($profit_presets as $profit_preset) :
+                                ?>
+                                    <button class="preset-btn" type="button" data-profit="<?php echo esc_attr((string) $profit_preset); ?>"><?php echo esc_html__('от ', 'franchises') . esc_html(franchises_format_money_ru($profit_preset)); ?></button>
+                                <?php endforeach; ?>
                             </div>
                         </div>
                     </div>

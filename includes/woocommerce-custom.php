@@ -248,6 +248,14 @@ add_filter('product_type_selector', function ($types) {
 // templates/components/franchise-card.php и на главной.
 // -------------------------------------------------------------------------
 
+if (! function_exists('franchises_money_group_sep')) {
+    /** Узкий неразрывный пробел (U+202F) — число не рвётся при переносе строки. */
+    function franchises_money_group_sep(): string
+    {
+        return "\u{202F}";
+    }
+}
+
 if (! function_exists('franchises_format_money_ru')) {
     /**
      * @param int|float|string|null $amount
@@ -258,8 +266,9 @@ if (! function_exists('franchises_format_money_ru')) {
             return '';
         }
         $n = is_numeric($amount) ? (float) $amount : 0;
+        $sep = franchises_money_group_sep();
 
-        return number_format((int) round($n), 0, ',', ' ') . ' ₽';
+        return number_format((int) round($n), 0, ',', $sep) . $sep . '₽';
     }
 }
 
@@ -279,8 +288,13 @@ if (! function_exists('franchises_format_product_price_ru')) {
     function franchises_format_product_price_ru(int $post_id): string
     {
         $amount = franchises_product_price_amount($post_id);
+        if ($amount !== null && $amount > 0) {
+            return franchises_format_money_ru($amount);
+        }
 
-        return ($amount !== null && $amount > 0) ? franchises_format_money_ru($amount) : '';
+        return function_exists('franchises_price_on_request_text')
+            ? franchises_price_on_request_text()
+            : 'Уточняйте у менеджера';
     }
 }
 
@@ -357,6 +371,13 @@ if (! function_exists('franchises_franchise_card_from_post')) {
             );
         }
 
+        $invest_parts = function_exists('franchises_format_investment_card_parts_ru')
+            ? franchises_format_investment_card_parts_ru($post_id)
+            : [
+                'label' => 'Инвестиции',
+                'value' => franchises_format_investment_card_value_ru($post_id),
+            ];
+
         return [
             'post_id'          => $post_id,
             'href'             => $permalink,
@@ -368,7 +389,8 @@ if (! function_exists('franchises_franchise_card_from_post')) {
             'invest'           => $invest,
             'invest_min'       => $invest_min,
             'invest_max'       => $invest_max,
-            'invest_display'   => franchises_format_investment_card_value_ru($post_id),
+            'invest_label'     => $invest_parts['label'],
+            'invest_display'   => $invest_parts['value'],
             'payback'          => $payback_for_filter,
             'profit'           => $profit_for_filter,
             'verified'         => $verified,
@@ -551,12 +573,22 @@ if (! function_exists('franchises_product_breadcrumb_trail')) {
 if (! function_exists('franchises_format_payback_ru')) {
     function franchises_format_payback_ru($min, $max): string
     {
-        $imin = $min !== null && $min !== '' ? (int) $min : null;
-        $imax = $max !== null && $max !== '' ? (int) $max : null;
+        $imin = $min !== null && $min !== '' && is_numeric($min) ? (int) $min : null;
+        $imax = $max !== null && $max !== '' && is_numeric($max) ? (int) $max : null;
+        if ($imin !== null && $imin <= 0) {
+            $imin = null;
+        }
+        if ($imax !== null && $imax <= 0) {
+            $imax = null;
+        }
         if ($imin === null && $imax === null) {
             return '';
         }
         if ($imin !== null && $imax !== null && $imin !== $imax) {
+            if ($imin > $imax) {
+                [$imin, $imax] = [$imax, $imin];
+            }
+
             return (string) $imin . '–' . (string) $imax . ' ' . russian_plural($imax, ['месяц', 'месяца', 'месяцев']);
         }
         $n = $imin ?? $imax;
@@ -569,8 +601,20 @@ if (! function_exists('franchises_format_profit_line_ru')) {
     /** «от …» / «до …» / «… – …» — та же логика, что у инвестиций и паушального взноса. */
     function franchises_format_profit_line_ru($min, $max): string
     {
-        $pmin = $min !== null && $min !== '' ? (int) $min : null;
-        $pmax = $max !== null && $max !== '' ? (int) $max : null;
+        $pmin = $min !== null && $min !== '' && is_numeric($min) ? (int) $min : null;
+        $pmax = $max !== null && $max !== '' && is_numeric($max) ? (int) $max : null;
+
+        if (function_exists('franchises_normalize_money_bound')) {
+            $pmin = franchises_normalize_money_bound($pmin);
+            $pmax = franchises_normalize_money_bound($pmax);
+        } else {
+            if ($pmin !== null && $pmin <= 0) {
+                $pmin = null;
+            }
+            if ($pmax !== null && $pmax <= 0) {
+                $pmax = null;
+            }
+        }
 
         if (! function_exists('franchises_format_money_range_line_ru')) {
             return '';
@@ -587,14 +631,28 @@ if (! function_exists('franchises_format_royalty_display')) {
             return '';
         }
         $r = get_field('royalty', $post_id);
-        if ($r === null || $r === '') {
+        if ($r === null || $r === '' || $r === false) {
             return '';
         }
         if (is_numeric($r)) {
-            return rtrim(rtrim((string) ((float) $r), '0'), '.') . '%';
+            $n = (float) $r;
+            if ($n <= 0) {
+                return '';
+            }
+            $formatted = rtrim(rtrim(number_format($n, 2, '.', ''), '0'), '.');
+            if ($formatted === '' || $formatted === '0') {
+                return '';
+            }
+
+            return $formatted . '%';
         }
 
-        return (string) $r;
+        $text = trim((string) $r);
+        if ($text === '' || $text === '%' || preg_match('/^0\s*%?$/u', $text)) {
+            return '';
+        }
+
+        return $text;
     }
 }
 
