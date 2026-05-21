@@ -864,22 +864,21 @@
 
     @media (max-width: 600px) {
         display: block;
-        position: sticky;
-        top: calc(var(--header-sticky-top) + var(--wp-admin-bar-height));
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: var(--header-sticky-top);
         z-index: 24;
         transition:
             transform 0.28s ease,
             opacity 0.28s ease,
-            padding 0.28s ease,
-            max-height 0.28s ease;
+            visibility 0.28s ease;
+        will-change: transform, opacity;
 
         &.is-hidden {
             transform: translateY(calc(-100% - 6px));
             opacity: 0;
-            max-height: 0;
-            padding-top: 0;
-            padding-bottom: 0;
-            overflow: hidden;
+            visibility: hidden;
             pointer-events: none;
         }
 
@@ -887,6 +886,14 @@
             width: 100%;
             box-shadow: none;
             border-radius: 14px;
+        }
+
+        + .wrap {
+            padding-top: calc(var(--header-height) + var(--mobile-search-bar-height) + 16px) !important;
+
+            &.wrap-home {
+                padding-top: calc(var(--header-height) + var(--mobile-search-bar-height) + 16px) !important;
+            }
         }
     }
 }

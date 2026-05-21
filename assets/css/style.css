@@ -2,7 +2,7 @@
 
 @font-face {
   font-family: "Manrope";
-  src: url("../fonts/Manrope-VariableFont_wght.woff2?v=1779384179635") format("woff2 supports variations"), url("../fonts/Manrope-VariableFont_wght.woff2?v=1779384179635") format("woff2-variations"), url("../fonts/Manrope-VariableFont_wght.woff?v=1779384179635") format("woff");
+  src: url("../fonts/Manrope-VariableFont_wght.woff2?v=1779384978833") format("woff2 supports variations"), url("../fonts/Manrope-VariableFont_wght.woff2?v=1779384978833") format("woff2-variations"), url("../fonts/Manrope-VariableFont_wght.woff?v=1779384978833") format("woff");
   font-weight: 100 900;
   font-stretch: 75% 125%;
   font-style: normal;
@@ -142,6 +142,11 @@
           flex-direction: column;
   max-width: 92vw;
   margin: auto;
+}
+
+.fancybox__container:has(.catalog-filter-popup) .filter-advanced {
+  display: -ms-grid !important;
+  display: grid !important;
 }
 
 .fancybox__content :focus:not(.carousel__button.is-close) {
@@ -8986,7 +8991,6 @@ body {
 
   .catalog-filter-popup {
     width: min(640px, 100vw - 24px);
-    max-height: calc(100vh - 32px);
     padding: 16px 16px 24px;
     gap: 12px;
     -webkit-box-orient: vertical;
@@ -9034,8 +9038,8 @@ body {
     -webkit-box-ordinal-group: 4;
         -ms-flex-order: 3;
             order: 3;
-    display: -ms-grid;
-    display: grid;
+    display: -ms-grid !important;
+    display: grid !important;
   }
 
   .catalog-filter-popup .filter-btn {
@@ -9047,6 +9051,20 @@ body {
     position: sticky;
     bottom: 0;
     z-index: 4;
+    isolation: isolate;
+  }
+
+  .catalog-filter-popup .filter-btn::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    height: 48px;
+    background: -webkit-gradient(linear, left bottom, left top, from(#ffffff), to(rgba(255, 255, 255, 0)));
+    background: linear-gradient(to top, #ffffff 0%, rgba(255, 255, 255, 0) 100%);
+    pointer-events: none;
+    z-index: -1;
   }
 
   .catalog-filter-popup .filter-toggle {
@@ -9054,8 +9072,8 @@ body {
   }
 
   .catalog-filter-popup .filter-card.advanced-collapsed .filter-advanced {
-    display: -ms-grid;
-    display: grid;
+    display: -ms-grid !important;
+    display: grid !important;
   }
 
   .catalog-filter-popup .filter-select-native {
@@ -9078,8 +9096,6 @@ body {
   }
 
   .catalog-filter-popup .filter-btn {
-    position: sticky;
-    bottom: 0;
     height: 64px;
     border-radius: 999px;
     font-size: 18px;
@@ -9382,6 +9398,7 @@ body {
   :root {
     --header-height: 56px;
     --section-gap: 32px;
+    --mobile-search-bar-height: 66px;
   }
 
   .wrap {
@@ -9455,13 +9472,16 @@ body {
 
   .mobile-search-bar {
     display: block;
-    position: sticky;
-    top: calc(var(--header-sticky-top) + var(--wp-admin-bar-height));
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: var(--header-sticky-top);
     z-index: 24;
-    -webkit-transition: opacity 0.28s ease, padding 0.28s ease, max-height 0.28s ease, -webkit-transform 0.28s ease;
-    transition: opacity 0.28s ease, padding 0.28s ease, max-height 0.28s ease, -webkit-transform 0.28s ease;
-    transition: transform 0.28s ease, opacity 0.28s ease, padding 0.28s ease, max-height 0.28s ease;
-    transition: transform 0.28s ease, opacity 0.28s ease, padding 0.28s ease, max-height 0.28s ease, -webkit-transform 0.28s ease;
+    -webkit-transition: opacity 0.28s ease, visibility 0.28s ease, -webkit-transform 0.28s ease;
+    transition: opacity 0.28s ease, visibility 0.28s ease, -webkit-transform 0.28s ease;
+    transition: transform 0.28s ease, opacity 0.28s ease, visibility 0.28s ease;
+    transition: transform 0.28s ease, opacity 0.28s ease, visibility 0.28s ease, -webkit-transform 0.28s ease;
+    will-change: transform, opacity;
   }
 
   .mobile-search-bar.is-hidden {
@@ -9469,10 +9489,7 @@ body {
         -ms-transform: translateY(calc(-100% - 6px));
             transform: translateY(calc(-100% - 6px));
     opacity: 0;
-    max-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    overflow: hidden;
+    visibility: hidden;
     pointer-events: none;
   }
 
@@ -9481,6 +9498,14 @@ body {
     -webkit-box-shadow: none;
             box-shadow: none;
     border-radius: 14px;
+  }
+
+  .mobile-search-bar + .wrap {
+    padding-top: calc(var(--header-height) + var(--mobile-search-bar-height) + 16px) !important;
+  }
+
+  .mobile-search-bar + .wrap.wrap-home {
+    padding-top: calc(var(--header-height) + var(--mobile-search-bar-height) + 16px) !important;
   }
 
   .footer {

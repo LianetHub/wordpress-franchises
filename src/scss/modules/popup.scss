@@ -79,6 +79,10 @@
 		max-width: 92vw;
 		margin: auto;
 	}
+
+	.filter-advanced {
+		display: grid !important;
+	}
 }
 
 .fancybox__content :focus:not(.carousel__button.is-close) {

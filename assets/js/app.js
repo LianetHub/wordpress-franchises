@@ -1235,6 +1235,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterToggle = filterRoot.querySelector('.filter-toggle');
     const filterAdvanced = filterRoot.querySelector('.filter-advanced');
     const filterToggleLabel = filterToggle?.querySelector('.filter-toggle__text');
+    const catalogFilterModalMq = window.matchMedia('(max-width: 900px)');
 
     const setFilterToggleLabel = (collapsed) => {
         if (!filterToggle || !filterToggleLabel) return;
@@ -1244,6 +1245,15 @@ document.addEventListener('DOMContentLoaded', () => {
         filterToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
     };
 
+    const showFilterAdvancedInModal = () => {
+        if (!filterCard || !filterAdvanced) return;
+        filterCard.classList.remove('advanced-collapsed');
+        filterAdvanced.style.removeProperty('display');
+        setFilterToggleLabel(false);
+    };
+
+    const isCatalogFilterModalView = () => catalogFilterModalMq.matches;
+
     if (filterToggle && filterCard && filterAdvanced && window.jQuery) {
         const $advanced = window.jQuery(filterAdvanced);
         const isCollapsed = () => filterCard.classList.contains('advanced-collapsed');
@@ -1251,6 +1261,8 @@ document.addEventListener('DOMContentLoaded', () => {
         setFilterToggleLabel(isCollapsed());
 
         filterToggle.addEventListener('click', () => {
+            if (isCatalogFilterModalView()) return;
+
             if (isCollapsed()) {
                 filterCard.classList.remove('advanced-collapsed');
                 $advanced.stop(true, true).slideDown(280, () => {
@@ -1263,6 +1275,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         });
+
+        const onCatalogFilterViewportChange = () => {
+            if (isCatalogFilterModalView()) {
+                showFilterAdvancedInModal();
+            }
+        };
+
+        if (typeof catalogFilterModalMq.addEventListener === 'function') {
+            catalogFilterModalMq.addEventListener('change', onCatalogFilterViewportChange);
+        } else if (typeof catalogFilterModalMq.addListener === 'function') {
+            catalogFilterModalMq.addListener(onCatalogFilterViewportChange);
+        }
+
+        if (isCatalogFilterModalView()) {
+            showFilterAdvancedInModal();
+        }
+    }
+
+    const mobileFilterBtn = document.querySelector('.mobile-filter-btn');
+    if (mobileFilterBtn) {
+        mobileFilterBtn.addEventListener('click', showFilterAdvancedInModal);
     }
 
     const investRange = filterRoot.querySelector('#invest-range');
@@ -1461,6 +1494,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const isActive = () => mobileMq.matches && !$menu.hasClass('open');
 
+        const syncMobileSearchBarHeight = () => {
+            if (!mobileMq.matches) {
+                document.documentElement.style.removeProperty('--mobile-search-bar-height');
+                return;
+            }
+
+            const wasHidden = mobileSearchBar.classList.contains('is-hidden');
+            if (wasHidden) {
+                mobileSearchBar.classList.remove('is-hidden');
+            }
+
+            document.documentElement.style.setProperty(
+                '--mobile-search-bar-height',
+                `${mobileSearchBar.offsetHeight}px`
+            );
+
+            if (wasHidden) {
+                mobileSearchBar.classList.add('is-hidden');
+            }
+        };
+
         const setMobileSearchHidden = (hidden) => {
             mobileSearchBar.classList.toggle('is-hidden', hidden);
             mobileSearchBar.setAttribute('aria-hidden', hidden ? 'true' : 'false');
@@ -1551,9 +1605,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!mobileMq.matches) {
                 setMobileSearchHidden(false);
             }
+            syncMobileSearchBarHeight();
             lastScrollY = getScrollY();
             touchLastY = null;
         });
+
+        syncMobileSearchBarHeight();
+        window.addEventListener('resize', syncMobileSearchBarHeight, { passive: true });
     };
 
     setupMobileSearchBarAutoHide();
