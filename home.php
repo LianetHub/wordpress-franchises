@@ -20,8 +20,8 @@
 
             <?php
             the_posts_pagination([
-                'prev_text' => '<span class="screen-reader-text">Предыдущая</span>',
-                'next_text' => '<span class="screen-reader-text">Следующая</span>',
+                'prev_text' => '<span aria-hidden="true">‹</span><span class="screen-reader-text">Предыдущая</span>',
+                'next_text' => '<span aria-hidden="true">›</span><span class="screen-reader-text">Следующая</span>',
             ]);
             ?>
         </div>

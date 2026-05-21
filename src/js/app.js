@@ -2066,8 +2066,8 @@ document.addEventListener('DOMContentLoaded', () => {
             '.catalog-layout',
             '.catalog-toolbar',
             '.pagination',
-            '.pagination .page-btn',
-            '.pagination .page-ellipsis',
+            '.woocommerce-pagination',
+            '.woocommerce-pagination > .page-numbers',
             '.sidebar-block',
             '.catalog-cards .popular-card',
             '.popular-grid .popular-card',
@@ -2102,7 +2102,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (el.closest('.mobile-menu') || el.closest('.nav-dropdown-panel')) return;
             if (
                 isCatalogPage &&
-                (el.closest('.catalog-cards') || el.closest('.pagination') || el.closest('.catalog-toolbar'))
+                (el.closest('.catalog-cards') || el.closest('.pagination') || el.closest('.woocommerce-pagination') || el.closest('.catalog-toolbar'))
             ) return;
             if (
                 isFranchisePage &&

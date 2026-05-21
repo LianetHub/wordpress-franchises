@@ -4,119 +4,245 @@
 @use "variables" as *;
 @use "fonts";
 
-.pagination {
-	padding: 0.75rem 1.5rem 1rem;
-	display: flex;
+@mixin page-btn-base {
+	width: 42px;
+	height: 42px;
+	border-radius: 999px;
+	border: 1.5px solid #d7dade;
+	background: #ffffff;
+	color: #2f3236;
+	font-weight: 800;
+	font-size: 16px;
+	line-height: 1;
+	cursor: pointer;
+	padding: 0;
+	box-sizing: border-box;
+	display: inline-flex;
 	align-items: center;
-	gap: rem(2);
+	justify-content: center;
+	text-decoration: none;
+	transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
 
-	@media (max-width: $md4) {
-		display: none;
+@mixin page-btn-hover {
+	background: #eef6ff;
+	border-color: #c9dff7;
+	color: #1a76d3;
+}
+
+@mixin page-btn-active {
+	background: var(--btn-accent);
+	border-color: var(--btn-accent);
+	color: #ffffff;
+}
+
+@mixin page-btn-nav {
+	font-size: 18px;
+	font-weight: 900;
+}
+
+@mixin page-ellipsis {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: auto;
+	height: 42px;
+	padding: 0 8px;
+	border: none;
+	background: transparent;
+	color: #8b9198;
+	font-weight: 800;
+	font-size: 16px;
+	user-select: none;
+	cursor: default;
+}
+
+@mixin pagination-items-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	align-items: center;
+	justify-content: center;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	border: none;
+}
+
+@mixin pagination-page-item {
+	@include page-btn-base;
+	min-width: 0;
+	margin: 0;
+	float: none;
+
+	@media (any-hover: hover) {
+		&:hover {
+			@include page-btn-hover;
+		}
 	}
 
-	// .pagination__item
-	.page-numbers {
-		width: rem(40);
-		height: rem(40);
-		text-align: center;
-		font-size: 1rem;
-		font-style: normal;
-		font-weight: 600;
-		line-height: 150%;
-		border-radius: 50%;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		transition:
-			background-color 0.3s ease,
-			color 0.3s ease;
-		color: #717680;
-
-		&.current {
-			color: #414651;
-			background: #fafafa;
-		}
-
-		&:is(a) {
-			@media (any-hover: hover) {
-				&:hover {
-					color: #414651;
-					background: #fafafa;
-				}
-			}
-		}
-	}
-
-	// .pagination__next
-	&__next,
-	&__prev {
-		transition: all 0.3s ease;
-		display: flex;
-		align-items: center;
-		gap: rem(6);
-		border-radius: 0.5rem;
-		border: rem(1) solid #d5d7da;
-		background: #fff;
-		color: #414651;
-		box-shadow: 0 rem(1) rem(2) 0 rgba(10, 13, 18, 0.05);
-		font-size: 1rem;
-		line-height: 150%;
-		padding: rem(8) rem(12);
-
-		&::before {
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			flex-shrink: 0;
-			color: #a4a7ae;
-			transition: color 0.3s ease;
-		}
-
-		& span {
-			display: none;
-
-			@media (min-width: $md4) {
-				display: inline;
-			}
-		}
-
-		&:disabled,
-		&[aria-disabled="true"] {
-			pointer-events: none;
-			user-select: none;
-			color: #a4a7ae;
-			border: rem(1) solid #e9eaeb;
-
-			&::before {
-				color: #d5d7da;
-			}
-		}
+	&.current {
+		@include page-btn-active;
 
 		@media (any-hover: hover) {
 			&:hover {
-				background: #fafafa;
-				box-shadow:
-					0 0 0 rem(1) rgba(10, 13, 18, 0.18) inset,
-					0 rem(-2) 0 0 rgba(10, 13, 18, 0.05) inset,
-					0 rem(1) rem(2) 0 rgba(10, 13, 18, 0.05);
+				background: var(--btn-accent);
+				border-color: var(--btn-accent);
+				color: #ffffff;
 			}
 		}
 	}
 
-	&__prev {
-		margin-right: auto;
-
-		&::before {
-			@include icon-chevron-left(0.625rem, 2px);
-		}
+	&.prev,
+	&.next {
+		@include page-btn-nav;
 	}
 
-	&__next {
-		margin-left: auto;
+	&.dots {
+		@include page-ellipsis;
 
-		&::before {
-			@include icon-chevron-right(0.625rem, 2px);
-			order: 1;
+		@media (any-hover: hover) {
+			&:hover {
+				background: transparent;
+				border-color: transparent;
+				color: #8b9198;
+			}
 		}
+	}
+}
+
+// WooCommerce catalog pagination (woocommerce_after_shop_loop)
+.catalog-main .woocommerce-pagination,
+.woocommerce-pagination {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	max-width: 100%;
+	margin: 34px auto 6px;
+	border: none;
+	clear: none;
+	float: none;
+	text-align: center;
+
+	// type=plain: ссылки и span — прямые дети nav
+	> a.page-numbers,
+	> span.page-numbers {
+		@include pagination-page-item;
+	}
+
+	> span.page-numbers.current {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		line-height: 1;
+	}
+
+	// type=list: fallback без квадратной сетки WC
+	ul.page-numbers {
+		@include pagination-items-row;
+
+		> li {
+			margin: 0;
+			padding: 0;
+			border: none;
+			float: none;
+			overflow: visible;
+			display: contents;
+		}
+
+		a,
+		span {
+			@include pagination-page-item;
+		}
+	}
+}
+
+// Сброс дефолтных стилей WooCommerce, если general.css всё же подключён
+.woocommerce nav.woocommerce-pagination ul.page-numbers {
+	border: none;
+	border-right: none;
+	margin: 0;
+	clear: none;
+	float: none;
+
+	li {
+		border: none;
+		padding: 0;
+		margin: 0;
+		float: none;
+		overflow: visible;
+
+		a,
+		span {
+			min-width: 0;
+			padding: 0;
+			font-weight: 800;
+		}
+
+		span.current {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			text-align: center;
+			line-height: 1;
+			background: var(--btn-accent);
+			border-color: var(--btn-accent);
+			color: #ffffff;
+		}
+	}
+}
+
+// Blog and other WP pagination (the_posts_pagination)
+.pagination,
+.navigation.pagination {
+	padding: 0.75rem 0 1rem;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	align-items: center;
+	justify-content: center;
+
+	.screen-reader-text {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+
+	.nav-links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+	}
+
+	.page-numbers {
+		@include pagination-page-item;
+
+		&.current {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			text-align: center;
+			line-height: 1;
+		}
+	}
+}
+
+.posts .pagination,
+.posts .navigation.pagination {
+	@media (max-width: $md4) {
+		display: none;
 	}
 }

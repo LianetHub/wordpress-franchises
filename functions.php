@@ -271,29 +271,14 @@ function format_service_price($price)
 // 7. ПАГИНАЦИЯ
 // =========================================================================
 
-function franchises_theme_pagination_class_filter($template)
+function franchises_theme_woocommerce_pagination_args($args)
 {
-    $template = str_replace('page-numbers', 'pagination__item', $template);
-    $template = str_replace('current', 'active', $template);
-    $template = str_replace('prev pagination__item', 'pagination__prev', $template);
-    $template = str_replace('next pagination__item', 'pagination__next', $template);
-    return $template;
+    $args['type'] = 'plain';
+    $args['prev_text'] = '‹';
+    $args['next_text'] = '›';
+    return $args;
 }
-add_filter('paginate_links', 'franchises_theme_pagination_class_filter');
-
-function posts_link_attributes()
-{
-    return 'class="pagination__item"';
-}
-add_filter('next_posts_link_attributes', 'posts_link_attributes');
-add_filter('previous_posts_link_attributes', 'posts_link_attributes');
-
-add_filter('previous_posts_link_attributes', function () {
-    return 'class="pagination__prev"';
-});
-add_filter('next_posts_link_attributes', function () {
-    return 'class="pagination__next"';
-});
+add_filter('woocommerce_pagination_args', 'franchises_theme_woocommerce_pagination_args');
 
 
 // =========================================================================
