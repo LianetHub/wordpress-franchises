@@ -1900,6 +1900,88 @@ document.addEventListener('DOMContentLoaded', () => {
                 .forEach(syncSearchForm);
         };
 
+        let suggestionsDockObserver = null;
+
+        const getActiveHeaderSearchWrap = () => {
+            const activeWrap = document.querySelector(
+                '[data-header-search] .dgwt-wcas-search-wrapp.dgwt-wcas-active, ' +
+                    '[data-header-search] .dgwt-wcas-search-wrapp:focus-within'
+            );
+
+            if (activeWrap) {
+                return activeWrap.closest('.header-search-wrap');
+            }
+
+            const focusedInput = document.querySelector(
+                '[data-header-search] .dgwt-wcas-search-input:focus, [data-header-search] input[type="search"]:focus'
+            );
+
+            return focusedInput?.closest('.header-search-wrap') || null;
+        };
+
+        const getVisibleSuggestionsPanel = () =>
+            Array.from(document.querySelectorAll('.dgwt-wcas-suggestions-wrapp')).find((panel) => {
+                if (!(panel instanceof HTMLElement)) {
+                    return false;
+                }
+
+                const style = window.getComputedStyle(panel);
+                return style.display !== 'none' && style.visibility !== 'hidden' && panel.offsetHeight > 0;
+            }) || null;
+
+        const clearSuggestionsInlinePosition = (panel) => {
+            if (!(panel instanceof HTMLElement)) {
+                return;
+            }
+
+            ['position', 'top', 'left', 'right', 'width', 'transform', 'margin-top', 'margin-left'].forEach((prop) => {
+                panel.style.removeProperty(prop);
+            });
+        };
+
+        const stopSuggestionsDockObserver = () => {
+            suggestionsDockObserver?.disconnect();
+            suggestionsDockObserver = null;
+        };
+
+        const startSuggestionsDockObserver = (panel, wrap) => {
+            stopSuggestionsDockObserver();
+
+            suggestionsDockObserver = new MutationObserver(() => {
+                if (!(panel.isConnected && wrap.isConnected)) {
+                    stopSuggestionsDockObserver();
+                    return;
+                }
+
+                if (panel.parentElement !== wrap) {
+                    wrap.appendChild(panel);
+                }
+
+                clearSuggestionsInlinePosition(panel);
+            });
+
+            suggestionsDockObserver.observe(panel, { attributes: true, attributeFilter: ['style'] });
+        };
+
+        const dockHeaderSuggestions = () => {
+            window.requestAnimationFrame(() => {
+                const wrap = getActiveHeaderSearchWrap();
+                const panel = getVisibleSuggestionsPanel();
+
+                if (!(wrap instanceof HTMLElement) || !(panel instanceof HTMLElement)) {
+                    return;
+                }
+
+                if (panel.parentElement !== wrap) {
+                    wrap.appendChild(panel);
+                }
+
+                panel.classList.add('header-search-suggestions-docked');
+                clearSuggestionsInlinePosition(panel);
+                startSuggestionsDockObserver(panel, wrap);
+            });
+        };
+
         const actions = header.querySelector('.header-actions');
         const desktopMq = window.matchMedia('(min-width: 901px)');
 
@@ -1947,6 +2029,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const focused = actions?.querySelector('.dgwt-wcas-search-input:focus, input[type="search"]:focus');
                 if (!focused) {
                     setSearchExpanded(false);
+                    stopSuggestionsDockObserver();
                 }
             }, 0);
         });
@@ -1958,7 +2041,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         syncAllHeaderSearchForms();
-        $(document).on('fibosearch/open fibosearch/show-suggestions fibosearch/show-pre-suggestions', syncAllHeaderSearchForms);
+        $(document).on('fibosearch/open fibosearch/show-suggestions fibosearch/show-pre-suggestions', () => {
+            syncAllHeaderSearchForms();
+            dockHeaderSuggestions();
+        });
 
         if (typeof MutationObserver !== 'undefined') {
             const observer = new MutationObserver(syncAllHeaderSearchForms);

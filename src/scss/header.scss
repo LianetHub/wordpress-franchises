@@ -14,6 +14,7 @@
     box-shadow: none !important;
     isolation: isolate;
     pointer-events: none;
+    overflow: visible;
     top: var(--wp-admin-bar-height) !important;
 
     @media (min-width: 901px) {
@@ -68,6 +69,7 @@
     transition: background 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
     pointer-events: auto;
     position: relative;
+    overflow: visible;
     filter: none !important;
     backdrop-filter: none !important;
     opacity: 1 !important;
@@ -281,6 +283,8 @@
 }
 
 .header-actions {
+    position: relative;
+    z-index: 2;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -414,20 +418,52 @@
 }
 
 .header-search-wrap {
+    position: relative;
     flex: 0 1 320px;
     min-width: 220px;
     max-width: 100%;
+    overflow: visible;
+    isolation: isolate;
+    z-index: 1;
+
+    .dgwt-wcas-suggestions-wrapp,
+    > .dgwt-wcas-suggestions-wrapp {
+        position: absolute !important;
+        top: calc(100% + 8px) !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: auto !important;
+        transform: none !important;
+        z-index: 1 !important;
+        margin: 0 !important;
+    }
 }
 
 .dgwt-wcas-search-wrapp.header-search--fibosearch {
+    position: relative;
     width: 100%;
     max-width: none;
+    overflow: visible;
+    z-index: 2;
+
+    .dgwt-wcas-suggestions-wrapp {
+        position: absolute !important;
+        top: calc(100% + 8px) !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: auto !important;
+        transform: none !important;
+        z-index: 1 !important;
+        margin: 0 !important;
+    }
 
     .dgwt-wcas-search-form {
         margin: 0;
     }
 
     .dgwt-wcas-sf-wrapp {
+        position: relative;
+        z-index: 2;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -537,7 +573,11 @@
 }
 
 .dgwt-wcas-suggestions-wrapp {
-    z-index: 120 !important;
+    z-index: 1 !important;
+}
+
+.dgwt-wcas-suggestions-wrapp.header-search-suggestions-docked {
+    position: absolute !important;
 }
 
 .mobile-menu {
@@ -807,6 +847,9 @@
     position: relative;
     padding: var(--mobile-search-pad-top) 16px 12px;
     background: transparent;
+    overflow: visible;
+    isolation: isolate;
+    z-index: 24;
 
     &::before {
         content: "";
