@@ -6,10 +6,10 @@
             <a href="<?php echo home_url(); ?>" class="logo">
                 <span class="logo__mark">
                     <?php
-                    $logo_icon = get_field('logo_icon', 'option');
-                    if ($logo_icon):
+                    $logo_icon_footer = get_field('logo_icon_footer', 'option');
+                    if ($logo_icon_footer):
                     ?>
-                        <img src="<?php echo esc_url($logo_icon['url']); ?>" alt="logo icon">
+                        <img src="<?php echo esc_url($logo_icon_footer['url']); ?>" alt="logo icon footer">
                     <?php endif; ?>
                 </span>
                 <?php echo esc_html(get_field('logo_text', 'option')); ?>
@@ -60,9 +60,16 @@
         </div>
     </div>
 </footer>
-</div>
 <?php require_once(TEMPLATE_PATH . '_modals.php'); ?>
 <?php wp_footer(); ?>
-</body>
 
+<script>
+document.addEventListener('wpcf7mailsent', function(event) {
+    if (typeof window.ym === 'function') {
+        window.ym(109308668, 'reachGoal', 'subm');
+    }
+}, false);
+</script>
+
+</body>
 </html>

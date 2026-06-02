@@ -17,9 +17,7 @@ $GLOBALS['franchises_current_selection_id'] = $selection_id;
 get_header();
 
 $paged = max(1, (int) get_query_var('paged'), (int) get_query_var('page'));
-$per_page = function_exists('franchises_catalog_products_per_page')
-    ? franchises_catalog_products_per_page()
-    : (int) get_option('posts_per_page', 12);
+$per_page = (int) get_option('posts_per_page', 12);
 if ($per_page <= 0) {
     $per_page = 12;
 }

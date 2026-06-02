@@ -273,7 +273,6 @@ function format_service_price($price)
 
 function franchises_theme_woocommerce_pagination_args($args)
 {
-    $args['type'] = 'plain';
     $args['prev_text'] = '‹';
     $args['next_text'] = '›';
     return $args;
@@ -456,4 +455,81 @@ function theme_content_with_toc($content)
         'content' => $content,
         'toc'     => '',
     ];
+}
+// =========================================================================
+// заявки в телеграмм
+// =========================================================================
+add_action('wpcf7_mail_sent', 'franchises_send_cf7_to_telegram', 20, 1);
+
+function franchises_send_cf7_to_telegram($contact_form)
+{
+    try {
+        if (!class_exists('WPCF7_Submission')) {
+            return;
+        }
+
+        $submission = WPCF7_Submission::get_instance();
+
+        if (!$submission) {
+            return;
+        }
+
+        $data = $submission->get_posted_data();
+
+        $bot_token = '8912962432:AAHHIEJ4x85Ad8TGCJAHQJ2Qk8VM1IcJ0tY';
+        $chat_id   = '-5163652841';
+
+        $form_title = method_exists($contact_form, 'title') ? $contact_form->title() : 'CF7 форма';
+        $page_url   = $submission->get_meta('url');
+
+        $name     = isset($data['your-name']) ? sanitize_text_field($data['your-name']) : '';
+        $phone    = isset($data['tel-phone']) ? sanitize_text_field($data['tel-phone']) : '';
+        $email    = isset($data['your-email']) ? sanitize_email($data['your-email']) : '';
+        $city     = isset($data['text-city']) ? sanitize_text_field($data['text-city']) : '';
+        $comment  = isset($data['text-comment']) ? sanitize_textarea_field($data['text-comment']) : '';
+        $question = isset($data['your-question']) ? sanitize_textarea_field($data['your-question']) : '';
+
+        $message = "📩 Новая заявка с сайта\n\n";
+        $message .= "Форма: " . $form_title . "\n";
+
+        if ($name !== '') {
+            $message .= "Имя: " . $name . "\n";
+        }
+
+        if ($phone !== '') {
+            $message .= "Телефон: " . $phone . "\n";
+        }
+
+        if ($email !== '') {
+            $message .= "Email: " . $email . "\n";
+        }
+
+        if ($city !== '') {
+            $message .= "Город: " . $city . "\n";
+        }
+
+        if ($comment !== '') {
+            $message .= "Комментарий: " . $comment . "\n";
+        }
+
+        if ($question !== '') {
+            $message .= "Вопрос: " . $question . "\n";
+        }
+
+        if ($page_url !== '') {
+            $message .= "\nСтраница: " . $page_url;
+        }
+
+        $response = wp_remote_post('https://api.telegram.org/bot' . $bot_token . '/sendMessage', array(
+            'timeout'  => 10,
+            'blocking' => false,
+            'body'     => array(
+                'chat_id' => $chat_id,
+                'text'    => $message,
+            ),
+        ));
+
+    } catch (Throwable $e) {
+        error_log('Telegram CF7 fatal: ' . $e->getMessage());
+    }
 }

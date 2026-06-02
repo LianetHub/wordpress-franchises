@@ -8,8 +8,6 @@ add_action('after_setup_theme', function () {
     add_theme_support('woocommerce');
 });
 
-add_filter('woocommerce_enqueue_styles', '__return_empty_array');
-
 // 1. Отключаем фичи нового интерфейса (включая платежи и аналитику)
 add_filter('woocommerce_admin_features', function ($features) {
     return array_values(array_diff($features, [

@@ -51,7 +51,7 @@ $info_rows = [
     ['label' => 'Год запуска франшизы', 'value' => $acf['franchise_since'] ?? null],
     ['label' => 'Франшизных предприятий', 'value' => $acf['franch_stores'] ?? null],
     ['label' => 'Товарный<br>знак', 'value' => $acf['tm_number'] ?? null],
-    ['label' => 'Городов присутствия', 'value' => $acf['cities_count'] ?? ($acf['cities_presence'] ?? null)],
+    ['label' => 'Городов присутствия', 'value' => $acf['own_stores'] ?? ($acf['own_stores'] ?? null)],
 ];
 
 $key_invest = franchises_format_investment_line_ru($product);
