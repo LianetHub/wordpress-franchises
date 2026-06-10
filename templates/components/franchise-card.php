@@ -212,4 +212,5 @@ $attr = static function (string $k, $v): string {
         <span class="meta-label"><?php echo esc_html($meta_label); ?></span>
         <span class="meta-value"><?php echo esc_html($meta_value); ?></span>
     </div>
+	
 </a>
