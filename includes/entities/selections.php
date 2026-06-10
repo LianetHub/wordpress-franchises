@@ -11,20 +11,84 @@ function franchises_selection_post_type(): string
 }
 
 /**
+ * @return array<string, int>
+ */
+function franchises_selection_invest_thresholds(): array
+{
+    return [
+        'invest_100000'  => 100000,
+        'invest_300000'  => 300000,
+        'invest_500000'  => 500000,
+        'invest_1000000' => 1000000,
+        'invest_2000000' => 2000000,
+        'invest_3000000' => 3000000,
+    ];
+}
+
+/**
+ * @return array<string, int>
+ */
+function franchises_selection_profit_thresholds(): array
+{
+    return [
+        'profit_30000'  => 30000,
+        'profit_100000' => 100000,
+        'profit_300000' => 300000,
+        'profit_500000' => 500000,
+    ];
+}
+
+function franchises_selection_threshold_for_type(string $type): ?int
+{
+    $invest = franchises_selection_invest_thresholds();
+    if (array_key_exists($type, $invest)) {
+        return $invest[$type];
+    }
+
+    $profit = franchises_selection_profit_thresholds();
+    if (array_key_exists($type, $profit)) {
+        return $profit[$type];
+    }
+
+    return null;
+}
+
+function franchises_selection_is_invest_type(string $type): bool
+{
+    return $type === 'low_invest' || array_key_exists($type, franchises_selection_invest_thresholds());
+}
+
+function franchises_selection_is_profit_type(string $type): bool
+{
+    return array_key_exists($type, franchises_selection_profit_thresholds());
+}
+
+/**
  * Готовые типы подборок (заголовок в админке → выберите соответствующий тип).
  *
  * @return array<string, string>
  */
 function franchises_selection_filter_choices(): array
 {
-    return [
+    $choices = [
         'popular'    => 'Популярные — франшизы с наибольшим числом просмотров страниц',
         'no_pausal'  => 'Франшизы без взноса - паушальный взнос 0 или не указан',
         'payback_12' => 'Окупаемость до 12 мес. - хотя бы одно поле окупаемости ≤ 12',
         'no_royalty' => 'Без роялти - роялти не указано или «нет»',
         'low_invest' => 'Недорогие старты - инвестиции до 500 000 ₽',
-        'manual'     => 'кастомные списки',
     ];
+
+    foreach (franchises_selection_invest_thresholds() as $type => $threshold) {
+        $choices[$type] = 'Инвестиции до ' . franchises_format_money_ru($threshold);
+    }
+
+    foreach (franchises_selection_profit_thresholds() as $type => $threshold) {
+        $choices[$type] = 'Прибыль от ' . franchises_format_money_ru($threshold) . '/мес';
+    }
+
+    $choices['manual'] = 'кастомные списки';
+
+    return $choices;
 }
 
 /**
@@ -138,12 +202,22 @@ function franchises_selection_filter_type_from_slug(string $slug): string
     }
 
     $patterns = [
-        'popular'    => ['populyarn', 'popular', 'trend'],
-        'no_pausal'  => ['bez-vznos', 'bez-pausal', 'no-pausal', 'bez-paus'],
-        'payback_12' => ['12-mes', 'okupaemost-12', 'payback-12'],
-        'no_royalty' => ['bez-royalti', 'no-royalty', 'bez-roialti'],
-        'low_invest' => ['nedorog', 'low-invest', 'deshevy', 'budget'],
-        'manual'     => ['pod-klyuch', 'pod-kluch', 'turnkey', 'top-2026', 'top-franshiz', 'top-202'],
+        'popular'          => ['populyarn', 'popular', 'trend'],
+        'no_pausal'        => ['bez-vznos', 'bez-pausal', 'no-pausal', 'bez-paus'],
+        'payback_12'       => ['12-mes', 'okupaemost-12', 'payback-12'],
+        'no_royalty'       => ['bez-royalti', 'no-royalty', 'bez-roialti'],
+        'low_invest'       => ['nedorog', 'low-invest', 'deshevy', 'budget'],
+        'invest_100000'    => ['do-100-000', 'do-100000', 'invest-do-100000'],
+        'invest_300000'    => ['do-300-000', 'do-300000', 'invest-do-300000'],
+        'invest_500000'    => ['do-500-000', 'do-500000', 'invest-do-500000'],
+        'invest_1000000'   => ['do-1-mln', 'do-1000000', 'do-1-000-000', 'invest-do-1000000'],
+        'invest_2000000'   => ['do-2-mln', 'do-2000000', 'do-2-000-000', 'invest-do-2000000'],
+        'invest_3000000'   => ['do-3-mln', 'do-3000000', 'do-3-000-000', 'invest-do-3000000'],
+        'profit_30000'     => ['ot-30-000', 'ot-30000', 'pribyl-ot-30000', 'profit-from-30000'],
+        'profit_100000'    => ['ot-100-000', 'ot-100000', 'pribyl-ot-100000', 'profit-from-100000'],
+        'profit_300000'    => ['ot-300-000', 'ot-300000', 'pribyl-ot-300000', 'profit-from-300000'],
+        'profit_500000'    => ['ot-500-000', 'ot-500000', 'pribyl-ot-500000', 'profit-from-500000'],
+        'manual'           => ['pod-klyuch', 'pod-kluch', 'turnkey', 'top-2026', 'top-franshiz', 'top-202'],
     ];
 
     foreach ($patterns as $type => $needles) {
@@ -182,7 +256,11 @@ function franchises_selection_filter_type(int $selection_id): string
 
 function franchises_selection_needs_post_filter(string $type): bool
 {
-    return in_array($type, ['manual', 'popular', 'no_royalty', 'no_pausal', 'payback_12', 'low_invest'], true);
+    if (in_array($type, ['manual', 'popular', 'no_royalty', 'no_pausal', 'payback_12'], true)) {
+        return true;
+    }
+
+    return franchises_selection_is_invest_type($type) || franchises_selection_is_profit_type($type);
 }
 
 /**
@@ -455,6 +533,24 @@ function franchises_product_payback_within(int $product_id, int $months): bool
 
 function franchises_product_matches_selection_type(int $product_id, string $type, int $selection_id = 0): bool
 {
+    if ($type === 'low_invest') {
+        return franchises_product_investment_within_max($product_id, franchises_selection_low_invest_max());
+    }
+
+    if (franchises_selection_is_invest_type($type)) {
+        $threshold = franchises_selection_threshold_for_type($type);
+
+        return $threshold !== null
+            && franchises_product_investment_within_max($product_id, $threshold);
+    }
+
+    if (franchises_selection_is_profit_type($type)) {
+        $threshold = franchises_selection_threshold_for_type($type);
+
+        return $threshold !== null
+            && franchises_product_monthly_profit_from($product_id, $threshold);
+    }
+
     switch ($type) {
         case 'no_pausal':
             return franchises_product_has_no_pausal($product_id);
@@ -462,10 +558,6 @@ function franchises_product_matches_selection_type(int $product_id, string $type
             return franchises_product_payback_within($product_id, 12);
         case 'no_royalty':
             return franchises_product_has_no_royalty($product_id);
-        case 'low_invest':
-            $invest = franchises_product_investment_amount($product_id);
-
-            return $invest !== null && $invest > 0 && $invest <= franchises_selection_low_invest_max();
         case 'manual':
             return $selection_id > 0 && in_array($product_id, franchises_selection_manual_product_ids($selection_id), true);
         default:

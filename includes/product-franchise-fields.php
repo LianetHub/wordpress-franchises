@@ -128,6 +128,34 @@ if (! function_exists('franchises_product_investment_amount')) {
     }
 }
 
+if (! function_exists('franchises_product_investment_within_max')) {
+    function franchises_product_investment_within_max(int $post_id, int $threshold): bool
+    {
+        if ($threshold <= 0) {
+            return false;
+        }
+
+        $upper = franchises_product_investment_max($post_id);
+
+        return $upper !== null && $upper > 0 && $upper <= $threshold;
+    }
+}
+
+if (! function_exists('franchises_product_monthly_profit_from')) {
+    function franchises_product_monthly_profit_from(int $post_id, int $threshold): bool
+    {
+        if ($threshold <= 0) {
+            return false;
+        }
+
+        $min = franchises_product_acf_money($post_id, ['monthly_profit_min']);
+        $max = franchises_product_acf_money($post_id, ['monthly_profit_max']);
+
+        return ($min !== null && $min >= $threshold)
+            || ($max !== null && $max >= $threshold);
+    }
+}
+
 if (! function_exists('franchises_product_pausal_amount')) {
     /** Нижняя граница паушального взноса (legacy-хелпер). */
     function franchises_product_pausal_amount(int $product_id): ?int
