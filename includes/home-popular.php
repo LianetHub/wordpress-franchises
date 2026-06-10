@@ -81,10 +81,10 @@ if (! function_exists('franchises_popular_franchise_product_ids')) {
             }
         }
 
-        if (function_exists('franchises_products_from_viewed_categories')) {
-            $from_categories = franchises_products_from_viewed_categories($limit);
-            if ($from_categories !== []) {
-                return $from_categories;
+        if (function_exists('franchises_get_top_viewed_product_ids')) {
+            $from_views = franchises_get_top_viewed_product_ids($limit);
+            if ($from_views !== []) {
+                return $from_views;
             }
         }
 
@@ -178,7 +178,6 @@ if (! function_exists('franchises_home_popular_seo_text')) {
      */
     function franchises_home_popular_seo_text(int $products_count = 0): string
     {
-        $labels = franchises_home_popular_category_labels(4);
         $selection_id = franchises_popular_selection_post_id();
 
         if ($selection_id > 0) {
@@ -188,19 +187,9 @@ if (! function_exists('franchises_home_popular_seo_text')) {
             }
         }
 
-        if ($labels !== []) {
-            $list = implode(', ', array_slice($labels, 0, 4));
-
-            return sprintf(
-                /* translators: %s: comma-separated category names */
-                __('Актуальные франшизы из востребованных направлений: %s. Сравните паушальный взнос, объём инвестиций и срок окупаемости — выберите модель под свой бюджет.', 'franchises'),
-                $list
-            );
-        }
-
         if ($products_count > 0) {
             return __(
-                'Популярные франшизы с прозрачными условиями входа: инвестиции, паушальный взнос, роялти и окупаемость. Откройте карточку в каталоге, чтобы изучить детали и связаться с франчайзером.',
+                'Самые просматриваемые франшизы в каталоге: сравните паушальный взнос, объём инвестиций и срок окупаемости — выберите модель под свой бюджет.',
                 'franchises'
             );
         }

@@ -18,7 +18,7 @@ function franchises_selection_post_type(): string
 function franchises_selection_filter_choices(): array
 {
     return [
-        'popular'    => 'Популярные — франшизы из самых просматриваемых категорий каталога',
+        'popular'    => 'Популярные — франшизы с наибольшим числом просмотров страниц',
         'no_pausal'  => 'Франшизы без взноса - паушальный взнос 0 или не указан',
         'payback_12' => 'Окупаемость до 12 мес. - хотя бы одно поле окупаемости ≤ 12',
         'no_royalty' => 'Без роялти - роялти не указано или «нет»',
@@ -182,19 +182,179 @@ function franchises_selection_filter_type(int $selection_id): string
 
 function franchises_selection_needs_post_filter(string $type): bool
 {
-    return in_array($type, ['manual', 'no_royalty', 'no_pausal', 'payback_12', 'low_invest'], true);
+    return in_array($type, ['manual', 'popular', 'no_royalty', 'no_pausal', 'payback_12', 'low_invest'], true);
+}
+
+/**
+ * @param list<int> $exclude_ids
+ * @return list<int>
+ */
+function franchises_get_top_viewed_product_ids(int $max = 12, array $exclude_ids = []): array
+{
+    $max = max(1, $max);
+    $exclude_ids = array_values(array_filter(array_map('intval', $exclude_ids)));
+
+    $query_args = [
+        'post_type'           => 'product',
+        'post_status'         => 'publish',
+        'posts_per_page'      => $max + count($exclude_ids),
+        'ignore_sticky_posts' => true,
+        'no_found_rows'       => true,
+        'fields'              => 'ids',
+        'meta_key'            => 'franchises_theme_post_views',
+        'orderby'             => [
+            'meta_value_num' => 'DESC',
+            'date'           => 'DESC',
+        ],
+    ];
+
+    if ($exclude_ids !== []) {
+        $query_args['post__not_in'] = $exclude_ids;
+    }
+
+    $query = new WP_Query($query_args);
+
+    return array_slice(array_values(array_map('intval', $query->posts)), 0, $max);
+}
+
+/**
+ * @return list<array{id: int, position: int, order: int}>
+ */
+function franchises_selection_popular_pins(int $selection_id): array
+{
+    if ($selection_id <= 0 || ! function_exists('get_field')) {
+        return [];
+    }
+
+    $raw = get_field('selection_popular_pins', $selection_id);
+    if (! is_array($raw)) {
+        return [];
+    }
+
+    $pins = [];
+    $seen_ids = [];
+    $order = 0;
+
+    foreach ($raw as $row) {
+        if (! is_array($row)) {
+            continue;
+        }
+
+        $franchise = $row['franchise'] ?? null;
+        $id = 0;
+        if ($franchise instanceof WP_Post) {
+            $id = (int) $franchise->ID;
+        } elseif (is_numeric($franchise)) {
+            $id = (int) $franchise;
+        } elseif (is_array($franchise) && isset($franchise['ID'])) {
+            $id = (int) $franchise['ID'];
+        }
+
+        $position = isset($row['position']) ? max(1, (int) $row['position']) : 0;
+        if ($id <= 0 || $position <= 0 || isset($seen_ids[$id])) {
+            continue;
+        }
+
+        $post = get_post($id);
+        if (! $post instanceof WP_Post || $post->post_type !== 'product' || $post->post_status !== 'publish') {
+            continue;
+        }
+
+        $seen_ids[$id] = true;
+        $pins[] = [
+            'id'       => $id,
+            'position' => $position,
+            'order'    => $order,
+        ];
+        $order++;
+    }
+
+    return $pins;
+}
+
+/**
+ * @param list<array{id: int, position: int, order: int}> $pins
+ * @return array<int, int>
+ */
+function franchises_selection_resolve_popular_pin_slots(array $pins, int $max): array
+{
+    $max = max(1, $max);
+    if ($pins === []) {
+        return [];
+    }
+
+    usort($pins, static function (array $a, array $b): int {
+        if ($a['position'] !== $b['position']) {
+            return $a['position'] <=> $b['position'];
+        }
+
+        return $a['order'] <=> $b['order'];
+    });
+
+    $slots = [];
+    $used_positions = [];
+
+    foreach ($pins as $pin) {
+        $position = max(1, (int) $pin['position']);
+        while (isset($used_positions[$position]) && $position <= $max) {
+            $position++;
+        }
+        if ($position > $max) {
+            continue;
+        }
+
+        $used_positions[$position] = true;
+        $slots[$position] = (int) $pin['id'];
+    }
+
+    return $slots;
 }
 
 /**
  * @return list<int>
  */
-function franchises_selection_popular_product_ids(int $max = 500): array
+function franchises_selection_merge_popular_ids(int $selection_id, int $max = 500): array
 {
-    if (! function_exists('franchises_products_from_viewed_categories')) {
-        return [];
+    $max = max(1, $max);
+    $pins = franchises_selection_popular_pins($selection_id);
+    $pinned_ids = array_map(static fn(array $pin): int => (int) $pin['id'], $pins);
+    $slots = franchises_selection_resolve_popular_pin_slots($pins, $max);
+    $auto = franchises_get_top_viewed_product_ids($max + count($pinned_ids), $pinned_ids);
+    $auto_index = 0;
+    $result = [];
+    $used = [];
+
+    for ($slot = 1; $slot <= $max; $slot++) {
+        if (isset($slots[$slot])) {
+            $id = (int) $slots[$slot];
+            if (! in_array($id, $used, true)) {
+                $result[] = $id;
+                $used[] = $id;
+            }
+            continue;
+        }
+
+        while ($auto_index < count($auto) && in_array($auto[$auto_index], $used, true)) {
+            $auto_index++;
+        }
+        if ($auto_index >= count($auto)) {
+            break;
+        }
+
+        $result[] = (int) $auto[$auto_index];
+        $used[] = (int) $auto[$auto_index];
+        $auto_index++;
     }
 
-    return franchises_products_from_viewed_categories($max);
+    return $result;
+}
+
+/**
+ * @return list<int>
+ */
+function franchises_selection_popular_product_ids(int $selection_id, int $max = 500): array
+{
+    return franchises_selection_merge_popular_ids($selection_id, $max);
 }
 
 /**
@@ -349,23 +509,10 @@ function franchises_selection_products_query_args(int $selection_id, array $over
     if ($type === 'manual') {
         $args['post__in'] = $manual_ids !== [] ? $manual_ids : [0];
         $args['orderby'] = 'post__in';
-    } elseif ($type === 'popular' && function_exists('franchises_get_top_viewed_product_cat_ids')) {
-        $term_ids = franchises_get_top_viewed_product_cat_ids(
-            max(1, (int) apply_filters('franchises_popular_categories_limit', 5))
-        );
-        if ($term_ids !== []) {
-            $args['tax_query'] = [
-                [
-                    'taxonomy'         => 'product_cat',
-                    'field'            => 'term_id',
-                    'terms'            => $term_ids,
-                    'include_children' => true,
-                ],
-            ];
-        }
-        $args['meta_key'] = 'franchises_theme_post_views';
-        $args['orderby'] = 'meta_value_num';
-        $args['order'] = 'DESC';
+    } elseif ($type === 'popular') {
+        $popular_ids = franchises_selection_merge_popular_ids($selection_id, 500);
+        $args['post__in'] = $popular_ids !== [] ? $popular_ids : [0];
+        $args['orderby'] = 'post__in';
     } else {
         $args['orderby'] = 'date';
         $args['order'] = 'DESC';
@@ -401,23 +548,19 @@ function franchises_selection_valid_product_ids(array $ids): array
 function franchises_selection_product_ids(int $selection_id, int $max = 500): array
 {
     $max = max(1, $max);
-
-    $manual_ids = franchises_selection_valid_product_ids(
-        franchises_selection_manual_product_ids($selection_id)
-    );
-    if ($manual_ids !== []) {
-        return array_slice($manual_ids, 0, $max);
-    }
-
     $type = franchises_selection_filter_type($selection_id);
 
     if ($type === 'manual') {
-        return [];
+        return array_slice(
+            franchises_selection_valid_product_ids(franchises_selection_manual_product_ids($selection_id)),
+            0,
+            $max
+        );
     }
 
     if ($type === 'popular') {
         return franchises_selection_valid_product_ids(
-            array_slice(franchises_selection_popular_product_ids($max), 0, $max)
+            franchises_selection_merge_popular_ids($selection_id, $max)
         );
     }
 
@@ -531,7 +674,41 @@ add_action('acf/init', static function (): void {
                 'choices'       => franchises_selection_filter_choices(),
                 'default_value' => 'manual',
                 'return_format' => 'value',
-                'instructions'  => '«Популярные» — автоматически из самых просматриваемых категорий. «Под ключ», «Топ франшиз» и другие кастомные подборки — тип «Вручную» и список франшиз ниже. Миниатюра записи — картинка в hero.',
+                'instructions'  => '«Популярные» — автоматически по просмотрам страниц; ниже можно закрепить франшизы на конкретных позициях. Кастомные подборки — тип «Вручную» и список франшиз. Миниатюра записи — картинка в hero.',
+            ],
+            [
+                'key'               => 'field_selection_popular_pins',
+                'label'             => 'Закреплённые франшизы',
+                'name'              => 'selection_popular_pins',
+                'type'              => 'repeater',
+                'layout'            => 'table',
+                'button_label'      => 'Добавить франшизу',
+                'instructions'      => 'Укажите позицию в списке (1 — первое место). При совпадении позиций первая строка занимает слот, следующая сдвигается на ближайшую свободную.',
+                'conditional_logic' => [[[
+                    'field'    => 'field_selection_filter_type',
+                    'operator' => '==',
+                    'value'    => 'popular',
+                ]]],
+                'sub_fields'        => [
+                    [
+                        'key'           => 'field_selection_popular_pin_franchise',
+                        'label'         => 'Франшиза',
+                        'name'          => 'franchise',
+                        'type'          => 'post_object',
+                        'post_type'     => ['product'],
+                        'return_format' => 'id',
+                        'ui'            => 1,
+                    ],
+                    [
+                        'key'      => 'field_selection_popular_pin_position',
+                        'label'    => 'Позиция',
+                        'name'     => 'position',
+                        'type'     => 'number',
+                        'min'      => 1,
+                        'step'     => 1,
+                        'required' => 1,
+                    ],
+                ],
             ],
             [
                 'key'               => 'field_selection_franchises',
