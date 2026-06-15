@@ -489,6 +489,16 @@ function franchises_send_cf7_to_telegram($contact_form)
         $comment  = isset($data['text-comment']) ? sanitize_textarea_field($data['text-comment']) : '';
         $question = isset($data['your-question']) ? sanitize_textarea_field($data['your-question']) : '';
 
+        $franchise_title = isset($data['franchise-title']) ? sanitize_text_field($data['franchise-title']) : '';
+        $franchise_url   = isset($data['franchise-url']) ? esc_url_raw($data['franchise-url']) : '';
+
+        $utm_source   = isset($data['utm_source']) ? sanitize_text_field($data['utm_source']) : '';
+        $utm_medium   = isset($data['utm_medium']) ? sanitize_text_field($data['utm_medium']) : '';
+        $utm_campaign = isset($data['utm_campaign']) ? sanitize_text_field($data['utm_campaign']) : '';
+        $utm_content  = isset($data['utm_content']) ? sanitize_text_field($data['utm_content']) : '';
+        $utm_term     = isset($data['utm_term']) ? sanitize_text_field($data['utm_term']) : '';
+        $clientID     = isset($data['clientID']) ? sanitize_text_field($data['clientID']) : '';
+
         $message = "📩 Новая заявка с сайта\n\n";
         $message .= "Форма: " . $form_title . "\n";
 
@@ -516,8 +526,38 @@ function franchises_send_cf7_to_telegram($contact_form)
             $message .= "Вопрос: " . $question . "\n";
         }
 
+        if ($franchise_title !== '') {
+            $message .= "Франшиза: " . $franchise_title . "\n";
+        }
+
+        if ($franchise_url !== '') {
+            $message .= "Ссылка на франшизу: " . $franchise_url . "\n";
+        }
+
         if ($page_url !== '') {
-            $message .= "\nСтраница: " . $page_url;
+            $message .= "Страница с которой отправлена заявка: " . $page_url . "\n";
+        }
+
+        $tracking = [
+            'UTM source'   => $utm_source,
+            'UTM medium'   => $utm_medium,
+            'UTM campaign' => $utm_campaign,
+            'UTM content'  => $utm_content,
+            'UTM term'     => $utm_term,
+            'ClientID'     => $clientID,
+        ];
+
+        $tracking_message = '';
+
+        foreach ($tracking as $label => $value) {
+            if ($value !== '') {
+                $tracking_message .= $label . ": " . $value . "\n";
+            }
+        }
+
+        if ($tracking_message !== '') {
+            $message .= "\n";
+            $message .= $tracking_message;
         }
 
         $response = wp_remote_post('https://api.telegram.org/bot' . $bot_token . '/sendMessage', array(

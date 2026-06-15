@@ -7,10 +7,12 @@
 <?php require_once(TEMPLATE_PATH . '_stats-block.php'); ?>
 
 <?php
-if (class_exists('WooCommerce', false) && function_exists('franchises_render_home_popular_section')) {
-    franchises_render_home_popular_section();
-}
-?>
+get_template_part('templates/components/month-franchises', null, [
+    'variant' => 'home',
+]);
+?> 
+
+<?php require_once(TEMPLATE_PATH . '_popular-section.php'); ?>
 
 <?php require_once TEMPLATE_PATH . '_collections-section.php'; ?>
 

@@ -235,13 +235,17 @@ $card = franchises_franchise_card_from_post($post_id);
             </section>
 
             <section class="card cta-card" aria-label="Форма заявки">
-                <h2 class="cta-title">Узнать больше о франшизе</h2>
+                <h2 class="cta-title">Получить презентацию</h2>
                 <p class="cta-subtitle">Оставьте контакты, и наш менеджер свяжется с вами, пришлёт презентацию и ответит на вопросы.</p>
                 <div class="wpcf7-wrap">
                     <?php franchises_render_franchise_lead_cf7(); ?>
                 </div>
             </section>
-
+			<?php
+				get_template_part('templates/components/month-franchises', null, [
+				'variant' => 'catalog',
+				]);
+			?>
             <?php if ($content_html !== '') : ?>
                 <section class="card content-section" aria-label="Описание франшизы">
                     <div class="entry-content franchise-product-content typography-block">
@@ -296,7 +300,7 @@ $card = franchises_franchise_card_from_post($post_id);
             </div>
 
             <div class="side-contact card">
-                <button class="btn btn-primary" type="button" data-fancybox data-src="#selection-popup">Связаться с франчайзером</button>
+                <button class="btn btn-primary" type="button" data-fancybox data-src="#presentation-popup">Получить презентацию</button>
             </div>
 
             <div class="side-meta card">
@@ -407,3 +411,17 @@ $card = franchises_franchise_card_from_post($post_id);
         </div>
     <?php endif; ?>
 </div>
+<section class="help-section help-section--compact" aria-label="Поможем подобрать франшизу">
+    <div class="help-panel">
+        <h2 class="help-title">Подберём франшизу по вашим параметрам бесплатно</h2>
+<p class="help-text">Оставьте заявку — подберём варианты под ваш бюджет и цели и свяжемся в течение дня.</p>
+        <a
+            class="btn btn-primary"
+            href="#selection-popup"
+            data-fancybox
+            data-src="#selection-popup"
+        >
+            Получить подбор
+        </a>
+    </div>
+</section>

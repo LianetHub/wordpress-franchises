@@ -203,7 +203,11 @@ if ($is_selection_catalog && function_exists('franchises_selection_breadcrumbs')
             <button class="btn btn-primary mobile-filter-btn" type="button" data-fancybox data-src="#catalog-filter-popup">Фильтры</button>
         </div>
 
-
+		<?php
+get_template_part('templates/components/month-franchises', null, [
+    'variant' => 'catalog',
+]);
+?>
         <?php
         wc_get_template(
             'parts/catalog-filters.php',

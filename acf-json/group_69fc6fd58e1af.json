@@ -63,6 +63,40 @@
             "append": ""
         },
         {
+            "key": "field_6a2e4e7f75419",
+            "label": "Франшизы месяца",
+            "name": "month_franchises",
+            "aria-label": "",
+            "type": "relationship",
+            "instructions": "",
+            "required": 1,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "post_type": [
+                "product"
+            ],
+            "post_status": [
+                "publish"
+            ],
+            "taxonomy": "",
+            "filters": [
+                "search",
+                "post_type",
+                "taxonomy"
+            ],
+            "return_format": "object",
+            "min": "",
+            "max": 2,
+            "allow_in_bindings": 0,
+            "elements": "",
+            "bidirectional": 0,
+            "bidirectional_target": []
+        },
+        {
             "key": "field_69fce076cb57c",
             "label": "Статистика",
             "name": "",
@@ -252,5 +286,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1781095367
+    "modified": 1781420351
 }

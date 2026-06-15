@@ -62,3 +62,14 @@ $error_close_btn   = $get_modal_option('error_close_btn', __('Понятно', '
         <?php franchises_render_selection_popup_cf7(); ?>
     </div>
 </div>
+<div class="popup selection-popup-card-wrap" id="presentation-popup" hidden>
+    <h2 class="selection-popup-title popup__title title-md" id="presentation-popup-title">
+        Получить презентацию франшизы
+    </h2>
+    <p class="selection-popup-subtitle popup__subtitle">
+        Оставьте имя и телефон. Мы отправим презентацию франшизы и расскажем подробности по условиям сотрудничества.
+    </p>
+    <div class="selection-popup-form-wrap">
+        <?php echo do_shortcode('[contact-form-7 id="32b1185" title="Контактная форма Получить презентацию"]'); ?>
+    </div>
+</div>

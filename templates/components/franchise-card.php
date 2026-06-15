@@ -164,6 +164,7 @@ $attr = static function (string $k, $v): string {
 };
 
 ?>
+<div class="popular-card-wrap">
 <a class="popular-card"
     href="<?php echo $href; ?>"
     data-order="<?php echo esc_attr((string) $c['order']); ?>"
@@ -214,3 +215,15 @@ $attr = static function (string $k, $v): string {
     </div>
 	
 </a>
+<button
+    type="button"
+    class="popular-card__popup-btn"
+    data-fancybox
+    data-src="#presentation-popup"
+    data-franchise-title="<?php echo esc_attr($brand_title_attr); ?>"
+    data-franchise-url="<?php echo esc_url($card_post_id > 0 ? get_permalink($card_post_id) : $href); ?>"
+>
+    Получить презентацию
+</button>
+
+</div>

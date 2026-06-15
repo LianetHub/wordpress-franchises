@@ -729,7 +729,8 @@ document.addEventListener('DOMContentLoaded', () => {
         $(document).on("wpcf7domready", (event) => {
             CustomSelect.initAll(event.target || document);
         });
-
+		
+		
         $(document).on("wpcf7mailsent", function () {
             if (typeof Fancybox !== "undefined" && Fancybox) Fancybox.close();
             if (typeof window.__showLeadFeedback === "function") {
@@ -1728,4 +1729,3 @@ document.addEventListener('DOMContentLoaded', () => {
         initHeaderMenu();
     }
 })(window.jQuery);
-
