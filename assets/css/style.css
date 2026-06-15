@@ -2,7 +2,7 @@
 
 @font-face {
   font-family: "Manrope";
-  src: url("../fonts/Manrope-VariableFont_wght.woff2?v=1779384978833") format("woff2 supports variations"), url("../fonts/Manrope-VariableFont_wght.woff2?v=1779384978833") format("woff2-variations"), url("../fonts/Manrope-VariableFont_wght.woff?v=1779384978833") format("woff");
+  src: url("../fonts/Manrope-VariableFont_wght.woff2?v=1781524370141") format("woff2 supports variations"), url("../fonts/Manrope-VariableFont_wght.woff2?v=1781524370141") format("woff2-variations"), url("../fonts/Manrope-VariableFont_wght.woff?v=1781524370141") format("woff");
   font-weight: 100 900;
   font-stretch: 75% 125%;
   font-style: normal;
@@ -6745,7 +6745,129 @@ body {
 }
 
 .popular-grid.catalog-cards .catalog-card-cell {
-  display: contents;
+  display: block !important;
+  height: 100%;
+}
+
+.popular-card-wrap {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  height: 100%;
+  background: #fff;
+  border: 1px solid #e3e8ef;
+  border-radius: 24px;
+  overflow: hidden;
+  -webkit-box-shadow: 0 8px 24px rgba(20, 35, 55, 0.06);
+          box-shadow: 0 8px 24px rgba(20, 35, 55, 0.06);
+  -webkit-transition: border-color 0.2s ease, -webkit-transform 0.2s ease, -webkit-box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, -webkit-transform 0.2s ease, -webkit-box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, -webkit-transform 0.2s ease, -webkit-box-shadow 0.2s ease;
+  will-change: transform;
+}
+
+.popular-card-wrap:hover {
+  -webkit-transform: translateY(-2px);
+      -ms-transform: translateY(-2px);
+          transform: translateY(-2px);
+  -webkit-box-shadow: 0 14px 26px rgba(15, 26, 23, 0.12);
+          box-shadow: 0 14px 26px rgba(15, 26, 23, 0.12);
+  border-color: #d5d9dd;
+}
+
+.popular-card-wrap .popular-card {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-flex: 1;
+      -ms-flex: 1 1 auto;
+          flex: 1 1 auto;
+  height: auto !important;
+  min-height: 0;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  -webkit-box-shadow: none !important;
+          box-shadow: none !important;
+  color: inherit;
+  text-decoration: none;
+  -webkit-transform: none !important;
+      -ms-transform: none !important;
+          transform: none !important;
+}
+
+.popular-card-wrap .popular-card:hover {
+  -webkit-transform: none !important;
+      -ms-transform: none !important;
+          transform: none !important;
+  -webkit-box-shadow: none !important;
+          box-shadow: none !important;
+  border-color: transparent !important;
+}
+
+.popular-card-wrap .popular-media {
+  border-radius: 0;
+}
+
+.popular-card-wrap .popular-meta {
+  margin-top: auto;
+}
+
+.popular-card__popup-btn {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  width: calc(100% - 32px);
+  min-height: 40px;
+  margin: 0 16px 16px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: #1d7eea;
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+  -webkit-transition: background-color 0.18s ease;
+  transition: background-color 0.18s ease;
+}
+
+.popular-card__popup-btn:hover {
+  background: #146fd2;
+}
+
+.catalog-card-cell--featured .popular-card-wrap {
+  position: relative;
+  border: 3px solid #1d7eea !important;
+  -webkit-box-shadow: 0 14px 34px rgba(29, 126, 234, 0.22) !important;
+          box-shadow: 0 14px 34px rgba(29, 126, 234, 0.22) !important;
+}
+
+.catalog-card-cell--featured .popular-card-wrap:hover {
+  -webkit-box-shadow: 0 18px 40px rgba(29, 126, 234, 0.28) !important;
+          box-shadow: 0 18px 40px rgba(29, 126, 234, 0.28) !important;
+}
+
+.catalog-card-cell--featured .popular-card__popup-btn {
+  background: #1d7eea;
 }
 
 .popular-card .popular-brand,
@@ -6778,6 +6900,258 @@ body {
   font-weight: 800;
   color: #2f3236;
   margin-top: 8px;
+}
+
+/**
+ * Компонент "Франшизы месяца" — вариант для главной страницы.
+ */
+
+.month-franchises--home {
+  margin: 0 0 28px;
+  padding: 24px;
+  border: 0;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #155aa1 0%, #1d7eea 100%);
+  -webkit-box-shadow: none;
+          box-shadow: none;
+}
+
+.month-franchises--home .month-franchises__head {
+  margin-bottom: 20px;
+}
+
+.month-franchises--home .month-franchises__title {
+  margin: 0 0 8px;
+  color: #fff;
+}
+
+.month-franchises--home .month-franchises__subtitle {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.month-franchises--home .month-franchises__grid {
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-columns: (minmax(0, 1fr))[2];
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.month-franchises--home .month-franchise-mini {
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-columns: 220px minmax(0, 1fr);
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 16px;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  min-height: 144px;
+  padding: 12px;
+  border: 1px solid #e3e8ef;
+  border-radius: 16px;
+  background: #fff;
+  color: #1c2023;
+  text-decoration: none;
+  -webkit-box-shadow: none;
+          box-shadow: none;
+  -webkit-transition: border-color 0.2s ease, -webkit-transform 0.2s ease;
+  transition: border-color 0.2s ease, -webkit-transform 0.2s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease, -webkit-transform 0.2s ease;
+}
+
+.month-franchises--home .month-franchise-mini:hover {
+  -webkit-transform: translateY(-2px);
+      -ms-transform: translateY(-2px);
+          transform: translateY(-2px);
+  border-color: #d5d9dd;
+  -webkit-box-shadow: none;
+          box-shadow: none;
+}
+
+.month-franchises--home .month-franchise-mini__image {
+  display: block;
+  width: 220px;
+  aspect-ratio: 16/9;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #f6f8fa;
+}
+
+.month-franchises--home .month-franchise-mini__image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border-radius: 16px;
+  -o-object-fit: contain;
+     object-fit: contain;
+}
+
+.month-franchises--home .month-franchise-mini__content {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  min-width: 0;
+}
+
+.month-franchises--home .month-franchise-mini__title {
+  display: -webkit-box;
+  margin-bottom: 7px;
+  color: #2f3236;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.15;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.month-franchises--home .month-franchise-mini__text {
+  display: -webkit-box;
+  color: #6d7278;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.35;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/**
+ * Компонент "Франшизы месяца" — вариант для каталога.
+ */
+
+.month-franchises--catalog {
+  margin: 0 0 20px;
+  padding: 16px;
+  border: 0;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #155aa1 0%, #1d7eea 100%);
+  -webkit-box-shadow: none;
+          box-shadow: none;
+}
+
+.month-franchises--catalog .month-franchises__head {
+  margin-bottom: 12px;
+}
+
+.month-franchises--catalog .month-franchises__title {
+  margin: 0;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.month-franchises--catalog .month-franchises__subtitle {
+  display: none;
+}
+
+.month-franchises--catalog .month-franchises__grid {
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-columns: (minmax(0, 1fr))[2];
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.month-franchises--catalog .month-franchise-mini {
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-columns: 120px minmax(0, 1fr);
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 12px;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  min-height: 92px;
+  padding: 8px;
+  border: 1px solid #e3e8ef;
+  border-radius: 16px;
+  background: #fff;
+  color: #1c2023;
+  text-decoration: none;
+  -webkit-box-shadow: none;
+          box-shadow: none;
+  -webkit-transition: border-color 0.2s ease, -webkit-transform 0.2s ease;
+  transition: border-color 0.2s ease, -webkit-transform 0.2s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease, -webkit-transform 0.2s ease;
+}
+
+.month-franchises--catalog .month-franchise-mini:hover {
+  -webkit-transform: translateY(-2px);
+      -ms-transform: translateY(-2px);
+          transform: translateY(-2px);
+  border-color: #d5d9dd;
+  -webkit-box-shadow: none;
+          box-shadow: none;
+}
+
+.month-franchises--catalog .month-franchise-mini__image {
+  display: block;
+  width: 120px;
+  aspect-ratio: 16/9;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #f6f8fa;
+}
+
+.month-franchises--catalog .month-franchise-mini__image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border-radius: 16px;
+  -o-object-fit: contain;
+     object-fit: contain;
+}
+
+.month-franchises--catalog .month-franchise-mini__content {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  min-width: 0;
+}
+
+.month-franchises--catalog .month-franchise-mini__title {
+  display: -webkit-box;
+  margin-bottom: 5px;
+  color: #2f3236;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.15;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.month-franchises--catalog .month-franchise-mini__text {
+  display: -webkit-box;
+  color: #6d7278;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.25;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .reviews-section {
@@ -8931,6 +9305,27 @@ body {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .month-franchises--home .month-franchises__grid {
+    -ms-grid-columns: 1fr;
+    grid-template-columns: 1fr;
+  }
+
+  .month-franchises--home .month-franchise-mini {
+    -ms-grid-columns: 240px minmax(0, 1fr);
+    grid-template-columns: 240px minmax(0, 1fr);
+    min-height: 160px;
+  }
+
+  .month-franchises--home .month-franchise-mini__image {
+    width: 240px;
+    aspect-ratio: 16/9;
+  }
+
+  .month-franchises--catalog .month-franchises__grid {
+    -ms-grid-columns: 1fr;
+    grid-template-columns: 1fr;
+  }
+
   .help-grid {
     -ms-grid-columns: 1fr;
     grid-template-columns: 1fr;
@@ -9677,6 +10072,28 @@ body {
     scroll-snap-align: start;
   }
 
+  .popular-card__popup-btn {
+    min-height: 42px;
+    padding: 7px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.15;
+    white-space: normal;
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  .catalog-card-cell--featured .popular-card-wrap {
+    border-width: 3px !important;
+    -webkit-box-shadow: 0 10px 24px rgba(29, 126, 234, 0.18) !important;
+            box-shadow: 0 10px 24px rgba(29, 126, 234, 0.18) !important;
+  }
+
+  .catalog-card-cell--featured .popular-card-wrap:hover {
+    -webkit-box-shadow: 0 10px 24px rgba(29, 126, 234, 0.18) !important;
+            box-shadow: 0 10px 24px rgba(29, 126, 234, 0.18) !important;
+  }
+
   .popular-section {
     padding: 18px 12px;
   }
@@ -9757,6 +10174,79 @@ body {
   .popular-meta .meta-value,
   .preview-meta .meta-value {
     font-size: 14px;
+  }
+
+  .month-franchises--home {
+    margin-bottom: 22px;
+    padding: 14px 12px;
+    border-radius: 16px;
+  }
+
+  .month-franchises--home .month-franchise-mini {
+    -ms-grid-columns: 150px minmax(0, 1fr);
+    grid-template-columns: 150px minmax(0, 1fr);
+    gap: 10px;
+    min-height: 104px;
+    padding: 8px;
+    border-radius: 16px;
+  }
+
+  .month-franchises--home .month-franchise-mini__image {
+    width: 150px;
+    aspect-ratio: 16/9;
+    border-radius: 16px;
+  }
+
+  .month-franchises--home .month-franchise-mini__image img {
+    border-radius: 18px;
+    -o-object-fit: contain;
+       object-fit: contain;
+  }
+
+  .month-franchises--home .month-franchise-mini__title {
+    font-size: 14px;
+    margin-bottom: 5px;
+  }
+
+  .month-franchises--home .month-franchise-mini__text {
+    font-size: 11px;
+    line-height: 1.25;
+    -webkit-line-clamp: 4;
+  }
+
+  .month-franchises--catalog {
+    margin-bottom: 16px;
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  .month-franchises--catalog .month-franchises__head {
+    margin-bottom: 10px;
+  }
+
+  .month-franchises--catalog .month-franchises__title {
+    font-size: 18px;
+  }
+
+  .month-franchises--catalog .month-franchise-mini {
+    -ms-grid-columns: 104px minmax(0, 1fr);
+    grid-template-columns: 104px minmax(0, 1fr);
+    min-height: 82px;
+    gap: 10px;
+    padding: 7px;
+  }
+
+  .month-franchises--catalog .month-franchise-mini__image {
+    width: 104px;
+  }
+
+  .month-franchises--catalog .month-franchise-mini__title {
+    font-size: 14px;
+  }
+
+  .month-franchises--catalog .month-franchise-mini__text {
+    font-size: 11px;
+    -webkit-line-clamp: 2;
   }
 
   .review-card {
@@ -9895,6 +10385,41 @@ body {
 
   .mobile-hidden {
     display: none !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .month-franchises--home .month-franchise-mini {
+    -ms-grid-columns: 128px minmax(0, 1fr);
+    grid-template-columns: 128px minmax(0, 1fr);
+    min-height: 92px;
+  }
+
+  .month-franchises--home .month-franchise-mini__image {
+    width: 128px;
+    aspect-ratio: 16/9;
+  }
+
+  .month-franchises--home .month-franchise-mini__title {
+    -webkit-line-clamp: 1;
+  }
+
+  .month-franchises--home .month-franchise-mini__text {
+    -webkit-line-clamp: 2;
+  }
+
+  .month-franchises--catalog .month-franchise-mini {
+    -ms-grid-columns: 92px minmax(0, 1fr);
+    grid-template-columns: 92px minmax(0, 1fr);
+    min-height: 74px;
+  }
+
+  .month-franchises--catalog .month-franchise-mini__image {
+    width: 92px;
+  }
+
+  .month-franchises--catalog .month-franchise-mini__text {
+    -webkit-line-clamp: 1;
   }
 }
 

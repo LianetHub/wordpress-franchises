@@ -1,0 +1,342 @@
+/**
+ * Компонент "Франшизы месяца" — вариант для главной страницы.
+ */
+.month-franchises--home {
+	margin: 0 0 28px;
+	padding: 24px;
+	border: 0;
+	border-radius: 24px;
+	background: linear-gradient(135deg, #155aa1 0%, #1d7eea 100%);
+	box-shadow: none;
+
+	.month-franchises__head {
+		margin-bottom: 20px;
+	}
+
+	.month-franchises__title {
+		margin: 0 0 8px;
+		color: #fff;
+	}
+
+	.month-franchises__subtitle {
+		margin: 0;
+		color: rgba(255, 255, 255, 0.82);
+	}
+
+	.month-franchises__grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 12px;
+	}
+
+	.month-franchise-mini {
+		display: grid;
+		grid-template-columns: 220px minmax(0, 1fr);
+		gap: 16px;
+		align-items: center;
+		min-height: 144px;
+		padding: 12px;
+		border: 1px solid #e3e8ef;
+		border-radius: 16px;
+		background: #fff;
+		color: #1c2023;
+		text-decoration: none;
+		box-shadow: none;
+		transition: transform 0.2s ease, border-color 0.2s ease;
+
+		&:hover {
+			transform: translateY(-2px);
+			border-color: #d5d9dd;
+			box-shadow: none;
+		}
+	}
+
+	.month-franchise-mini__image {
+		display: block;
+		width: 220px;
+		aspect-ratio: 16 / 9;
+		border-radius: 16px;
+		overflow: hidden;
+		background: #f6f8fa;
+
+		img {
+			display: block;
+			width: 100%;
+			height: 100%;
+			padding: 0;
+			border-radius: 16px;
+			object-fit: contain;
+		}
+	}
+
+	.month-franchise-mini__content {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		min-width: 0;
+	}
+
+	.month-franchise-mini__title {
+		display: -webkit-box;
+		margin-bottom: 7px;
+		color: #2f3236;
+		font-size: 16px;
+		font-weight: 800;
+		line-height: 1.15;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.month-franchise-mini__text {
+		display: -webkit-box;
+		color: #6d7278;
+		font-size: 13px;
+		font-weight: 500;
+		line-height: 1.35;
+		-webkit-line-clamp: 4;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+}
+
+@media (max-width: 900px) {
+	.month-franchises--home {
+		.month-franchises__grid {
+			grid-template-columns: 1fr;
+		}
+
+		.month-franchise-mini {
+			grid-template-columns: 240px minmax(0, 1fr);
+			min-height: 160px;
+		}
+
+		.month-franchise-mini__image {
+			width: 240px;
+			aspect-ratio: 16 / 9;
+		}
+	}
+}
+
+@media (max-width: 600px) {
+	.month-franchises--home {
+		margin-bottom: 22px;
+		padding: 14px 12px;
+		border-radius: 16px;
+
+		.month-franchise-mini {
+			grid-template-columns: 150px minmax(0, 1fr);
+			gap: 10px;
+			min-height: 104px;
+			padding: 8px;
+			border-radius: 16px;
+		}
+
+		.month-franchise-mini__image {
+			width: 150px;
+			aspect-ratio: 16 / 9;
+			border-radius: 16px;
+
+			img {
+				border-radius: 18px;
+				object-fit: contain;
+			}
+		}
+
+		.month-franchise-mini__title {
+			font-size: 14px;
+			margin-bottom: 5px;
+		}
+
+		.month-franchise-mini__text {
+			font-size: 11px;
+			line-height: 1.25;
+			-webkit-line-clamp: 4;
+		}
+	}
+}
+
+@media (max-width: 420px) {
+	.month-franchises--home {
+		.month-franchise-mini {
+			grid-template-columns: 128px minmax(0, 1fr);
+			min-height: 92px;
+		}
+
+		.month-franchise-mini__image {
+			width: 128px;
+			aspect-ratio: 16 / 9;
+		}
+
+		.month-franchise-mini__title {
+			-webkit-line-clamp: 1;
+		}
+
+		.month-franchise-mini__text {
+			-webkit-line-clamp: 2;
+		}
+	}
+}
+
+/**
+ * Компонент "Франшизы месяца" — вариант для каталога.
+ */
+.month-franchises--catalog {
+	margin: 0 0 20px;
+	padding: 16px;
+	border: 0;
+	border-radius: 20px;
+	background: linear-gradient(135deg, #155aa1 0%, #1d7eea 100%);
+	box-shadow: none;
+
+	.month-franchises__head {
+		margin-bottom: 12px;
+	}
+
+	.month-franchises__title {
+		margin: 0;
+		color: #fff;
+		font-size: 20px;
+		font-weight: 800;
+		line-height: 1.2;
+	}
+
+	.month-franchises__subtitle {
+		display: none;
+	}
+
+	.month-franchises__grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 12px;
+	}
+
+	.month-franchise-mini {
+		display: grid;
+		grid-template-columns: 120px minmax(0, 1fr);
+		gap: 12px;
+		align-items: center;
+		min-height: 92px;
+		padding: 8px;
+		border: 1px solid #e3e8ef;
+		border-radius: 16px;
+		background: #fff;
+		color: #1c2023;
+		text-decoration: none;
+		box-shadow: none;
+		transition: transform 0.2s ease, border-color 0.2s ease;
+
+		&:hover {
+			transform: translateY(-2px);
+			border-color: #d5d9dd;
+			box-shadow: none;
+		}
+	}
+
+	.month-franchise-mini__image {
+		display: block;
+		width: 120px;
+		aspect-ratio: 16 / 9;
+		border-radius: 16px;
+		overflow: hidden;
+		background: #f6f8fa;
+
+		img {
+			display: block;
+			width: 100%;
+			height: 100%;
+			padding: 0;
+			border-radius: 16px;
+			object-fit: contain;
+		}
+	}
+
+	.month-franchise-mini__content {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		min-width: 0;
+	}
+
+	.month-franchise-mini__title {
+		display: -webkit-box;
+		margin-bottom: 5px;
+		color: #2f3236;
+		font-size: 15px;
+		font-weight: 800;
+		line-height: 1.15;
+		-webkit-line-clamp: 1;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.month-franchise-mini__text {
+		display: -webkit-box;
+		color: #6d7278;
+		font-size: 12px;
+		font-weight: 500;
+		line-height: 1.25;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+}
+
+@media (max-width: 900px) {
+	.month-franchises--catalog .month-franchises__grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 600px) {
+	.month-franchises--catalog {
+		margin-bottom: 16px;
+		padding: 12px;
+		border-radius: 16px;
+
+		.month-franchises__head {
+			margin-bottom: 10px;
+		}
+
+		.month-franchises__title {
+			font-size: 18px;
+		}
+
+		.month-franchise-mini {
+			grid-template-columns: 104px minmax(0, 1fr);
+			min-height: 82px;
+			gap: 10px;
+			padding: 7px;
+		}
+
+		.month-franchise-mini__image {
+			width: 104px;
+		}
+
+		.month-franchise-mini__title {
+			font-size: 14px;
+		}
+
+		.month-franchise-mini__text {
+			font-size: 11px;
+			-webkit-line-clamp: 2;
+		}
+	}
+}
+
+@media (max-width: 420px) {
+	.month-franchises--catalog {
+		.month-franchise-mini {
+			grid-template-columns: 92px minmax(0, 1fr);
+			min-height: 74px;
+		}
+
+		.month-franchise-mini__image {
+			width: 92px;
+		}
+
+		.month-franchise-mini__text {
+			-webkit-line-clamp: 1;
+		}
+	}
+}

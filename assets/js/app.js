@@ -181,6 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // sliders
 
+
         if ($('.hero__slider').length) {
             new Swiper('.hero__slider', {
                 speed: 400,
@@ -729,8 +730,7 @@ document.addEventListener('DOMContentLoaded', () => {
         $(document).on("wpcf7domready", (event) => {
             CustomSelect.initAll(event.target || document);
         });
-		
-		
+
         $(document).on("wpcf7mailsent", function () {
             if (typeof Fancybox !== "undefined" && Fancybox) Fancybox.close();
             if (typeof window.__showLeadFeedback === "function") {
@@ -746,6 +746,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.__showLeadFeedback(message, true);
             }
         });
+
+        // CF7: данные франшизы из кнопки «Получить презентацию»
+        let presentationFranchiseTitle = '';
+        let presentationFranchiseUrl = '';
+
+        $(document).on('click', '.popular-card__popup-btn', function () {
+            presentationFranchiseTitle = $(this).attr('data-franchise-title') || '';
+            presentationFranchiseUrl = $(this).attr('data-franchise-url') || '';
+            sessionStorage.setItem('presentationFranchiseTitle', presentationFranchiseTitle);
+            sessionStorage.setItem('presentationFranchiseUrl', presentationFranchiseUrl);
+            $('input[name="franchise-title"]').val(presentationFranchiseTitle);
+            $('input[name="franchise-url"]').val(presentationFranchiseUrl);
+        });
+
+        document.addEventListener('wpcf7beforesubmit', function (event) {
+            const form = event.target;
+            const title = presentationFranchiseTitle || sessionStorage.getItem('presentationFranchiseTitle') || '';
+            const url = presentationFranchiseUrl || sessionStorage.getItem('presentationFranchiseUrl') || '';
+            const titleInput = form.querySelector('input[name="franchise-title"]');
+            const urlInput = form.querySelector('input[name="franchise-url"]');
+
+            if (titleInput) titleInput.value = title;
+            if (urlInput) urlInput.value = url;
+
+            if (event.detail?.formData) {
+                event.detail.formData.set('franchise-title', title);
+                event.detail.formData.set('franchise-url', url);
+            }
+        }, true);
 
 
         const initYandexMap = () => {
@@ -1008,16 +1037,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const chips = document.querySelector("[data-collections-chips]");
         if (!chips) return;
 
+        const openBtn = document.querySelector("[data-collections-open]");
+
         const activate = (key) => {
+            let activeUrl = "";
             chips.querySelectorAll("[data-collection]").forEach((btn) => {
                 const active = btn.getAttribute("data-collection") === key;
                 btn.classList.toggle("active", active);
                 btn.setAttribute("aria-pressed", String(active));
+                if (active) {
+                    activeUrl = btn.getAttribute("data-collection-url") || "";
+                }
             });
             document.querySelectorAll("[data-collection-panel]").forEach((panel) => {
                 const active = panel.getAttribute("data-collection-panel") === key;
                 panel.hidden = !active;
             });
+            if (openBtn && activeUrl) {
+                openBtn.href = activeUrl;
+            }
         };
 
         const first = chips.querySelector("[data-collection]");
@@ -1191,7 +1229,6 @@ document.addEventListener('DOMContentLoaded', () => {
             new Swiper(container, {
                 speed: 400,
                 slidesPerView: "auto",
-
                 spaceBetween: 12,
                 watchOverflow: true,
                 navigation: prev && next ? { prevEl: prev, nextEl: next } : undefined,
@@ -1220,10 +1257,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const main = document.querySelector('main.wrap.catalog-page');
     if (!main) return;
 
-    const filterCard = main.querySelector('.filter-card');
-    const filterToggle = main.querySelector('.filter-toggle');
-    const filterAdvanced = main.querySelector('.filter-advanced');
+    const filterForm = document.getElementById('franchises-catalog-filters');
+    const filterRoot = filterForm || main;
+
+    const filterCard = filterRoot.querySelector('.filter-card');
+    const filterToggle = filterRoot.querySelector('.filter-toggle');
+    const filterAdvanced = filterRoot.querySelector('.filter-advanced');
     const filterToggleLabel = filterToggle?.querySelector('.filter-toggle__text');
+    const catalogFilterModalMq = window.matchMedia('(max-width: 900px)');
 
     const setFilterToggleLabel = (collapsed) => {
         if (!filterToggle || !filterToggleLabel) return;
@@ -1233,6 +1274,15 @@ document.addEventListener('DOMContentLoaded', () => {
         filterToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
     };
 
+    const showFilterAdvancedInModal = () => {
+        if (!filterCard || !filterAdvanced) return;
+        filterCard.classList.remove('advanced-collapsed');
+        filterAdvanced.style.removeProperty('display');
+        setFilterToggleLabel(false);
+    };
+
+    const isCatalogFilterModalView = () => catalogFilterModalMq.matches;
+
     if (filterToggle && filterCard && filterAdvanced && window.jQuery) {
         const $advanced = window.jQuery(filterAdvanced);
         const isCollapsed = () => filterCard.classList.contains('advanced-collapsed');
@@ -1240,6 +1290,8 @@ document.addEventListener('DOMContentLoaded', () => {
         setFilterToggleLabel(isCollapsed());
 
         filterToggle.addEventListener('click', () => {
+            if (isCatalogFilterModalView()) return;
+
             if (isCollapsed()) {
                 filterCard.classList.remove('advanced-collapsed');
                 $advanced.stop(true, true).slideDown(280, () => {
@@ -1252,17 +1304,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         });
+
+        const onCatalogFilterViewportChange = () => {
+            if (isCatalogFilterModalView()) {
+                showFilterAdvancedInModal();
+            }
+        };
+
+        if (typeof catalogFilterModalMq.addEventListener === 'function') {
+            catalogFilterModalMq.addEventListener('change', onCatalogFilterViewportChange);
+        } else if (typeof catalogFilterModalMq.addListener === 'function') {
+            catalogFilterModalMq.addListener(onCatalogFilterViewportChange);
+        }
+
+        if (isCatalogFilterModalView()) {
+            showFilterAdvancedInModal();
+        }
     }
 
-    const investRange = main.querySelector('#invest-range');
-    const investHidden = main.querySelector('#invest_max_input');
-    const investLabel = main.querySelector('#invest-value');
-    const profitRange = main.querySelector('#profit-range');
-    const profitHidden = main.querySelector('#profit_min_input');
-    const profitLabel = main.querySelector('#profit-value');
+    const mobileFilterBtn = document.querySelector('.mobile-filter-btn');
+    if (mobileFilterBtn) {
+        mobileFilterBtn.addEventListener('click', showFilterAdvancedInModal);
+    }
 
-    const formatMoney = (n) =>
-        new Intl.NumberFormat('ru-RU').format(Math.round(Number(n) || 0)) + ' ₽';
+    const investRange = filterRoot.querySelector('#invest-range');
+    const profitRange = filterRoot.querySelector('#profit-range');
+
+    const MONEY_NNBSP = '\u202F';
+    const formatMoney = (n) => {
+        const grouped = new Intl.NumberFormat('ru-RU').format(Math.round(Number(n) || 0));
+
+        return grouped.replace(/[\u00A0\u202F\s]/g, MONEY_NNBSP) + MONEY_NNBSP + '₽';
+    };
 
     const syncCatalogRange = (rangeEl) => {
         if (!rangeEl) return;
@@ -1271,8 +1344,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const value = Number(rangeEl.value) || 0;
         const hiddenSel = rangeEl.getAttribute("data-range-hidden");
         const labelSel = rangeEl.getAttribute("data-range-label");
-        const hidden = hiddenSel ? main.querySelector(hiddenSel) : null;
-        const label = labelSel ? main.querySelector(labelSel) : null;
+        const hidden = hiddenSel ? document.querySelector(hiddenSel) : null;
+        const label = labelSel ? document.querySelector(labelSel) : null;
         if (!hidden || !label) return;
 
         const emptyLabel = rangeEl.getAttribute("data-range-empty-label") || "";
@@ -1296,7 +1369,7 @@ document.addEventListener('DOMContentLoaded', () => {
         syncCatalogRange(rangeEl);
     });
 
-    main.querySelectorAll(".preset-btn[data-invest]").forEach((btn) => {
+    filterRoot.querySelectorAll(".preset-btn[data-invest]").forEach((btn) => {
         btn.addEventListener("click", () => {
             const v = btn.getAttribute("data-invest");
             if (investRange && v) {
@@ -1306,7 +1379,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    main.querySelectorAll(".preset-btn[data-profit]").forEach((btn) => {
+    filterRoot.querySelectorAll(".preset-btn[data-profit]").forEach((btn) => {
         btn.addEventListener("click", () => {
             const v = btn.getAttribute("data-profit");
             if (profitRange && v) {
@@ -1316,9 +1389,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    const filterForm = main.querySelector('#franchises-catalog-filters');
-    const sphereSelect = main.querySelector('select[name="sphere"]');
-    const categorySelect = main.querySelector('select[name="category"]');
+    const sphereSelect = filterForm?.querySelector('select[name="sphere"]');
+    const categorySelect = filterForm?.querySelector('select[name="category"]');
 
     const refreshNativeSelect = (selectEl) => {
         if (!selectEl) return;
@@ -1406,25 +1478,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const modal = document.getElementById('filter-modal');
-    const sheetBody = modal ? modal.querySelector('.filter-sheet-body') : null;
-    const openBtn = main.querySelector('[data-filter-open]');
-    if (modal && sheetBody && filterCard && openBtn && filterForm) {
-        const setModal = (open) => {
-            modal.classList.toggle('active', open);
-            modal.setAttribute('aria-hidden', String(!open));
-            document.body.classList.toggle('modal-open', open);
-            if (open) {
-                sheetBody.appendChild(filterCard);
-            } else {
-                filterForm.insertBefore(filterCard, filterForm.firstElementChild);
-            }
-        };
-        openBtn.addEventListener('click', () => setModal(true));
-        modal.querySelectorAll('[data-filter-close]').forEach((el) => {
-            el.addEventListener('click', () => setModal(false));
-        });
-    }
 });
 
 /* ===== header menu (разметка в PHP) ===== */
@@ -1448,6 +1501,149 @@ document.addEventListener('DOMContentLoaded', () => {
         $('.menu-toggle').attr('aria-expanded', String(isOpen));
         $('body').toggleClass('modal-open', isOpen);
     };
+
+    const setupMobileSearchBarAutoHide = () => {
+        const mobileSearchBar = document.querySelector('.mobile-search-bar');
+        if (!mobileSearchBar) return;
+
+        const mobileMq = window.matchMedia('(max-width: 600px)');
+        const scrollTopThreshold = 16;
+        const directionDeltaMin = 4;
+        const wheelDeltaMin = 8;
+
+        const getScrollY = () =>
+            window.pageYOffset ||
+            document.documentElement.scrollTop ||
+            document.body.scrollTop ||
+            0;
+
+        let lastScrollY = getScrollY();
+        let scrollTicking = false;
+        let touchLastY = null;
+
+        const isActive = () => mobileMq.matches && !$menu.hasClass('open');
+
+        const syncMobileSearchBarHeight = () => {
+            if (!mobileMq.matches) {
+                document.documentElement.style.removeProperty('--mobile-search-bar-height');
+                return;
+            }
+
+            const wasHidden = mobileSearchBar.classList.contains('is-hidden');
+            if (wasHidden) {
+                mobileSearchBar.classList.remove('is-hidden');
+            }
+
+            document.documentElement.style.setProperty(
+                '--mobile-search-bar-height',
+                `${mobileSearchBar.offsetHeight}px`
+            );
+
+            if (wasHidden) {
+                mobileSearchBar.classList.add('is-hidden');
+            }
+        };
+
+        const setMobileSearchHidden = (hidden) => {
+            mobileSearchBar.classList.toggle('is-hidden', hidden);
+            mobileSearchBar.setAttribute('aria-hidden', hidden ? 'true' : 'false');
+        };
+
+        const applyDirection = (scrollingDown) => {
+            if (!isActive()) return;
+
+            if (getScrollY() <= scrollTopThreshold) {
+                setMobileSearchHidden(false);
+                return;
+            }
+
+            setMobileSearchHidden(scrollingDown);
+        };
+
+        const syncFromScrollPosition = () => {
+            if (!isActive()) return;
+
+            const y = getScrollY();
+
+            if (y <= scrollTopThreshold) {
+                setMobileSearchHidden(false);
+                lastScrollY = y;
+                return;
+            }
+
+            const delta = y - lastScrollY;
+            lastScrollY = y;
+
+            if (Math.abs(delta) < directionDeltaMin) return;
+
+            applyDirection(delta > 0);
+        };
+
+        const scheduleScrollSync = () => {
+            if (scrollTicking) return;
+            scrollTicking = true;
+            requestAnimationFrame(() => {
+                syncFromScrollPosition();
+                scrollTicking = false;
+            });
+        };
+
+        const onWheel = (event) => {
+            if (!isActive()) return;
+
+            const { deltaY } = event;
+            if (Math.abs(deltaY) < wheelDeltaMin) return;
+
+            applyDirection(deltaY > 0);
+            lastScrollY = getScrollY();
+        };
+
+        const onTouchStart = (event) => {
+            if (!isActive()) return;
+            touchLastY = event.touches[0]?.clientY ?? null;
+        };
+
+        const onTouchMove = (event) => {
+            if (!isActive() || touchLastY === null) return;
+
+            const y = event.touches[0]?.clientY;
+            if (y == null) return;
+
+            const delta = touchLastY - y;
+            touchLastY = y;
+
+            if (Math.abs(delta) < directionDeltaMin) return;
+
+            applyDirection(delta > 0);
+        };
+
+        const onTouchEnd = () => {
+            touchLastY = null;
+            lastScrollY = getScrollY();
+        };
+
+        window.addEventListener('wheel', onWheel, { passive: true });
+        window.addEventListener('scroll', scheduleScrollSync, { passive: true });
+        document.addEventListener('scroll', scheduleScrollSync, { passive: true });
+        document.addEventListener('touchstart', onTouchStart, { passive: true });
+        document.addEventListener('touchmove', onTouchMove, { passive: true });
+        document.addEventListener('touchend', onTouchEnd, { passive: true });
+        document.addEventListener('touchcancel', onTouchEnd, { passive: true });
+
+        mobileMq.addEventListener('change', () => {
+            if (!mobileMq.matches) {
+                setMobileSearchHidden(false);
+            }
+            syncMobileSearchBarHeight();
+            lastScrollY = getScrollY();
+            touchLastY = null;
+        });
+
+        syncMobileSearchBarHeight();
+        window.addEventListener('resize', syncMobileSearchBarHeight, { passive: true });
+    };
+
+    setupMobileSearchBarAutoHide();
 
     $(document)
         .on('click', '.menu-toggle', function (event) {
@@ -1627,12 +1823,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const isDropdownOpen = (el) => !!el && (el.classList.contains('is-open') || el.classList.contains('open'));
 
+        const getDropdownGap = () => {
+            const raw = getComputedStyle(document.documentElement)
+                .getPropertyValue('--header-dropdown-gap')
+                .trim();
+            const gap = parseFloat(raw);
+            return Number.isFinite(gap) ? gap : 2;
+        };
+
+        const getHeaderFloatOffset = () => {
+            if (!window.matchMedia('(min-width: 901px)').matches) return 0;
+            const raw = getComputedStyle(document.documentElement)
+                .getPropertyValue('--header-float-offset')
+                .trim();
+            const offset = parseFloat(raw);
+            return Number.isFinite(offset) ? offset : 0;
+        };
+
         const syncPanelTop = () => {
             if (!(categoriesPanel instanceof HTMLElement)) return;
             const headerInner = header.querySelector('.header-inner');
             const anchor = headerInner instanceof HTMLElement ? headerInner : header;
             const headerBottom = Math.round(anchor.getBoundingClientRect().bottom);
-            const panelTop = Math.max(0, headerBottom - 1);
+            const panelTop = Math.max(0, headerBottom + getDropdownGap() - getHeaderFloatOffset());
             categoriesPanel.style.setProperty('top', `${panelTop}px`, 'important');
             if (collectionsPanel instanceof HTMLElement) {
                 collectionsPanel.style.setProperty('top', `${panelTop}px`, 'important');
@@ -1718,9 +1931,220 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const setupFiboSearchHeader = () => {
+        if (typeof franchisesFiboSearch === 'undefined') {
+            return;
+        }
+
+        const shopUrl = franchisesFiboSearch.shopUrl || '';
+        const submitLabel = franchisesFiboSearch.i18n?.submit || 'Найти';
+        const placeholder = franchisesFiboSearch.i18n?.placeholder || 'Поиск по франшизам';
+        const searchIconHtml =
+            '<svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>';
+
+        const syncSearchIcon = (form) => {
+            const wrapp = form.querySelector('.dgwt-wcas-sf-wrapp');
+            if (!wrapp || wrapp.querySelector('.search-icon')) {
+                return;
+            }
+            const input = wrapp.querySelector('.dgwt-wcas-search-input, input[type="search"]');
+            if (input) {
+                input.insertAdjacentHTML('beforebegin', searchIconHtml);
+            }
+        };
+
+        const syncSearchForm = (form) => {
+            if (!(form instanceof HTMLFormElement)) {
+                return;
+            }
+
+            if (shopUrl) {
+                form.setAttribute('action', shopUrl);
+            }
+
+            syncSearchIcon(form);
+
+            const input = form.querySelector('.dgwt-wcas-search-input, input[type="search"]');
+            if (input) {
+                input.setAttribute('name', 'q');
+                if (!input.getAttribute('placeholder')) {
+                    input.setAttribute('placeholder', placeholder);
+                }
+            }
+
+            const submit = form.querySelector('.dgwt-wcas-search-submit, button[type="submit"]');
+            if (submit && submitLabel) {
+                submit.setAttribute('aria-label', submitLabel);
+                if (!submit.textContent.trim()) {
+                    submit.textContent = submitLabel;
+                }
+            }
+        };
+
+        const syncAllHeaderSearchForms = () => {
+            document
+                .querySelectorAll('[data-header-search] .dgwt-wcas-search-form, .header-search--fibosearch .dgwt-wcas-search-form')
+                .forEach(syncSearchForm);
+        };
+
+        let suggestionsDockObserver = null;
+
+        const getActiveHeaderSearchWrap = () => {
+            const activeWrap = document.querySelector(
+                '[data-header-search] .dgwt-wcas-search-wrapp.dgwt-wcas-active, ' +
+                    '[data-header-search] .dgwt-wcas-search-wrapp:focus-within'
+            );
+
+            if (activeWrap) {
+                return activeWrap.closest('.header-search-wrap');
+            }
+
+            const focusedInput = document.querySelector(
+                '[data-header-search] .dgwt-wcas-search-input:focus, [data-header-search] input[type="search"]:focus'
+            );
+
+            return focusedInput?.closest('.header-search-wrap') || null;
+        };
+
+        const getVisibleSuggestionsPanel = () =>
+            Array.from(document.querySelectorAll('.dgwt-wcas-suggestions-wrapp')).find((panel) => {
+                if (!(panel instanceof HTMLElement)) {
+                    return false;
+                }
+
+                const style = window.getComputedStyle(panel);
+                return style.display !== 'none' && style.visibility !== 'hidden' && panel.offsetHeight > 0;
+            }) || null;
+
+        const clearSuggestionsInlinePosition = (panel) => {
+            if (!(panel instanceof HTMLElement)) {
+                return;
+            }
+
+            ['position', 'top', 'left', 'right', 'width', 'transform', 'margin-top', 'margin-left'].forEach((prop) => {
+                panel.style.removeProperty(prop);
+            });
+        };
+
+        const stopSuggestionsDockObserver = () => {
+            suggestionsDockObserver?.disconnect();
+            suggestionsDockObserver = null;
+        };
+
+        const startSuggestionsDockObserver = (panel, wrap) => {
+            stopSuggestionsDockObserver();
+
+            suggestionsDockObserver = new MutationObserver(() => {
+                if (!(panel.isConnected && wrap.isConnected)) {
+                    stopSuggestionsDockObserver();
+                    return;
+                }
+
+                if (panel.parentElement !== wrap) {
+                    wrap.appendChild(panel);
+                }
+
+                clearSuggestionsInlinePosition(panel);
+            });
+
+            suggestionsDockObserver.observe(panel, { attributes: true, attributeFilter: ['style'] });
+        };
+
+        const dockHeaderSuggestions = () => {
+            window.requestAnimationFrame(() => {
+                const wrap = getActiveHeaderSearchWrap();
+                const panel = getVisibleSuggestionsPanel();
+
+                if (!(wrap instanceof HTMLElement) || !(panel instanceof HTMLElement)) {
+                    return;
+                }
+
+                if (panel.parentElement !== wrap) {
+                    wrap.appendChild(panel);
+                }
+
+                panel.classList.add('header-search-suggestions-docked');
+                clearSuggestionsInlinePosition(panel);
+                startSuggestionsDockObserver(panel, wrap);
+            });
+        };
+
+        const actions = header.querySelector('.header-actions');
+        const desktopMq = window.matchMedia('(min-width: 901px)');
+
+        const setSearchExpanded = (expanded) => {
+            if (!desktopMq.matches) {
+                header.classList.remove('search-expanded');
+                return;
+            }
+            header.classList.toggle('search-expanded', expanded);
+        };
+
+        const isHeaderSearchField = (node) =>
+            node instanceof Element &&
+            !!node.closest('.header-search-wrap, .header-search--fibosearch') &&
+            node.matches('.dgwt-wcas-search-input, input[type="search"]');
+
+        if (actions) {
+            actions.addEventListener(
+                'focusin',
+                (event) => {
+                    if (isHeaderSearchField(event.target)) {
+                        setSearchExpanded(true);
+                    }
+                },
+                true
+            );
+
+            actions.addEventListener(
+                'focusout',
+                () => {
+                    window.setTimeout(() => {
+                        const focused = actions.querySelector('.dgwt-wcas-search-input:focus, input[type="search"]:focus');
+                        if (!focused) {
+                            setSearchExpanded(false);
+                        }
+                    }, 0);
+                },
+                true
+            );
+        }
+
+        document.addEventListener('fibosearch/open', () => setSearchExpanded(true));
+        document.addEventListener('fibosearch/close', () => {
+            window.setTimeout(() => {
+                const focused = actions?.querySelector('.dgwt-wcas-search-input:focus, input[type="search"]:focus');
+                if (!focused) {
+                    setSearchExpanded(false);
+                    stopSuggestionsDockObserver();
+                }
+            }, 0);
+        });
+
+        desktopMq.addEventListener('change', () => {
+            if (!desktopMq.matches) {
+                setSearchExpanded(false);
+            }
+        });
+
+        syncAllHeaderSearchForms();
+        $(document).on('fibosearch/open fibosearch/show-suggestions fibosearch/show-pre-suggestions', () => {
+            syncAllHeaderSearchForms();
+            dockHeaderSuggestions();
+        });
+
+        if (typeof MutationObserver !== 'undefined') {
+            const observer = new MutationObserver(syncAllHeaderSearchForms);
+            document.querySelectorAll('[data-header-search]').forEach((root) => {
+                observer.observe(root, { childList: true, subtree: true });
+            });
+        }
+    };
+
     const initHeaderMenu = () => {
         setupCategoriesDropdown();
         setupHeaderDropdowns();
+        setupFiboSearchHeader();
     };
 
     if (document.readyState === 'loading') {
@@ -1729,3 +2153,248 @@ document.addEventListener('DOMContentLoaded', () => {
         initHeaderMenu();
     }
 })(window.jQuery);
+
+/* ===== Motion: reveal / intro ===== */
+(() => {
+    const setupModernAnimations = () => {
+        const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+        if (reducedMotion) return;
+
+        const path = (window.location.pathname.split('/').pop() || '').toLowerCase();
+        const isHomePage =
+            document.body.classList.contains('home') ||
+            path === '' ||
+            path === 'index' ||
+            path === 'index.html';
+        const isCatalogPage =
+            !!document.querySelector('main.wrap.catalog-page') ||
+            path === 'catalog' ||
+            path === 'catalog.html';
+        const isFranchisePage =
+            document.body.classList.contains('woocommerce-single-franchise') ||
+            document.body.classList.contains('single-product') ||
+            /^franchise(?:-[a-z0-9-]+)?\.html$/i.test(path);
+
+        if (!document.getElementById('shared-motion-style')) {
+            const style = document.createElement('style');
+            style.id = 'shared-motion-style';
+            style.textContent = `
+        @media (prefers-reduced-motion: no-preference) {
+          .fx-intro,
+          .fx-reveal {
+            opacity: 0;
+            transform: translate3d(0, var(--fx-shift, 30px), 0);
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+            transition:
+              opacity var(--fx-opacity-duration, .42s) cubic-bezier(.22,.61,.36,1),
+              transform var(--fx-transform-duration, .58s) cubic-bezier(.22,.61,.36,1);
+            transition-delay: var(--fx-delay, 0ms);
+          }
+
+          .fx-intro {
+            --fx-shift: 20px;
+            --fx-opacity-duration: .4s;
+            --fx-transform-duration: .52s;
+          }
+
+          .fx-reveal {
+            --fx-shift: 34px;
+          }
+
+          .fx-intro.is-visible,
+          .fx-reveal.is-visible {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+          }
+        }
+      `;
+            document.head.appendChild(style);
+        }
+
+        const unique = (list) => Array.from(new Set(list.filter(Boolean)));
+        const introTargets = unique([
+            document.querySelector('.header-inner'),
+            !isFranchisePage ? document.querySelector('.breadcrumbs') : null,
+            !isFranchisePage ? document.querySelector('.page-title') : null,
+            document.querySelector('.hero-title'),
+            document.querySelector('.hero-sub'),
+            document.querySelector('.catalog-hero'),
+            !isFranchisePage ? document.querySelector('.franchise-head') : null,
+        ]);
+
+        introTargets.forEach((el, index) => {
+            el.classList.add('fx-intro');
+            el.style.setProperty('--fx-delay', `${index * 55}ms`);
+        });
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                introTargets.forEach((el) => el.classList.add('is-visible'));
+            });
+        });
+
+        const revealSelector = [
+            '.wrap > section',
+            '.catalog-layout',
+            '.catalog-toolbar',
+            '.pagination',
+            '.woocommerce-pagination',
+            '.woocommerce-pagination > .page-numbers',
+            '.sidebar-block',
+            '.catalog-cards .popular-card',
+            '.popular-grid .popular-card',
+            '.preview-grid .preview-card',
+            '.info-grid .info-item',
+            '.franchise-layout > .main-column',
+            '.franchise-layout > .side-column',
+            '.card',
+            '.help-card',
+            '.faq-item',
+            '.collection-block',
+            '.popular-section',
+        ].join(', ');
+
+        const prepared = new WeakSet();
+        let sequence = 0;
+
+        const observer = 'IntersectionObserver' in window
+            ? new IntersectionObserver((entries, obs) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.add('is-visible');
+                    obs.unobserve(entry.target);
+                });
+            }, { threshold: 0.14, rootMargin: '0px 0px -8% 0px' })
+            : null;
+
+        const prepareEl = (el) => {
+            if (!(el instanceof HTMLElement)) return;
+            if (prepared.has(el)) return;
+            if (el.closest('.about-stats')) return;
+            if (el.closest('.mobile-menu') || el.closest('.nav-dropdown-panel')) return;
+            if (
+                isCatalogPage &&
+                (el.closest('.catalog-cards') || el.closest('.pagination') || el.closest('.woocommerce-pagination') || el.closest('.catalog-toolbar'))
+            ) return;
+            if (
+                isFranchisePage &&
+                (
+                    el.matches('.page-head, .info-row, .cta-card, .content-section, .faq-section, .ask-box, .toc-desktop, .toc-mobile, .side-meta, .key-list') ||
+                    el.closest('.page-head, .info-row, .cta-card, .content-section, .faq-section, .ask-box, .toc-desktop, .toc-mobile, .side-meta, .key-list')
+                )
+            ) return;
+            if (
+                isHomePage &&
+                (el.matches('.popular-section .popular-card, [data-collections-section] .popular-card') ||
+                    el.closest('.popular-section .popular-card, [data-collections-section] .popular-card'))
+            ) return;
+            if (window.getComputedStyle(el).display === 'none') return;
+            prepared.add(el);
+
+            el.classList.add('fx-reveal');
+            if (!el.style.getPropertyValue('--fx-delay')) {
+                const delay = Math.min(sequence, 10) * 50;
+                el.style.setProperty('--fx-delay', `${delay}ms`);
+            }
+            sequence += 1;
+
+            const rect = el.getBoundingClientRect();
+            const mostlyVisible = rect.top < window.innerHeight * 1.02;
+            if (mostlyVisible || !observer) {
+                requestAnimationFrame(() => el.classList.add('is-visible'));
+                return;
+            }
+            observer.observe(el);
+        };
+
+        const registerTargets = (root = document) => {
+            if (root instanceof HTMLElement && root.matches(revealSelector)) {
+                prepareEl(root);
+            }
+            root.querySelectorAll?.(revealSelector).forEach(prepareEl);
+        };
+
+        registerTargets(document);
+        window.setTimeout(() => registerTargets(document), 320);
+        window.setTimeout(() => registerTargets(document), 1100);
+        window.addEventListener('load', () => registerTargets(document), { once: true });
+
+        const wrap = document.querySelector('.wrap') || document.body;
+        if (wrap instanceof HTMLElement && 'MutationObserver' in window) {
+            const mo = new MutationObserver((mutations) => {
+                mutations.forEach((m) => {
+                    m.addedNodes.forEach((node) => {
+                        if (node instanceof HTMLElement) registerTargets(node);
+                    });
+                });
+            });
+            mo.observe(wrap, { childList: true, subtree: true });
+        }
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupModernAnimations, { once: true });
+    } else {
+        setupModernAnimations();
+    }
+})();
+
+// CF7: UTM-метки и clientID из Яндекс.Метрики
+(function () {
+    const counterId = 109308668;
+    const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
+
+    const getStoredParam = (key) => new URLSearchParams(location.search).get(key) || localStorage.getItem(key) || '';
+
+    const storeParam = (key, value) => {
+        if (!value) return;
+        localStorage.setItem(key, value);
+        document.cookie = `${key}=${encodeURIComponent(value)}; path=/; max-age=31536000`;
+    };
+
+    const fillFormFields = () => {
+        utmKeys.forEach((key) => {
+            document.querySelectorAll(`input[name="${key}"]`).forEach((input) => {
+                input.value = getStoredParam(key);
+            });
+        });
+
+        const clientID = localStorage.getItem('clientID') || '';
+        document.querySelectorAll('input[name="clientID"]').forEach((input) => {
+            input.value = clientID;
+        });
+    };
+
+    utmKeys.forEach((key) => {
+        const value = new URLSearchParams(location.search).get(key);
+        if (value) storeParam(key, value);
+    });
+
+    const fetchClientId = () => {
+        if (!window.ym) return;
+        window.ym(counterId, 'getClientID', (id) => {
+            if (!id) return;
+            localStorage.setItem('clientID', id);
+            fillFormFields();
+        });
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        fillFormFields();
+        setTimeout(fetchClientId, 800);
+        setTimeout(fillFormFields, 1200);
+    });
+
+    document.addEventListener('wpcf7beforesubmit', (event) => {
+        fillFormFields();
+        const formData = event.detail?.formData;
+        if (!formData) return;
+
+        utmKeys.forEach((key) => {
+            formData.set(key, localStorage.getItem(key) || '');
+        });
+        formData.set('clientID', localStorage.getItem('clientID') || '');
+    }, true);
+})();
+

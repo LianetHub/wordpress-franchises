@@ -747,6 +747,35 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // CF7: данные франшизы из кнопки «Получить презентацию»
+        let presentationFranchiseTitle = '';
+        let presentationFranchiseUrl = '';
+
+        $(document).on('click', '.popular-card__popup-btn', function () {
+            presentationFranchiseTitle = $(this).attr('data-franchise-title') || '';
+            presentationFranchiseUrl = $(this).attr('data-franchise-url') || '';
+            sessionStorage.setItem('presentationFranchiseTitle', presentationFranchiseTitle);
+            sessionStorage.setItem('presentationFranchiseUrl', presentationFranchiseUrl);
+            $('input[name="franchise-title"]').val(presentationFranchiseTitle);
+            $('input[name="franchise-url"]').val(presentationFranchiseUrl);
+        });
+
+        document.addEventListener('wpcf7beforesubmit', function (event) {
+            const form = event.target;
+            const title = presentationFranchiseTitle || sessionStorage.getItem('presentationFranchiseTitle') || '';
+            const url = presentationFranchiseUrl || sessionStorage.getItem('presentationFranchiseUrl') || '';
+            const titleInput = form.querySelector('input[name="franchise-title"]');
+            const urlInput = form.querySelector('input[name="franchise-url"]');
+
+            if (titleInput) titleInput.value = title;
+            if (urlInput) urlInput.value = url;
+
+            if (event.detail?.formData) {
+                event.detail.formData.set('franchise-title', title);
+                event.detail.formData.set('franchise-url', url);
+            }
+        }, true);
+
 
         const initYandexMap = () => {
             const mapContainer = document.getElementById('map');
@@ -2309,5 +2338,63 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         setupModernAnimations();
     }
+})();
+
+// CF7: UTM-метки и clientID из Яндекс.Метрики
+(function () {
+    const counterId = 109308668;
+    const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
+
+    const getStoredParam = (key) => new URLSearchParams(location.search).get(key) || localStorage.getItem(key) || '';
+
+    const storeParam = (key, value) => {
+        if (!value) return;
+        localStorage.setItem(key, value);
+        document.cookie = `${key}=${encodeURIComponent(value)}; path=/; max-age=31536000`;
+    };
+
+    const fillFormFields = () => {
+        utmKeys.forEach((key) => {
+            document.querySelectorAll(`input[name="${key}"]`).forEach((input) => {
+                input.value = getStoredParam(key);
+            });
+        });
+
+        const clientID = localStorage.getItem('clientID') || '';
+        document.querySelectorAll('input[name="clientID"]').forEach((input) => {
+            input.value = clientID;
+        });
+    };
+
+    utmKeys.forEach((key) => {
+        const value = new URLSearchParams(location.search).get(key);
+        if (value) storeParam(key, value);
+    });
+
+    const fetchClientId = () => {
+        if (!window.ym) return;
+        window.ym(counterId, 'getClientID', (id) => {
+            if (!id) return;
+            localStorage.setItem('clientID', id);
+            fillFormFields();
+        });
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        fillFormFields();
+        setTimeout(fetchClientId, 800);
+        setTimeout(fillFormFields, 1200);
+    });
+
+    document.addEventListener('wpcf7beforesubmit', (event) => {
+        fillFormFields();
+        const formData = event.detail?.formData;
+        if (!formData) return;
+
+        utmKeys.forEach((key) => {
+            formData.set(key, localStorage.getItem(key) || '');
+        });
+        formData.set('clientID', localStorage.getItem('clientID') || '');
+    }, true);
 })();
 
