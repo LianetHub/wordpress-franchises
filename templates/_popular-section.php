@@ -8,9 +8,24 @@ defined('ABSPATH') || exit;
  * @var string    $popular_franchises_notice
  */
 
-$product_ids = isset($product_ids) && is_array($product_ids) ? $product_ids : [];
-$popular_all_href = isset($popular_all_href) ? (string) $popular_all_href : home_url('/');
-$popular_franchises_notice = isset($popular_franchises_notice) ? (string) $popular_franchises_notice : '';
+$product_ids = isset($product_ids) && is_array($product_ids) ? $product_ids : null;
+$popular_all_href = isset($popular_all_href) ? (string) $popular_all_href : null;
+$popular_franchises_notice = isset($popular_franchises_notice) ? (string) $popular_franchises_notice : null;
+
+if ($product_ids === null && function_exists('franchises_popular_franchise_product_ids')) {
+    $popular_limit = function_exists('franchises_home_popular_limit') ? franchises_home_popular_limit() : 12;
+    $product_ids = franchises_popular_franchise_product_ids($popular_limit);
+    $popular_all_href = function_exists('franchises_home_popular_all_url')
+        ? franchises_home_popular_all_url()
+        : home_url('/');
+    $popular_franchises_notice = function_exists('franchises_home_popular_seo_text')
+        ? franchises_home_popular_seo_text(count($product_ids))
+        : '';
+} else {
+    $product_ids = is_array($product_ids) ? $product_ids : [];
+    $popular_all_href = $popular_all_href ?? home_url('/');
+    $popular_franchises_notice = $popular_franchises_notice ?? '';
+}
 ?>
 
 <section class="popular-section stats-next-tight" aria-label="<?php esc_attr_e('Популярные франшизы', 'franchises'); ?>" data-popular-section>
