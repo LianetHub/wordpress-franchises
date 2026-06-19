@@ -114,3 +114,146 @@ if (! function_exists('franchises_catalog_build_meta_query_parts')) {
         return $meta_parts;
     }
 }
+
+if (! function_exists('franchises_catalog_build_tax_query_parts')) {
+    /**
+     * @param array<string, mixed> $source
+     * @return list<array<string, mixed>>
+     */
+    function franchises_catalog_build_tax_query_parts(array $source = []): array
+    {
+        if ($source === [] && isset($_GET)) {
+            $source = $_GET;
+        }
+
+        $f = franchises_catalog_normalize_filter_criteria($source);
+        $parts = [];
+
+        if ($f['category'] !== '') {
+            $parent_id = 0;
+            if ($f['sphere'] !== '') {
+                $parent = franchises_resolve_product_cat_term($f['sphere']);
+                $parent_id = $parent ? (int) $parent->term_id : 0;
+            }
+            $term = franchises_resolve_product_cat_term($f['category'], $parent_id);
+            if (! $term && $parent_id > 0) {
+                $term = franchises_resolve_product_cat_term($f['category']);
+            }
+            if ($term instanceof WP_Term) {
+                $parts[] = [
+                    'taxonomy'         => 'product_cat',
+                    'field'            => 'term_id',
+                    'terms'            => [(int) $term->term_id],
+                    'include_children' => false,
+                ];
+            }
+        } elseif ($f['sphere'] !== '') {
+            $term = franchises_resolve_product_cat_term($f['sphere']);
+            if ($term instanceof WP_Term) {
+                $parts[] = [
+                    'taxonomy'         => 'product_cat',
+                    'field'            => 'term_id',
+                    'terms'            => [(int) $term->term_id],
+                    'include_children' => true,
+                ];
+            }
+        }
+
+        return $parts;
+    }
+}
+
+if (! function_exists('franchises_catalog_get_orderby')) {
+    function franchises_catalog_get_orderby(): string
+    {
+        $default = function_exists('get_option')
+            ? (string) get_option('woocommerce_default_catalog_orderby', 'menu_order')
+            : 'menu_order';
+
+        if (! isset($_GET['orderby']) || $_GET['orderby'] === '') {
+            return $default;
+        }
+
+        return sanitize_text_field(wp_unslash((string) $_GET['orderby']));
+    }
+}
+
+if (! function_exists('franchises_catalog_has_custom_orderby')) {
+    /**
+     * @param array<string, mixed> $source
+     */
+    function franchises_catalog_has_custom_orderby(array $source = []): bool
+    {
+        if ($source === [] && isset($_GET)) {
+            $source = $_GET;
+        }
+
+        $default = function_exists('get_option')
+            ? (string) get_option('woocommerce_default_catalog_orderby', 'menu_order')
+            : 'menu_order';
+        $orderby = isset($source['orderby'])
+            ? sanitize_text_field((string) $source['orderby'])
+            : $default;
+
+        return $orderby !== '' && $orderby !== $default;
+    }
+}
+
+if (! function_exists('franchises_catalog_has_list_filters')) {
+    /**
+     * @param array<string, mixed> $source
+     */
+    function franchises_catalog_has_list_filters(array $source = []): bool
+    {
+        if ($source === [] && isset($_GET)) {
+            $source = $_GET;
+        }
+
+        $f = franchises_catalog_normalize_filter_criteria($source);
+
+        if ($f['search_q'] !== '') {
+            return true;
+        }
+        if ($f['verified']) {
+            return true;
+        }
+        if ($f['invest_max'] > 0) {
+            return true;
+        }
+        if ($f['profit_min'] > 0) {
+            return true;
+        }
+        if ($f['payback_max'] > 0) {
+            return true;
+        }
+        if ($f['sphere'] !== '') {
+            return true;
+        }
+        if ($f['category'] !== '') {
+            return true;
+        }
+
+        return false;
+    }
+}
+
+if (! function_exists('franchises_catalog_ordering_query_args')) {
+    /**
+     * @return array<string, mixed>
+     */
+    function franchises_catalog_ordering_query_args(?string $orderby = null): array
+    {
+        if ($orderby === null) {
+            $orderby = franchises_catalog_get_orderby();
+        }
+
+        if (function_exists('WC') && WC()->query instanceof WC_Query) {
+            return WC()->query->get_catalog_ordering_args($orderby);
+        }
+
+        return [
+            'orderby' => 'date',
+            'order'   => 'DESC',
+        ];
+    }
+}

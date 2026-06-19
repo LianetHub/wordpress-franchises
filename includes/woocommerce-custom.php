@@ -1643,43 +1643,9 @@ add_action('woocommerce_product_query', static function ($q): void {
         $q->set('s', $search_q);
     }
 
-    $extra_tax = [];
-
-    // На странице магазина (is_shop() && tax) GET-фильтры по категориям; на архиве категории WC уже задаёт tax_query.
-    if (is_shop()) {
-        $category = isset($_GET['category']) ? sanitize_text_field(wp_unslash($_GET['category'])) : '';
-        $sphere = isset($_GET['sphere']) ? sanitize_text_field(wp_unslash($_GET['sphere'])) : '';
-
-        if ($category !== '') {
-            $parent_id = 0;
-            if ($sphere !== '') {
-                $parent = franchises_resolve_product_cat_term($sphere);
-                $parent_id = $parent ? (int) $parent->term_id : 0;
-            }
-            $term = franchises_resolve_product_cat_term($category, $parent_id);
-            if (! $term && $parent_id > 0) {
-                $term = franchises_resolve_product_cat_term($category);
-            }
-            if ($term instanceof WP_Term) {
-                $extra_tax[] = [
-                    'taxonomy'         => 'product_cat',
-                    'field'            => 'term_id',
-                    'terms'            => [(int) $term->term_id],
-                    'include_children' => false,
-                ];
-            }
-        } elseif ($sphere !== '') {
-            $term = franchises_resolve_product_cat_term($sphere);
-            if ($term instanceof WP_Term) {
-                $extra_tax[] = [
-                    'taxonomy'         => 'product_cat',
-                    'field'            => 'term_id',
-                    'terms'            => [(int) $term->term_id],
-                    'include_children' => true,
-                ];
-            }
-        }
-    }
+    $extra_tax = is_shop() && function_exists('franchises_catalog_build_tax_query_parts')
+        ? franchises_catalog_build_tax_query_parts()
+        : [];
 
     if ($extra_tax !== []) {
         $tax_query = $q->get('tax_query');
@@ -1724,3 +1690,26 @@ add_action('woocommerce_product_query', static function ($q): void {
         $q->set('meta_query', array_merge(['relation' => 'AND'], $meta_parts));
     }
 }, 40);
+
+add_filter('woocommerce_pagination_args', static function (array $args): array {
+    if (! function_exists('franchises_is_selection_catalog_view') || ! franchises_is_selection_catalog_view()) {
+        return $args;
+    }
+
+    $add_args = function_exists('franchises_catalog_filter_query_args')
+        ? franchises_catalog_filter_query_args()
+        : [];
+
+    if (isset($_GET['sphere']) && $_GET['sphere'] !== '') {
+        $add_args['sphere'] = sanitize_text_field(wp_unslash((string) $_GET['sphere']));
+    }
+    if (isset($_GET['category']) && $_GET['category'] !== '') {
+        $add_args['category'] = sanitize_text_field(wp_unslash((string) $_GET['category']));
+    }
+
+    if ($add_args !== []) {
+        $args['add_args'] = array_merge($args['add_args'] ?? [], $add_args);
+    }
+
+    return $args;
+}, 20);

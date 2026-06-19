@@ -18,12 +18,14 @@
  * @var string              $reset_url
  * @var bool                $show_reset
  * @var bool                $advanced_open
+ * @var string              $selection_url
  */
 
 defined('ABSPATH') || exit;
 
 $shop_url = isset($shop_url) ? (string) $shop_url : '';
 $form_action = isset($form_action) ? (string) $form_action : $shop_url;
+$selection_url = isset($selection_url) ? (string) $selection_url : '';
 $parents = isset($parents) && is_array($parents) ? $parents : [];
 $cur_sphere = isset($cur_sphere) ? (string) $cur_sphere : '';
 $cur_category = isset($cur_category) ? (string) $cur_category : '';
@@ -47,7 +49,7 @@ if (! $advanced_open) {
 <div class="catalog-filters">
     <div class="catalog-filter-popup" id="catalog-filter-popup" hidden>
         <h2 class="catalog-filter-popup__title title-md">Фильтры</h2>
-        <form method="get" action="<?php echo esc_url($form_action); ?>" aria-label="Фильтр каталога" id="franchises-catalog-filters" data-shop-url="<?php echo esc_url($shop_url); ?>">
+        <form method="get" action="<?php echo esc_url($form_action); ?>" aria-label="Фильтр каталога" id="franchises-catalog-filters" data-shop-url="<?php echo esc_url($shop_url); ?>"<?php echo $selection_url !== '' ? ' data-selection-url="' . esc_url($selection_url) . '"' : ''; ?>>
             <div class="<?php echo esc_attr($filter_card_classes); ?>">
                 <div class="filter-grid">
                     <select class="filter-select filter-select-native" name="sphere" data-filter="sphere" aria-label="Сфера бизнеса">

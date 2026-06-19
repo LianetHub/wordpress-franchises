@@ -38,8 +38,19 @@ if (is_product_category()) {
 $default_orderby = function_exists('get_option') ? get_option('woocommerce_default_catalog_orderby', 'menu_order') : 'menu_order';
 $cur_orderby = isset($_GET['orderby']) ? sanitize_text_field(wp_unslash($_GET['orderby'])) : $default_orderby;
 
+$current_selection_id = function_exists('franchises_get_current_selection_id')
+    ? franchises_get_current_selection_id()
+    : 0;
+
+$selection_url = '';
 $form_action = $shop_url;
-if (function_exists('franchises_catalog_url_for_selection')) {
+if ($current_selection_id > 0) {
+    $selection_link = get_permalink($current_selection_id);
+    if (is_string($selection_link) && $selection_link !== '') {
+        $form_action = $selection_link;
+        $selection_url = $selection_link;
+    }
+} elseif (function_exists('franchises_catalog_url_for_selection')) {
     $form_action = franchises_catalog_url_for_selection($cur_sphere, $cur_category);
 } elseif (is_product_category()) {
     $term = get_queried_object();
@@ -52,10 +63,6 @@ if (function_exists('franchises_catalog_url_for_selection')) {
         }
     }
 }
-
-$current_selection_id = function_exists('franchises_get_current_selection_id')
-    ? franchises_get_current_selection_id()
-    : 0;
 
 $is_selection_catalog = $current_selection_id > 0;
 $shop_link_active = ! $is_selection_catalog
@@ -120,9 +127,6 @@ $orderby_options = function_exists('franchises_wc_catalog_orderby_choices')
 
 global $wp_query;
 $found = (int) $wp_query->found_posts;
-if ($is_selection_catalog && $current_selection_id > 0 && function_exists('franchises_selection_product_ids')) {
-    $found = count(franchises_selection_product_ids($current_selection_id, 500));
-}
 $paged = max(1, (int) get_query_var('paged'));
 $per_page = (int) $wp_query->get('posts_per_page');
 if ($per_page <= 0) {
@@ -214,6 +218,7 @@ get_template_part('templates/components/month-franchises', null, [
             [
                 'shop_url'        => $shop_url,
                 'form_action'     => $form_action,
+                'selection_url'   => $selection_url,
                 'parents'         => $parents,
                 'cur_sphere'      => $cur_sphere,
                 'cur_category'    => $cur_category,

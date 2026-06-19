@@ -686,6 +686,124 @@ function franchises_selection_product_ids(int $selection_id, int $max = 500): ar
 }
 
 /**
+ * @param list<int> $base_ids
+ * @param list<int> $candidate_ids
+ * @return list<int>
+ */
+function franchises_selection_intersect_preserve_order(array $base_ids, array $candidate_ids): array
+{
+    $lookup = array_flip(array_map('intval', $candidate_ids));
+    $out = [];
+    foreach ($base_ids as $raw_id) {
+        $id = (int) $raw_id;
+        if ($id > 0 && isset($lookup[$id])) {
+            $out[] = $id;
+        }
+    }
+
+    return $out;
+}
+
+/**
+ * @param array<string, mixed> $source
+ * @return list<int>
+ */
+function franchises_selection_filtered_product_ids(int $selection_id, array $source = []): array
+{
+    $base_ids = franchises_selection_product_ids($selection_id, 500);
+    if ($base_ids === []) {
+        return [];
+    }
+
+    $query_source = $source === [] && isset($_GET) ? $_GET : $source;
+    $filtered_ids = $base_ids;
+
+    if (function_exists('franchises_catalog_has_list_filters') && franchises_catalog_has_list_filters($query_source)) {
+        $criteria = franchises_catalog_normalize_filter_criteria($query_source);
+        $args = [
+            'post_type'           => 'product',
+            'post_status'         => 'publish',
+            'post__in'            => $base_ids,
+            'posts_per_page'      => -1,
+            'fields'              => 'ids',
+            'no_found_rows'       => true,
+            'ignore_sticky_posts' => true,
+            'orderby'             => 'post__in',
+        ];
+
+        if ($criteria['search_q'] !== '') {
+            $args['s'] = $criteria['search_q'];
+        }
+
+        if (function_exists('franchises_catalog_build_tax_query_parts')) {
+            $tax_parts = franchises_catalog_build_tax_query_parts($query_source);
+            if ($tax_parts !== []) {
+                $args['tax_query'] = count($tax_parts) > 1
+                    ? array_merge(['relation' => 'AND'], $tax_parts)
+                    : $tax_parts;
+            }
+        }
+
+        if (function_exists('franchises_catalog_build_meta_query_parts')) {
+            $meta_parts = franchises_catalog_build_meta_query_parts($query_source);
+            if ($meta_parts !== []) {
+                $args['meta_query'] = array_merge(['relation' => 'AND'], $meta_parts);
+            }
+        }
+
+        $query = new WP_Query($args);
+        $filtered_ids = franchises_selection_intersect_preserve_order(
+            $base_ids,
+            array_map('intval', $query->posts)
+        );
+        wp_reset_postdata();
+    }
+
+    if (function_exists('franchises_catalog_has_custom_orderby') && franchises_catalog_has_custom_orderby($query_source)) {
+        $ordering = franchises_catalog_ordering_query_args();
+        $order_query = new WP_Query(array_merge([
+            'post_type'           => 'product',
+            'post_status'         => 'publish',
+            'post__in'            => $filtered_ids !== [] ? $filtered_ids : [0],
+            'posts_per_page'      => -1,
+            'fields'              => 'ids',
+            'no_found_rows'       => true,
+            'ignore_sticky_posts' => true,
+        ], $ordering));
+        $filtered_ids = array_map('intval', $order_query->posts);
+        wp_reset_postdata();
+    }
+
+    return $filtered_ids;
+}
+
+function franchises_selection_catalog_query(int $selection_id, int $paged = 1, int $per_page = 12): WP_Query
+{
+    $per_page = max(1, $per_page);
+    $paged = max(1, $paged);
+
+    $all_ids = franchises_selection_filtered_product_ids($selection_id);
+    $total = count($all_ids);
+    $offset = ($paged - 1) * $per_page;
+    $page_ids = array_slice($all_ids, $offset, $per_page);
+
+    $products_query = new WP_Query([
+        'post_type'           => 'product',
+        'post_status'         => 'publish',
+        'post__in'            => $page_ids !== [] ? $page_ids : [0],
+        'orderby'             => 'post__in',
+        'posts_per_page'      => $per_page,
+        'paged'               => 1,
+        'no_found_rows'       => true,
+        'ignore_sticky_posts' => true,
+    ]);
+    $products_query->found_posts = $total;
+    $products_query->max_num_pages = $total > 0 ? (int) ceil($total / $per_page) : 0;
+
+    return $products_query;
+}
+
+/**
  * @return array{text: string, link: string, image_url: string}|null
  */
 function franchises_selection_hero_slide(int $selection_id): ?array

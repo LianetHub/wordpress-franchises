@@ -1428,6 +1428,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateCatalogFormAction = () => {
         if (!filterForm) return;
+        const selectionUrl = String(filterForm.getAttribute('data-selection-url') || '').trim();
+        if (selectionUrl) {
+            filterForm.action = selectionUrl;
+            return;
+        }
         const shopUrl = String(filterForm.getAttribute('data-shop-url') || '').trim();
         const categoryOpt = categorySelect?.selectedOptions?.[0];
         const sphereOpt = sphereSelect?.selectedOptions?.[0];
