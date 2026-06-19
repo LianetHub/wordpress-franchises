@@ -720,43 +720,20 @@ function franchises_selection_filtered_product_ids(int $selection_id, array $sou
 
     if (function_exists('franchises_catalog_has_list_filters') && franchises_catalog_has_list_filters($query_source)) {
         $criteria = franchises_catalog_normalize_filter_criteria($query_source);
-        $args = [
-            'post_type'           => 'product',
-            'post_status'         => 'publish',
-            'post__in'            => $base_ids,
-            'posts_per_page'      => -1,
-            'fields'              => 'ids',
-            'no_found_rows'       => true,
-            'ignore_sticky_posts' => true,
-            'orderby'             => 'post__in',
-        ];
-
-        if ($criteria['search_q'] !== '') {
-            $args['s'] = $criteria['search_q'];
-        }
-
-        if (function_exists('franchises_catalog_build_tax_query_parts')) {
-            $tax_parts = franchises_catalog_build_tax_query_parts($query_source);
-            if ($tax_parts !== []) {
-                $args['tax_query'] = count($tax_parts) > 1
-                    ? array_merge(['relation' => 'AND'], $tax_parts)
-                    : $tax_parts;
+        $matched = [];
+        foreach ($base_ids as $raw_id) {
+            $product_id = (int) $raw_id;
+            if ($product_id <= 0) {
+                continue;
+            }
+            if (
+                function_exists('franchises_catalog_product_matches_list_filters')
+                && franchises_catalog_product_matches_list_filters($product_id, $criteria)
+            ) {
+                $matched[] = $product_id;
             }
         }
-
-        if (function_exists('franchises_catalog_build_meta_query_parts')) {
-            $meta_parts = franchises_catalog_build_meta_query_parts($query_source);
-            if ($meta_parts !== []) {
-                $args['meta_query'] = array_merge(['relation' => 'AND'], $meta_parts);
-            }
-        }
-
-        $query = new WP_Query($args);
-        $filtered_ids = franchises_selection_intersect_preserve_order(
-            $base_ids,
-            array_map('intval', $query->posts)
-        );
-        wp_reset_postdata();
+        $filtered_ids = franchises_selection_intersect_preserve_order($base_ids, $matched);
     }
 
     if (function_exists('franchises_catalog_has_custom_orderby') && franchises_catalog_has_custom_orderby($query_source)) {

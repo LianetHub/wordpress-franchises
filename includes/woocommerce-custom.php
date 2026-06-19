@@ -1420,7 +1420,10 @@ if (! function_exists('franchises_catalog_build_hero_title')) {
         int $invest_max = 0,
         int $profit_min = 0,
         int $payback_max = 0,
-        string $search_q = ''
+        string $search_q = '',
+        bool $is_selection = false,
+        string $sphere = '',
+        string $category = ''
     ): string {
         $clauses = [];
 
@@ -1437,6 +1440,48 @@ if (! function_exists('franchises_catalog_build_hero_title')) {
                 franchises_ru_months_genitive($payback_max)
             );
         }
+
+        $geo_clause = '';
+        if ($category !== '') {
+            $geo_clause = 'в категории «' . $category . '»';
+        } elseif ($sphere !== '') {
+            $geo_clause = 'в сфере «' . $sphere . '»';
+        }
+
+        if ($is_selection) {
+            $search_clause = $search_q !== '' ? 'по запросу «' . $search_q . '»' : '';
+            $suffix_parts = array_values(array_filter(array_merge(
+                $geo_clause !== '' ? [$geo_clause] : [],
+                $clauses,
+                $search_clause !== '' ? [$search_clause] : []
+            )));
+
+            if (! $verified && $suffix_parts === []) {
+                return $base_title;
+            }
+
+            if ($verified) {
+                $title = 'Проверенные франшизы: ' . franchises_lcfirst_utf8($base_title);
+                if ($suffix_parts !== []) {
+                    $title .= ', ' . franchises_catalog_join_title_clauses($suffix_parts);
+                }
+
+                return $title;
+            }
+
+            $title = $base_title;
+            if ($suffix_parts === []) {
+                return $title;
+            }
+
+            $joined = franchises_catalog_join_title_clauses($suffix_parts);
+            if (count($suffix_parts) === 1 && $geo_clause !== '' && $clauses === [] && $search_clause === '') {
+                return $title . ' ' . $joined;
+            }
+
+            return $title . ': ' . $joined;
+        }
+
         if ($search_q !== '') {
             $clauses[] = 'по запросу «' . $search_q . '»';
         }
@@ -1458,12 +1503,7 @@ if (! function_exists('franchises_catalog_build_hero_title')) {
         }
 
         if ($clauses !== []) {
-            if (count($clauses) > 1) {
-                $last = array_pop($clauses);
-                $title .= ' ' . implode(', ', $clauses) . ' и ' . $last;
-            } else {
-                $title .= ' ' . $clauses[0];
-            }
+            $title .= ' ' . franchises_catalog_join_title_clauses($clauses);
         }
 
         return $title;

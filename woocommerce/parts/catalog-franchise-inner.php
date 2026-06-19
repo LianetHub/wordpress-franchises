@@ -98,7 +98,10 @@ $hero_title = function_exists('franchises_catalog_build_hero_title')
         $cur_invest_max,
         $cur_profit_min,
         $cur_payback_max,
-        $cur_search_q
+        $cur_search_q,
+        $is_selection_catalog,
+        $cur_sphere,
+        $cur_category
     )
     : $hero_base_title;
 
