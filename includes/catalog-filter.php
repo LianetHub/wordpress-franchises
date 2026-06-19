@@ -21,11 +21,19 @@ if (! function_exists('franchises_catalog_normalize_filter_criteria')) {
      */
     function franchises_catalog_normalize_filter_criteria(array $raw): array
     {
+        $parse_int = static function ($value): int {
+            if (function_exists('franchises_parse_money_int')) {
+                return franchises_parse_money_int($value);
+            }
+
+            return max(0, (int) $value);
+        };
+
         return [
             'verified'    => ! empty($raw['verified']),
-            'invest_max'  => isset($raw['invest_max']) ? max(0, (int) $raw['invest_max']) : 0,
-            'profit_min'  => isset($raw['profit_min']) ? max(0, (int) $raw['profit_min']) : 0,
-            'payback_max' => isset($raw['payback_max']) ? max(0, (int) $raw['payback_max']) : 0,
+            'invest_max'  => isset($raw['invest_max']) ? $parse_int($raw['invest_max']) : 0,
+            'profit_min'  => isset($raw['profit_min']) ? $parse_int($raw['profit_min']) : 0,
+            'payback_max' => isset($raw['payback_max']) ? $parse_int($raw['payback_max']) : 0,
             'sphere'      => isset($raw['sphere']) ? trim((string) $raw['sphere']) : '',
             'category'    => isset($raw['category']) ? trim((string) $raw['category']) : '',
             'search_q'    => isset($raw['search_q']) ? trim((string) $raw['search_q']) : (isset($raw['q']) ? trim((string) $raw['q']) : ''),
@@ -54,15 +62,6 @@ if (! function_exists('franchises_catalog_build_meta_query_parts')) {
                 'key'     => 'verified',
                 'value'   => '1',
                 'compare' => '=',
-            ];
-        }
-
-        if ($f['invest_max'] > 0) {
-            $meta_parts[] = [
-                'key'     => 'investment_min',
-                'value'   => [1, (int) $f['invest_max']],
-                'compare' => 'BETWEEN',
-                'type'    => 'NUMERIC',
             ];
         }
 
@@ -348,13 +347,14 @@ if (! function_exists('franchises_catalog_product_matches_list_filters')) {
             }
         }
 
-        if ($criteria['invest_max'] > 0) {
-            $invest_min = function_exists('franchises_product_investment_min')
-                ? franchises_product_investment_min($product_id)
-                : null;
-            if ($invest_min === null || $invest_min <= 0 || $invest_min > $criteria['invest_max']) {
-                return false;
-            }
+        if (
+            $criteria['invest_max'] > 0
+            && (
+                ! function_exists('franchises_product_investment_min_within')
+                || ! franchises_product_investment_min_within($product_id, $criteria['invest_max'])
+            )
+        ) {
+            return false;
         }
 
         if ($criteria['profit_min'] > 0) {
@@ -399,3 +399,79 @@ if (! function_exists('franchises_catalog_product_matches_list_filters')) {
         return true;
     }
 }
+
+if (! function_exists('franchises_sql_money_unsigned_expr')) {
+    function franchises_sql_money_unsigned_expr(string $column): string
+    {
+        $expr = $column;
+        $chars = [' ', ',', '₽', "\u{00A0}", "\u{202F}"];
+
+        foreach ($chars as $char) {
+            $expr = "REPLACE({$expr}, '" . esc_sql($char) . "', '')";
+        }
+
+        return "CAST({$expr} AS UNSIGNED)";
+    }
+}
+
+if (! function_exists('franchises_catalog_invest_max_posts_clauses')) {
+    /**
+     * @param array<string, string> $clauses
+     * @return array<string, string>
+     */
+    function franchises_catalog_invest_max_posts_clauses(array $clauses, WP_Query $query): array
+    {
+        if (is_admin() || ! $query->is_main_query()) {
+            return $clauses;
+        }
+        if (function_exists('franchises_is_selection_catalog_view') && franchises_is_selection_catalog_view()) {
+            return $clauses;
+        }
+        if (! function_exists('is_shop') || (! is_shop() && ! is_product_taxonomy())) {
+            return $clauses;
+        }
+
+        $source = isset($_GET) ? $_GET : [];
+        $max = franchises_catalog_normalize_filter_criteria($source)['invest_max'];
+        if ($max <= 0) {
+            return $clauses;
+        }
+
+        global $wpdb;
+
+        $im_expr = franchises_sql_money_unsigned_expr('fr_cat_inv_im.meta_value');
+        $legacy_expr = franchises_sql_money_unsigned_expr('fr_cat_inv_legacy.meta_value');
+        $price_expr = franchises_sql_money_unsigned_expr('fr_cat_inv_rp.meta_value');
+
+        $subquery = "
+            SELECT CASE
+                WHEN fr_cat_inv_im.meta_value IS NOT NULL AND fr_cat_inv_im.meta_value <> ''
+                    THEN {$im_expr}
+                WHEN fr_cat_inv_legacy.meta_value IS NOT NULL AND fr_cat_inv_legacy.meta_value <> ''
+                    THEN {$legacy_expr}
+                WHEN fr_cat_inv_rp.meta_value IS NOT NULL AND fr_cat_inv_rp.meta_value <> ''
+                    THEN {$price_expr}
+                ELSE 0
+            END
+            FROM {$wpdb->posts} fr_cat_inv_p
+            LEFT JOIN {$wpdb->postmeta} fr_cat_inv_im
+                ON fr_cat_inv_p.ID = fr_cat_inv_im.post_id AND fr_cat_inv_im.meta_key = 'investment_min'
+            LEFT JOIN {$wpdb->postmeta} fr_cat_inv_legacy
+                ON fr_cat_inv_p.ID = fr_cat_inv_legacy.post_id AND fr_cat_inv_legacy.meta_key = 'investment'
+            LEFT JOIN {$wpdb->postmeta} fr_cat_inv_rp
+                ON fr_cat_inv_p.ID = fr_cat_inv_rp.post_id AND fr_cat_inv_rp.meta_key = '_regular_price'
+            WHERE fr_cat_inv_p.ID = {$wpdb->posts}.ID
+            LIMIT 1
+        ";
+
+        $clauses['where'] .= $wpdb->prepare(
+            " AND ({$subquery}) BETWEEN %d AND %d",
+            1,
+            $max
+        );
+
+        return $clauses;
+    }
+}
+
+add_filter('posts_clauses', 'franchises_catalog_invest_max_posts_clauses', 20, 2);

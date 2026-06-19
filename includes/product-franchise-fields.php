@@ -10,6 +10,34 @@ defined('ABSPATH') || exit;
 // Чтение ACF (с legacy-полями investment / pausal)
 // -------------------------------------------------------------------------
 
+if (! function_exists('franchises_parse_money_int')) {
+    /**
+     * @param mixed $raw
+     */
+    function franchises_parse_money_int($raw): int
+    {
+        if ($raw === null || $raw === '' || $raw === false) {
+            return 0;
+        }
+        if (is_int($raw)) {
+            return max(0, $raw);
+        }
+        if (is_float($raw)) {
+            return max(0, (int) round($raw));
+        }
+        if (is_numeric($raw)) {
+            return max(0, (int) round((float) $raw));
+        }
+
+        $clean = preg_replace('/[^\d.]/u', '', (string) $raw);
+        if ($clean === '' || $clean === '.') {
+            return 0;
+        }
+
+        return max(0, (int) round((float) $clean));
+    }
+}
+
 if (! function_exists('franchises_acf_money_int')) {
     /**
      * @param mixed $raw
@@ -19,11 +47,16 @@ if (! function_exists('franchises_acf_money_int')) {
         if ($raw === null || $raw === '' || $raw === false) {
             return null;
         }
-        if (! is_numeric($raw)) {
+        if (is_numeric($raw)) {
+            return (int) round((float) $raw);
+        }
+
+        $parsed = franchises_parse_money_int($raw);
+        if ($parsed === 0 && ! preg_match('/\d/u', (string) $raw)) {
             return null;
         }
 
-        return (int) round((float) $raw);
+        return $parsed;
     }
 }
 
@@ -116,7 +149,20 @@ if (! function_exists('franchises_product_wc_regular_price_amount')) {
             return null;
         }
 
-        return (int) wc_format_decimal($price, 0, false);
+        return franchises_parse_money_int(wc_format_decimal($price, 0, false));
+    }
+}
+
+if (! function_exists('franchises_product_investment_min_within')) {
+    function franchises_product_investment_min_within(int $post_id, int $threshold): bool
+    {
+        if ($threshold <= 0) {
+            return false;
+        }
+
+        $invest_min = franchises_product_investment_min($post_id);
+
+        return $invest_min !== null && $invest_min > 0 && $invest_min <= $threshold;
     }
 }
 

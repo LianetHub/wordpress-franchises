@@ -1033,14 +1033,32 @@ if (! function_exists('franchises_catalog_filter_query_args')) {
         if (! empty($_GET['verified'])) {
             $args['verified'] = '1';
         }
-        if (isset($_GET['invest_max']) && (int) $_GET['invest_max'] > 0) {
-            $args['invest_max'] = (int) $_GET['invest_max'];
+
+        $parse_get = static function (string $key): int {
+            if (! isset($_GET[$key])) {
+                return 0;
+            }
+
+            $raw = wp_unslash($_GET[$key]);
+
+            return function_exists('franchises_parse_money_int')
+                ? franchises_parse_money_int($raw)
+                : max(0, (int) $raw);
+        };
+
+        $invest_max = $parse_get('invest_max');
+        if ($invest_max > 0) {
+            $args['invest_max'] = $invest_max;
         }
-        if (isset($_GET['profit_min']) && (int) $_GET['profit_min'] > 0) {
-            $args['profit_min'] = (int) $_GET['profit_min'];
+
+        $profit_min = $parse_get('profit_min');
+        if ($profit_min > 0) {
+            $args['profit_min'] = $profit_min;
         }
-        if (isset($_GET['payback_max']) && (int) $_GET['payback_max'] > 0) {
-            $args['payback_max'] = (int) $_GET['payback_max'];
+
+        $payback_max = $parse_get('payback_max');
+        if ($payback_max > 0) {
+            $args['payback_max'] = $payback_max;
         }
         $search_q = function_exists('franchises_get_catalog_search_query') ? franchises_get_catalog_search_query() : '';
         if ($search_q !== '') {
@@ -1525,13 +1543,22 @@ if (! function_exists('franchises_catalog_has_active_filters')) {
         if (! empty($_GET['category'])) {
             return true;
         }
-        if (isset($_GET['invest_max']) && (int) $_GET['invest_max'] > 0) {
+        if (function_exists('franchises_catalog_normalize_filter_criteria')) {
+            $criteria = franchises_catalog_normalize_filter_criteria(isset($_GET) ? $_GET : []);
+            if ($criteria['invest_max'] > 0) {
+                return true;
+            }
+            if ($criteria['profit_min'] > 0) {
+                return true;
+            }
+            if ($criteria['payback_max'] > 0) {
+                return true;
+            }
+        } elseif (isset($_GET['invest_max']) && (int) $_GET['invest_max'] > 0) {
             return true;
-        }
-        if (isset($_GET['profit_min']) && (int) $_GET['profit_min'] > 0) {
+        } elseif (isset($_GET['profit_min']) && (int) $_GET['profit_min'] > 0) {
             return true;
-        }
-        if (isset($_GET['payback_max']) && (int) $_GET['payback_max'] > 0) {
+        } elseif (isset($_GET['payback_max']) && (int) $_GET['payback_max'] > 0) {
             return true;
         }
 

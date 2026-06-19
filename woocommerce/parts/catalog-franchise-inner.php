@@ -12,12 +12,24 @@ if (! function_exists('wc_get_page_id')) {
 
 $shop_url = get_permalink(wc_get_page_id('shop')) ?: home_url('/');
 
+$catalog_criteria = function_exists('franchises_catalog_normalize_filter_criteria')
+    ? franchises_catalog_normalize_filter_criteria(isset($_GET) ? $_GET : [])
+    : [
+        'verified'    => ! empty($_GET['verified']),
+        'invest_max'  => isset($_GET['invest_max']) ? max(0, (int) $_GET['invest_max']) : 0,
+        'profit_min'  => isset($_GET['profit_min']) ? max(0, (int) $_GET['profit_min']) : 0,
+        'payback_max' => isset($_GET['payback_max']) ? max(0, (int) $_GET['payback_max']) : 0,
+        'sphere'      => '',
+        'category'    => '',
+        'search_q'    => '',
+    ];
+
 $cur_sphere = isset($_GET['sphere']) ? sanitize_text_field(wp_unslash($_GET['sphere'])) : '';
 $cur_category = isset($_GET['category']) ? sanitize_text_field(wp_unslash($_GET['category'])) : '';
-$cur_verified = ! empty($_GET['verified']);
-$cur_invest_max = isset($_GET['invest_max']) ? max(0, (int) $_GET['invest_max']) : 0;
-$cur_profit_min = isset($_GET['profit_min']) ? max(0, (int) $_GET['profit_min']) : 0;
-$cur_payback_max = isset($_GET['payback_max']) ? max(0, (int) $_GET['payback_max']) : 0;
+$cur_verified = $catalog_criteria['verified'];
+$cur_invest_max = $catalog_criteria['invest_max'];
+$cur_profit_min = $catalog_criteria['profit_min'];
+$cur_payback_max = $catalog_criteria['payback_max'];
 
 if (is_product_category()) {
     $term = get_queried_object();
