@@ -65,8 +65,33 @@
 
 <script>
 document.addEventListener('wpcf7mailsent', function(event) {
-    if (typeof window.ym === 'function') {
-        window.ym(109308668, 'reachGoal', 'subm');
+    if (typeof window.ym !== 'function') return;
+
+    var counterId = 109308668;
+
+    // Общая цель для всех форм
+    window.ym(counterId, 'reachGoal', 'subm');
+
+    // Проверяем текущую страницу и скрытое поле franchise-url
+    var pageUrl = window.location.href;
+    var franchiseUrl = '';
+
+    if (event.detail && event.detail.inputs) {
+        event.detail.inputs.forEach(function(input) {
+            if (input.name === 'franchise-url') {
+                franchiseUrl = String(input.value || '');
+            }
+        });
+    }
+
+    var checkUrl = pageUrl + ' ' + franchiseUrl;
+
+    // Дополнительная цель для двух прачечных франшиз
+    if (
+        checkUrl.indexOf('/franshizy/stirka-com/') !== -1 ||
+        checkUrl.indexOf('/franshizy/prachechnaya-rf/') !== -1
+    ) {
+        window.ym(counterId, 'reachGoal', 'prachechnye');
     }
 }, false);
 </script>

@@ -478,7 +478,7 @@ function franchises_send_cf7_to_telegram($contact_form)
         $data = $submission->get_posted_data();
 
         $bot_token = '8912962432:AAHHIEJ4x85Ad8TGCJAHQJ2Qk8VM1IcJ0tY';
-        $chat_id   = '-5163652841';
+        $chat_id   = '-1003993540731';
 
         $form_title = method_exists($contact_form, 'title') ? $contact_form->title() : 'CF7 форма';
         $page_url   = $submission->get_meta('url');
