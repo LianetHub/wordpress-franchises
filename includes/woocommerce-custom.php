@@ -1129,6 +1129,55 @@ if (! function_exists('franchises_normalize_url_path')) {
     }
 }
 
+if (! function_exists('franchises_register_shop_prefixed_product_cat_rewrite_rules')) {
+    function franchises_register_shop_prefixed_product_cat_rewrite_rules(): void
+    {
+        if (! function_exists('wc_get_page_id') || ! taxonomy_exists('product_cat')) {
+            return;
+        }
+
+        $shop_slug = franchises_shop_page_slug();
+        if ($shop_slug === '') {
+            return;
+        }
+
+        $shop = preg_quote($shop_slug, '/');
+
+        add_rewrite_rule(
+            '^' . $shop . '/([^/]+)/page/?([0-9]{1,})/?$',
+            'index.php?product_cat=$matches[1]&paged=$matches[2]',
+            'top'
+        );
+
+        add_rewrite_rule(
+            '^' . $shop . '/([^/]+)/([^/]+)/page/?([0-9]{1,})/?$',
+            'index.php?product_cat=$matches[2]&paged=$matches[3]',
+            'top'
+        );
+    }
+}
+
+add_action('init', 'franchises_register_shop_prefixed_product_cat_rewrite_rules', 5);
+
+add_action('init', static function (): void {
+    $version = '1';
+    $option  = 'franchises_shop_cat_rewrite_version';
+
+    if (get_option($option) === $version) {
+        return;
+    }
+
+    franchises_register_shop_prefixed_product_cat_rewrite_rules();
+    flush_rewrite_rules(false);
+    update_option($option, $version);
+}, 99);
+
+add_action('after_switch_theme', static function (): void {
+    franchises_register_shop_prefixed_product_cat_rewrite_rules();
+    flush_rewrite_rules(false);
+    update_option('franchises_shop_cat_rewrite_version', '1');
+});
+
 if (! function_exists('franchises_fix_shop_prefixed_product_cat_request')) {
     /**
      * WooCommerce отдаёт канонические ссылки вида /{shop}/{родитель}/{категория}/, но правила
@@ -1181,11 +1230,18 @@ if (! function_exists('franchises_fix_shop_prefixed_product_cat_request')) {
         }
 
         $paged = 0;
-        $n = count($parts);
+        $n     = count($parts);
         if ($n >= 3 && $parts[$n - 2] === 'page' && ctype_digit((string) $parts[$n - 1])) {
             $paged = (int) $parts[$n - 1];
             array_pop($parts);
             array_pop($parts);
+        } elseif (
+            $paged <= 0
+            && ! empty($query_vars['page'])
+            && (int) $query_vars['page'] > 1
+            && str_contains($path, '/page/')
+        ) {
+            $paged = (int) $query_vars['page'];
         }
 
         array_shift($parts);
@@ -1210,6 +1266,7 @@ if (! function_exists('franchises_fix_shop_prefixed_product_cat_request')) {
                 'pagename',
                 'page_id',
                 'page',
+                'paged',
                 'attachment',
                 'attachment_id',
                 'name',
@@ -1240,6 +1297,55 @@ if (! function_exists('franchises_fix_shop_prefixed_product_cat_request')) {
 }
 
 add_filter('request', 'franchises_fix_shop_prefixed_product_cat_request', 999);
+
+add_filter('pre_handle_404', static function (bool $preempt, WP_Query $wp_query): bool {
+    if ($preempt || is_admin() || wp_doing_ajax() || wp_doing_cron()) {
+        return $preempt;
+    }
+    if (! taxonomy_exists('product_cat')) {
+        return $preempt;
+    }
+
+    $path = franchises_request_uri_relative_path();
+    if ($path === '' || ! preg_match('#/page/[0-9]+/?$#', $path)) {
+        return $preempt;
+    }
+
+    $shop_slug = franchises_shop_page_slug();
+    if ($shop_slug === '' || ! str_starts_with($path, $shop_slug . '/')) {
+        return $preempt;
+    }
+
+    $fixed = franchises_fix_shop_prefixed_product_cat_request($wp_query->query_vars);
+    if (empty($fixed['product_cat']) || empty($fixed['paged'])) {
+        return $preempt;
+    }
+
+    $term = get_term_by('slug', (string) $fixed['product_cat'], 'product_cat');
+    if (! $term instanceof WP_Term || is_wp_error($term)) {
+        return $preempt;
+    }
+
+    $wp_query->query_vars = $fixed;
+    $wp_query->parse_query($fixed);
+    $wp_query->get_posts();
+
+    if ($wp_query->found_posts <= 0) {
+        return $preempt;
+    }
+
+    $wp_query->is_404      = false;
+    $wp_query->is_tax      = true;
+    $wp_query->is_archive  = true;
+    $wp_query->is_singular = false;
+    $wp_query->is_home     = false;
+    $wp_query->queried_object    = $term;
+    $wp_query->queried_object_id = (int) $term->term_id;
+
+    status_header(200);
+
+    return true;
+}, 10, 2);
 
 add_action('pre_get_posts', static function (WP_Query $q): void {
     if (is_admin() || ! $q->is_main_query()) {
