@@ -23,6 +23,7 @@ $includes = [
     'includes/home-collections.php',
     'includes/home-popular.php',
     'includes/cf7-forms.php',
+    'includes/seo-https.php',
 ];
 
 foreach ($includes as $file) {
